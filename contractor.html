@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도급·용역·위탁 관리 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, sidebar: '#1e293b' } } } }
+    </script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-content.modal-lg { max-width: 720px; }
+        .modal-content.modal-xl { max-width: 960px; }
+        .modal-content.modal-md { max-width: 560px; }
+        .sidebar-logo.damyang { background: linear-gradient(135deg, #047857, #10b981); }
+        .dy-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+        .toast.show { opacity: 1; pointer-events: auto; }
+        .legal-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .legal-tag .x { cursor: pointer; opacity: 0.7; }
+        .legal-tag .x:hover { opacity: 1; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- 담양 공통 GNB 사이드바 -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="sidebar-logo damyang">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-bold text-white leading-tight">담양군</span>
+                        <span class="block text-[10px] text-emerald-200">중대재해예방통합관리</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="space-y-1">
+                    <li><a href="index.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>대시보드</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '관리대상 현황')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>관리대상 현황</a></li>
+                    <li><a href="safety-policy.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>안전보건 목표·경영방침</a></li>
+                    <li><a href="organization.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>전담조직 관리</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '유해·위험요인 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>유해·위험요인 관리</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '인력·예산 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>인력·예산 관리</a></li>
+                    <li><a href="contractor.html" class="sidebar-item active"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>도급·용역·위탁 관리</a></li>
+                    <li><a href="opinion.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>종사자 의견청취</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '의무이행 점검')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>의무이행 점검</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '현황 및 통계')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>현황 및 통계</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '제증명 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>제증명 관리</a></li>
+                </ul>
+            </nav>
+            <div class="workspace-selector">
+                <div class="workspace-btn">
+                    <div class="workspace-avatar" style="background:#047857;">담</div>
+                    <div class="workspace-info"><div class="workspace-name">담양군청 · 안전건설과</div><div class="workspace-role">안전관리자 · 박안전</div></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="header-title">도급·용역·위탁 관리</h1>
+                </div>
+                <div class="header-right">
+                    <button class="header-notification"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></button>
+                    <div class="header-user"><div class="header-avatar" style="background:#047857;">박</div><span class="header-username">박안전</span></div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- 탭 -->
+                <div class="border-b border-gray-200 mb-4">
+                    <nav class="flex gap-6 overflow-x-auto" data-tab-group="contractor">
+                        <button class="sub-tab active" data-tab="construction">공사관련</button>
+                        <button class="sub-tab" data-tab="service">용역관련</button>
+                        <button class="sub-tab" data-tab="purchase">구매설치관련</button>
+                        <button class="sub-tab" data-tab="trust">위탁사업</button>
+                        <button class="sub-tab" data-tab="etc">기타</button>
+                    </nav>
+                </div>
+
+                <!-- 점검상태 범례 -->
+                <div class="flex items-center gap-3 mb-4 text-xs">
+                    <span class="text-gray-600 font-medium">점검상태:</span>
+                    <span class="badge badge-success">점검완료</span>
+                    <span class="badge badge-info">진행중</span>
+                    <span class="badge badge-gray">미시행</span>
+                </div>
+
+                <div data-tab-content="contractor">
+                    <!-- ===== 공사관련 ===== -->
+                    <div class="tab-pane" data-pane="construction">
+                        <div class="alert alert-info mb-4">
+                            <svg class="alert-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div class="alert-content">
+                                <p class="alert-title text-blue-800">차세대 e호조 연동 안내</p>
+                                <p class="alert-message text-blue-700">차세대 e호조 연동 시 공사정보가 자동으로 불러와집니다. 프로토타입에서는 직접 등록 방식.</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <input type="text" class="input w-64" placeholder="공사명 / 수급업체 검색...">
+                                <select class="select"><option>전체 점검상태</option><option>점검완료</option><option>진행중</option><option>미시행</option></select>
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="공사">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                공사 등록
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th>발주처</th><th>공사명</th><th class="w-44">공사기간</th><th class="w-32 text-right">공사금액</th><th>수급업체</th><th class="w-24 text-center">점검상태</th><th class="w-28 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">군청 주차장 안전시설 보강공사</td>
+                                            <td class="text-gray-600 text-sm">2026.03.01<br>~2026.06.30</td>
+                                            <td class="text-right font-medium">85,000,000원</td>
+                                            <td>(주)한국안전건설</td>
+                                            <td class="text-center"><span class="badge badge-success">점검완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">소방시설 정기점검</td>
+                                            <td class="text-gray-600 text-sm">2026.04.01<br>~2026.05.31</td>
+                                            <td class="text-right font-medium">12,000,000원</td>
+                                            <td>전남소방기술(주)</td>
+                                            <td class="text-center"><span class="badge badge-info">진행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">군민체육관 노후 배관 교체공사</td>
+                                            <td class="text-gray-600 text-sm">2026.06.01<br>~2026.08.31</td>
+                                            <td class="text-right font-medium">42,500,000원</td>
+                                            <td>광주배관공사(주)</td>
+                                            <td class="text-center"><span class="badge badge-gray">미시행</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 용역관련 ===== -->
+                    <div class="tab-pane hidden" data-pane="service">
+                        <div class="flex justify-between items-center mb-4">
+                            <input type="text" class="input w-64" placeholder="용역명 검색...">
+                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="용역">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                용역 등록
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th>발주처</th><th>용역명</th><th class="w-44">용역기간</th><th class="w-32 text-right">계약금액</th><th>수급업체</th><th class="w-24 text-center">점검상태</th><th class="w-28 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">청사 청소·시설 위탁 용역</td>
+                                            <td class="text-gray-600 text-sm">2026.01.01<br>~2026.12.31</td>
+                                            <td class="text-right font-medium">68,000,000원</td>
+                                            <td>(주)담양종합관리</td>
+                                            <td class="text-center"><span class="badge badge-info">진행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">전기안전관리 위탁 용역</td>
+                                            <td class="text-gray-600 text-sm">2026.03.01<br>~2027.02.28</td>
+                                            <td class="text-right font-medium">28,000,000원</td>
+                                            <td>전남전기안전공사</td>
+                                            <td class="text-center"><span class="badge badge-success">점검완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 구매설치관련 ===== -->
+                    <div class="tab-pane hidden" data-pane="purchase">
+                        <div class="flex justify-between items-center mb-4">
+                            <input type="text" class="input w-64" placeholder="품목명 검색...">
+                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="구매설치">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                구매설치 등록
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th>발주처</th><th>품목명</th><th class="w-32">계약일</th><th class="w-32 text-right">계약금액</th><th>업체명</th><th class="w-24 text-center">점검상태</th><th class="w-28 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">CCTV 통합관제 시스템 구축·설치</td>
+                                            <td class="text-gray-600 text-sm">2026-04-10</td>
+                                            <td class="text-right font-medium">155,000,000원</td>
+                                            <td>(주)스마트시큐어</td>
+                                            <td class="text-center"><span class="badge badge-info">진행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">군청 무정전전원장치(UPS) 교체</td>
+                                            <td class="text-gray-600 text-sm">2026-03-20</td>
+                                            <td class="text-right font-medium">22,000,000원</td>
+                                            <td>한국전산설비(주)</td>
+                                            <td class="text-center"><span class="badge badge-success">점검완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 위탁사업 ===== -->
+                    <div class="tab-pane hidden" data-pane="trust">
+                        <div class="flex justify-between items-center mb-4">
+                            <input type="text" class="input w-64" placeholder="사업명 검색...">
+                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="위탁사업">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                위탁사업 등록
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th>발주처</th><th>사업명</th><th class="w-44">사업기간</th><th class="w-32 text-right">계약금액</th><th>수탁기관</th><th class="w-24 text-center">점검상태</th><th class="w-28 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">군립도서관 운영 위탁</td>
+                                            <td class="text-gray-600 text-sm">2026.01.01<br>~2027.12.31</td>
+                                            <td class="text-right font-medium">320,000,000원</td>
+                                            <td>(사)담양문화재단</td>
+                                            <td class="text-center"><span class="badge badge-success">점검완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-gray-600">담양군청</td>
+                                            <td class="font-medium text-gray-900">노인복지관 운영 위탁</td>
+                                            <td class="text-gray-600 text-sm">2026.01.01<br>~2028.12.31</td>
+                                            <td class="text-right font-medium">540,000,000원</td>
+                                            <td>(사)담양복지재단</td>
+                                            <td class="text-center"><span class="badge badge-info">진행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 기타 ===== -->
+                    <div class="tab-pane hidden" data-pane="etc">
+                        <div class="flex justify-between items-center mb-4">
+                            <input type="text" class="input w-64" placeholder="사업명 검색...">
+                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="기타">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                기타 등록
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th class="w-24">구분</th><th>사업명</th><th class="w-44">기간</th><th>업체명</th><th class="w-24 text-center">점검상태</th><th class="w-28 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="badge badge-gray">기타</span></td>
+                                            <td class="font-medium text-gray-900">군청 주차장 임대(민간운영)</td>
+                                            <td class="text-gray-600 text-sm">2026.01.01<br>~2026.12.31</td>
+                                            <td>대한주차관리(주)</td>
+                                            <td class="text-center"><span class="badge badge-info">진행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============= 등록 모달 (탭 공통) ============= -->
+    <div id="contractor-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal('contractor-modal')"></div>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title" id="contractor-modal-title">사업 등록</h3>
+                <button class="modal-close" onclick="closeModal('contractor-modal')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="form-label">발주처 <span class="text-red-500">*</span></label><input type="text" class="input w-full" value="담양군청" readonly></div>
+                    <div><label class="form-label" id="contractor-name-label">사업/공사명 <span class="text-red-500">*</span></label><input type="text" class="input w-full" placeholder="명칭 입력"></div>
+                    <div><label class="form-label">시작일 <span class="text-red-500">*</span></label><input type="date" class="input w-full"></div>
+                    <div><label class="form-label">종료일 <span class="text-red-500">*</span></label><input type="date" class="input w-full"></div>
+                    <div><label class="form-label">금액 (원) <span class="text-red-500">*</span></label><input type="number" class="input w-full" placeholder="예: 50000000"></div>
+                    <div><label class="form-label" id="contractor-vendor-label">수급업체 / 수탁기관 <span class="text-red-500">*</span></label><input type="text" class="input w-full" placeholder="업체명 입력"></div>
+                </div>
+
+                <div class="mt-5">
+                    <label class="form-label">관련근거</label>
+                    <div class="flex flex-wrap items-center gap-2 p-2 border border-gray-200 rounded-lg min-h-[44px]" id="legalTags">
+                        <span class="legal-tag">중대재해처벌법 제5조 <span class="x" onclick="this.parentElement.remove()">×</span></span>
+                        <button type="button" class="text-xs text-primary-600 px-2 py-1 hover:bg-blue-50 rounded">+ 추가</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">관련근거·법령 탭에 등록된 법령에서 선택</p>
+                </div>
+
+                <div class="mt-5">
+                    <label class="form-label">증빙서류 첨부</label>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 text-xs">
+                                <tr><th class="px-3 py-2 text-left font-medium text-gray-600 w-2/5">파일명</th><th class="px-3 py-2 text-left font-medium text-gray-600">설명</th><th class="px-3 py-2 w-20 text-center font-medium text-gray-600">관리</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t border-gray-100">
+                                    <td class="px-3 py-2 text-gray-700">계약서_사본.pdf</td>
+                                    <td class="px-3 py-2"><input type="text" class="input w-full" value="원본 대조 후 스캔본"></td>
+                                    <td class="px-3 py-2 text-center"><button class="text-red-500 text-xs">삭제</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="p-2 bg-gray-50 border-t border-gray-100">
+                            <button class="btn btn-outline btn-sm">+ 파일 추가</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-4 bg-emerald-50 border border-emerald-100 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-emerald-800">안전보건관리 준수 서약서</p>
+                            <p class="text-xs text-emerald-600 mt-0.5">수급업체/수탁기관의 서약서 첨부 (PDF, 이미지)</p>
+                        </div>
+                        <button class="btn btn-outline btn-sm" style="border-color:#10b981;color:#047857;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            파일 선택
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('contractor-modal')">취소</button>
+                <button class="btn btn-primary" onclick="closeModal('contractor-modal')">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/app.js"></script>
+    <script>
+        // 담양 페이지: app.js의 GNB 권한 필터링이 추가하는 hidden 클래스 강제 해제
+        (function unlockDamyangGnb() {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+            const unhide = () => sidebar.querySelectorAll('.sidebar-nav > ul > li.hidden')
+                .forEach(li => li.classList.remove('hidden'));
+            unhide();
+            new MutationObserver(unhide).observe(sidebar, {
+                subtree: true, attributes: true, attributeFilter: ['class']
+            });
+        })();
+
+        // 탭 전환
+        document.querySelectorAll('[data-tab-group="contractor"] .sub-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.tab;
+                document.querySelectorAll('[data-tab-group="contractor"] .sub-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('[data-tab-content="contractor"] .tab-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== target));
+            });
+        });
+
+        // 등록 버튼이 누른 탭에 따라 모달 타이틀·라벨 변경
+        document.querySelectorAll('[data-tab-label]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const label = btn.dataset.tabLabel;
+                document.getElementById('contractor-modal-title').textContent = label + ' 등록';
+                const nameLabel = document.getElementById('contractor-name-label');
+                const vendorLabel = document.getElementById('contractor-vendor-label');
+                if (label === '공사') { nameLabel.innerHTML = '공사명 <span class="text-red-500">*</span>'; vendorLabel.innerHTML = '수급업체 <span class="text-red-500">*</span>'; }
+                else if (label === '용역') { nameLabel.innerHTML = '용역명 <span class="text-red-500">*</span>'; vendorLabel.innerHTML = '수급업체 <span class="text-red-500">*</span>'; }
+                else if (label === '구매설치') { nameLabel.innerHTML = '품목명 <span class="text-red-500">*</span>'; vendorLabel.innerHTML = '업체명 <span class="text-red-500">*</span>'; }
+                else if (label === '위탁사업') { nameLabel.innerHTML = '사업명 <span class="text-red-500">*</span>'; vendorLabel.innerHTML = '수탁기관 <span class="text-red-500">*</span>'; }
+                else { nameLabel.innerHTML = '사업명 <span class="text-red-500">*</span>'; vendorLabel.innerHTML = '업체명 <span class="text-red-500">*</span>'; }
+            });
+        });
+
+        function showComingSoon(e, label) {
+            if (e) e.preventDefault();
+            const t = document.getElementById('toast');
+            t.textContent = (label ? '['+label+'] ' : '') + '준비 중인 기능입니다.';
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+        }
+    </script>
+</body>
+</html>

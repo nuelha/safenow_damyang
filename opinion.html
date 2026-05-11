@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>종사자 의견청취 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, sidebar: '#1e293b' } } } }
+    </script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-content.modal-lg { max-width: 720px; }
+        .modal-content.modal-md { max-width: 560px; }
+        .sidebar-logo.damyang { background: linear-gradient(135deg, #047857, #10b981); }
+        .dy-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+        .toast.show { opacity: 1; pointer-events: auto; }
+        .legal-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .legal-tag .x { cursor: pointer; opacity: 0.7; }
+        .legal-tag .x:hover { opacity: 1; }
+        .pill-filter { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 999px; border: 1px solid #e2e8f0; background: white; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+        .pill-filter.active { background: #1e40af; color: white; border-color: #1e40af; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- 담양 공통 GNB 사이드바 -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="sidebar-logo damyang">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-bold text-white leading-tight">담양군</span>
+                        <span class="block text-[10px] text-emerald-200">중대재해예방통합관리</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="space-y-1">
+                    <li><a href="index.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>대시보드</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '관리대상 현황')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>관리대상 현황</a></li>
+                    <li><a href="safety-policy.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>안전보건 목표·경영방침</a></li>
+                    <li><a href="organization.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>전담조직 관리</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '유해·위험요인 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>유해·위험요인 관리</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '인력·예산 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>인력·예산 관리</a></li>
+                    <li><a href="contractor.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>도급·용역·위탁 관리</a></li>
+                    <li><a href="opinion.html" class="sidebar-item active"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>종사자 의견청취</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '의무이행 점검')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>의무이행 점검</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '현황 및 통계')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>현황 및 통계</a></li>
+                    <li><a href="#" onclick="showComingSoon(event, '제증명 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>제증명 관리</a></li>
+                </ul>
+            </nav>
+            <div class="workspace-selector">
+                <div class="workspace-btn">
+                    <div class="workspace-avatar" style="background:#047857;">담</div>
+                    <div class="workspace-info"><div class="workspace-name">담양군청 · 안전건설과</div><div class="workspace-role">안전관리자 · 박안전</div></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="header-title">종사자 의견청취</h1>
+                </div>
+                <div class="header-right">
+                    <button class="header-notification"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></button>
+                    <div class="header-user"><div class="header-avatar" style="background:#047857;">박</div><span class="header-username">박안전</span></div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- 탭 -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex gap-6" data-tab-group="opinion">
+                        <button class="sub-tab active" data-tab="receive">의견청취 접수</button>
+                        <button class="sub-tab" data-tab="council">협의체 운영</button>
+                        <button class="sub-tab" data-tab="duty">의무이행 현황</button>
+                    </nav>
+                </div>
+
+                <div data-tab-content="opinion">
+                    <!-- ===== 1. 의견청취 접수 ===== -->
+                    <div class="tab-pane" data-pane="receive">
+                        <div class="grid grid-cols-4 gap-4 mb-6">
+                            <div class="card stat-card p-4">
+                                <p class="text-xs text-gray-500">접수대기</p>
+                                <p class="text-2xl font-bold text-orange-600 mt-1">3<span class="text-sm font-normal text-gray-500"> 건</span></p>
+                            </div>
+                            <div class="card stat-card p-4">
+                                <p class="text-xs text-gray-500">조치계획</p>
+                                <p class="text-2xl font-bold text-blue-600 mt-1">5<span class="text-sm font-normal text-gray-500"> 건</span></p>
+                            </div>
+                            <div class="card stat-card p-4">
+                                <p class="text-xs text-gray-500">조치경과</p>
+                                <p class="text-2xl font-bold text-yellow-600 mt-1">2<span class="text-sm font-normal text-gray-500"> 건</span></p>
+                            </div>
+                            <div class="card stat-card p-4">
+                                <p class="text-xs text-gray-500">조치완료</p>
+                                <p class="text-2xl font-bold text-emerald-600 mt-1">12<span class="text-sm font-normal text-gray-500"> 건</span></p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <select class="select"><option>전체 분류</option><option>위험신고</option><option>안전제안</option><option>아차사고</option><option>기타</option></select>
+                                <select class="select"><option>전체 처리상태</option><option>접수대기</option><option>조치계획</option><option>조치경과</option><option>조치완료</option></select>
+                                <select class="select"><option>전체 접수유형</option><option>온라인</option><option>오프라인</option></select>
+                                <input type="text" class="input w-56" placeholder="제목 검색...">
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('opinion-modal')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                의견 등록
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th class="w-24 text-center">접수유형</th><th class="w-24 text-center">분류</th><th>제목</th><th class="w-28">접수일</th><th class="w-28 text-center">접수경로</th><th class="w-28 text-center">처리상태</th><th class="w-24 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"><span class="badge badge-info">온라인</span></td>
+                                            <td class="text-center"><span class="badge badge-danger">위험신고</span></td>
+                                            <td class="font-medium text-gray-900">3층 누전차단기 이상 소음</td>
+                                            <td class="text-gray-600 text-sm">2026-04-21</td>
+                                            <td class="text-center text-gray-600 text-xs">시스템</td>
+                                            <td class="text-center"><span class="badge badge-warning">접수대기</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center"><span class="badge badge-gray">오프라인</span></td>
+                                            <td class="text-center"><span class="badge badge-info">안전제안</span></td>
+                                            <td class="font-medium text-gray-900">주차장 조명 개선 제안</td>
+                                            <td class="text-gray-600 text-sm">2026-04-18</td>
+                                            <td class="text-center text-gray-600 text-xs">현장수렴</td>
+                                            <td class="text-center"><span class="badge badge-success">조치완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center"><span class="badge badge-info">온라인</span></td>
+                                            <td class="text-center"><span class="badge badge-warning">아차사고</span></td>
+                                            <td class="font-medium text-gray-900">군청 1층 계단 미끄럼 발생</td>
+                                            <td class="text-gray-600 text-sm">2026-04-25</td>
+                                            <td class="text-center text-gray-600 text-xs">시스템</td>
+                                            <td class="text-center"><span class="badge badge-info">조치계획</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center"><span class="badge badge-gray">오프라인</span></td>
+                                            <td class="text-center"><span class="badge badge-info">안전제안</span></td>
+                                            <td class="font-medium text-gray-900">방문 민원실 비상통로 안내 표시 추가 요청</td>
+                                            <td class="text-gray-600 text-sm">2026-04-29</td>
+                                            <td class="text-center text-gray-600 text-xs">민원접수함</td>
+                                            <td class="text-center"><span class="badge" style="background:#fef9c3;color:#854d0e;">조치경과</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 2. 협의체 운영 ===== -->
+                    <div class="tab-pane hidden" data-pane="council">
+                        <div class="alert alert-info mb-4">
+                            <svg class="alert-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <div class="alert-content">
+                                <p class="alert-title text-blue-800">법적 근거</p>
+                                <p class="alert-message text-blue-700">산업안전보건법 제24조(산업안전보건위원회) / 제64조(도급사업의 안전보건협의체)</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <button class="pill-filter active" data-council-filter="all">전체</button>
+                                <button class="pill-filter" data-council-filter="ohsc">산업안전보건위원회</button>
+                                <button class="pill-filter" data-council-filter="contractor">도급사업 협의체</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('council-modal')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                회의 등록
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th class="w-44">구분</th><th>회의명</th><th class="w-28">개최일</th><th>안건</th><th class="w-24 text-center">이행현황</th><th class="w-24 text-center">관리</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="badge badge-info">산업안전보건위원회</span></td>
+                                            <td class="font-medium text-gray-900">2026년 1분기 정기회의</td>
+                                            <td class="text-gray-600 text-sm">2026-03-15</td>
+                                            <td class="text-gray-700 text-sm">2026년 안전계획 수립 검토</td>
+                                            <td class="text-center"><span class="badge badge-success">이행완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge" style="background:#fef3c7;color:#92400e;">도급사업 협의체</span></td>
+                                            <td class="font-medium text-gray-900">4월 정기 협의체</td>
+                                            <td class="text-gray-600 text-sm">2026-04-15</td>
+                                            <td class="text-gray-700 text-sm">현장 위험요인 공유</td>
+                                            <td class="text-center"><span class="badge badge-success">이행완료</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge badge-info">산업안전보건위원회</span></td>
+                                            <td class="font-medium text-gray-900">2026년 2분기 정기회의</td>
+                                            <td class="text-gray-600 text-sm">2026-05-15</td>
+                                            <td class="text-gray-700 text-sm">상반기 안전점검 결과 검토 / 의견청취 처리현황 보고</td>
+                                            <td class="text-center"><span class="badge badge-warning">이행중</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge" style="background:#fef3c7;color:#92400e;">도급사업 협의체</span></td>
+                                            <td class="font-medium text-gray-900">5월 정기 협의체 (예정)</td>
+                                            <td class="text-gray-600 text-sm">2026-05-20</td>
+                                            <td class="text-gray-700 text-sm">군청 주차장 보강공사 안전관리 점검</td>
+                                            <td class="text-center"><span class="badge badge-gray">미이행</span></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== 3. 의무이행 현황 ===== -->
+                    <div class="tab-pane hidden" data-pane="duty">
+                        <div class="alert alert-info mb-4">
+                            <svg class="alert-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div class="alert-content">
+                                <p class="alert-message text-blue-700">산업안전보건법에 따른 의무이행 현황을 관리합니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <select class="select"><option>전체 분야</option><option>안전보건교육</option><option>건강진단</option><option>작업환경측정</option><option>위험성평가</option></select>
+                                <input type="text" class="input w-56" placeholder="검색...">
+                            </div>
+                            <button class="btn btn-primary" onclick="openModal('duty-modal')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                의무이행 등록
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body p-12 text-center">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <p class="text-gray-600 mb-1 font-medium">등록된 의무이행 항목이 없습니다</p>
+                                <p class="text-sm text-gray-400">상단의 [의무이행 등록] 버튼을 클릭해서 항목을 추가하세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============= 의견 등록 모달 ============= -->
+    <div id="opinion-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal('opinion-modal')"></div>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">의견청취 등록</h3>
+                <button class="modal-close" onclick="closeModal('opinion-modal')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">접수 유형 <span class="text-red-500">*</span></label>
+                        <select class="select w-full" id="opinionType" onchange="toggleOfflineFields()">
+                            <option value="online">온라인 (종사자 직접 등록)</option>
+                            <option value="offline">오프라인 (담당자 대리 등록)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">분류 <span class="text-red-500">*</span></label>
+                        <select class="select w-full">
+                            <option value="risk">위험신고</option>
+                            <option value="suggestion">안전제안</option>
+                            <option value="near_miss">아차사고</option>
+                            <option value="etc">기타</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="offlineFields" class="hidden mt-4 p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                    <label class="form-label text-amber-900">접수경로 <span class="text-red-500">*</span></label>
+                    <input type="text" class="input w-full" placeholder="예: 현장수렴, 민원접수함, 부서회의 등">
+                    <p class="text-xs text-amber-700 mt-1">오프라인 접수의 경우 어떤 경로로 의견을 받았는지 명시</p>
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label">제목 <span class="text-red-500">*</span></label>
+                    <input type="text" class="input w-full" placeholder="제목 입력">
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label">내용 <span class="text-red-500">*</span></label>
+                    <textarea class="input w-full" rows="5" placeholder="구체적인 위험요인·제안 내용을 입력하세요"></textarea>
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label">첨부파일</label>
+                    <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-sm text-gray-500">
+                        파일을 끌어다 놓거나 <button class="text-primary-600 underline">파일 선택</button>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label">관련근거</label>
+                    <div class="flex flex-wrap items-center gap-2 p-2 border border-gray-200 rounded-lg min-h-[44px]">
+                        <button type="button" class="text-xs text-primary-600 px-2 py-1 hover:bg-blue-50 rounded">+ 추가</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">관련근거·법령에서 선택</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('opinion-modal')">취소</button>
+                <button class="btn btn-primary" onclick="closeModal('opinion-modal')">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============= 협의체 등록 모달 ============= -->
+    <div id="council-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal('council-modal')"></div>
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h3 class="modal-title">협의체 회의 등록</h3>
+                <button class="modal-close" onclick="closeModal('council-modal')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">구분 <span class="text-red-500">*</span></label>
+                        <select class="select w-full">
+                            <option value="ohsc">산업안전보건위원회</option>
+                            <option value="contractor">도급사업 협의체</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">회의명 <span class="text-red-500">*</span></label>
+                        <input type="text" class="input w-full" placeholder="예: 2026년 2분기 정기회의">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">개최일 <span class="text-red-500">*</span></label>
+                            <input type="date" class="input w-full">
+                        </div>
+                        <div>
+                            <label class="form-label">항목 구분</label>
+                            <select class="select w-full">
+                                <option value="">선택 안함</option>
+                                <option value="service">용역</option>
+                                <option value="purchase">구매설치</option>
+                                <option value="trust">위탁사업</option>
+                                <option value="etc">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">안건 <span class="text-red-500">*</span></label>
+                        <textarea class="input w-full" rows="3" placeholder="회의 안건 입력"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">참석자</label>
+                        <input type="text" class="input w-full" placeholder="예: 군수, 부군수, 안전건설과장 외 8명">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('council-modal')">취소</button>
+                <button class="btn btn-primary" onclick="closeModal('council-modal')">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============= 의무이행 등록 모달 ============= -->
+    <div id="duty-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal('duty-modal')"></div>
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h3 class="modal-title">의무이행 항목 등록</h3>
+                <button class="modal-close" onclick="closeModal('duty-modal')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">분야 <span class="text-red-500">*</span></label>
+                        <select class="select w-full">
+                            <option>안전보건교육</option>
+                            <option>건강진단</option>
+                            <option>작업환경측정</option>
+                            <option>위험성평가</option>
+                            <option>기타</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">항목명 <span class="text-red-500">*</span></label>
+                        <input type="text" class="input w-full" placeholder="예: 정기 안전보건교육 (분기 1회)">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="form-label">시행일 <span class="text-red-500">*</span></label><input type="date" class="input w-full"></div>
+                        <div><label class="form-label">담당부서</label><input type="text" class="input w-full" placeholder="예: 안전건설과"></div>
+                    </div>
+                    <div>
+                        <label class="form-label">관련근거</label>
+                        <div class="flex flex-wrap items-center gap-2 p-2 border border-gray-200 rounded-lg min-h-[44px]">
+                            <button type="button" class="text-xs text-primary-600 px-2 py-1 hover:bg-blue-50 rounded">+ 추가</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('duty-modal')">취소</button>
+                <button class="btn btn-primary" onclick="closeModal('duty-modal')">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/app.js"></script>
+    <script>
+        // 담양 페이지: app.js의 GNB 권한 필터링이 추가하는 hidden 클래스 강제 해제
+        (function unlockDamyangGnb() {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+            const unhide = () => sidebar.querySelectorAll('.sidebar-nav > ul > li.hidden')
+                .forEach(li => li.classList.remove('hidden'));
+            unhide();
+            new MutationObserver(unhide).observe(sidebar, {
+                subtree: true, attributes: true, attributeFilter: ['class']
+            });
+        })();
+
+        // 탭 전환
+        document.querySelectorAll('[data-tab-group="opinion"] .sub-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.tab;
+                document.querySelectorAll('[data-tab-group="opinion"] .sub-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('[data-tab-content="opinion"] .tab-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== target));
+            });
+        });
+
+        // 협의체 필터 pill
+        document.querySelectorAll('[data-council-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-council-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // 의견 등록 모달: 오프라인 선택 시 접수경로 노출
+        function toggleOfflineFields() {
+            const type = document.getElementById('opinionType').value;
+            document.getElementById('offlineFields').classList.toggle('hidden', type !== 'offline');
+        }
+
+        function showComingSoon(e, label) {
+            if (e) e.preventDefault();
+            const t = document.getElementById('toast');
+            t.textContent = (label ? '['+label+'] ' : '') + '준비 중인 기능입니다.';
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+        }
+    </script>
+</body>
+</html>
