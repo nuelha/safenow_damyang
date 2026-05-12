@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>외부 사용자 대시보드 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 외부 사용자 권한 토글 (SUB/CON 보기 전환) */
+        .ext-mode-tabs {
+            display: inline-flex;
+            background: var(--gray-100);
+            border-radius: 999px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .ext-mode-tab {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+        .ext-mode-tab.is-active {
+            background: var(--main);
+            color: white;
+        }
+
+        /* 패널 토글 */
+        .ext-panel { display: none; }
+        .ext-panel.is-active { display: flex; flex-direction: column; gap: 24px; }
+
+        /* 서약서 강조 카드 */
+        .urgent-action-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 22px;
+            background: var(--status-danger-bg);
+            border: 1px solid var(--status-danger-border);
+            border-radius: var(--radius-card);
+        }
+        .urgent-action-card.warning {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+        }
+        .urgent-action-card-icon {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: white;
+            color: var(--status-danger-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .urgent-action-card.warning .urgent-action-card-icon { color: var(--status-warning-fg); }
+        .urgent-action-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .urgent-action-card-title { font-size: 16px; font-weight: 700; color: var(--main-dark2); }
+        .urgent-action-card-meta { font-size: 13px; color: var(--text-gray); }
+    </style>
+</head>
+<body data-dy-page="index" data-role="ext" data-page-title="외부 사용자 대시보드" data-page-subtitle="(주)A건설 — 도급/컨설팅 작업 현황">
+    <main>
+        <!-- 보기 모드 토글 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div class="dsh-greeting">
+                안녕하세요, <strong>김도급 ((주)A건설 안전관리자)</strong>님. 오늘은 <strong>2026-05-12 (월)</strong>입니다.
+            </div>
+            <div class="ext-mode-tabs">
+                <button class="ext-mode-tab is-active" type="button" onclick="window.ExtMode.switch('sub')" data-mode="sub">도급업체 (SUB)</button>
+                <button class="ext-mode-tab" type="button" onclick="window.ExtMode.switch('con')" data-mode="con">컨설팅업체 (CON)</button>
+            </div>
+        </div>
+
+        <!-- ═════════════════════════════════════════════ -->
+        <!-- ① SUB 대시보드 -->
+        <!-- ═════════════════════════════════════════════ -->
+        <div class="ext-panel is-active" data-panel="sub">
+            <!-- 1행: 내 계약 현황 KPI + 서약서 강조 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 계약 현황</h2>
+                    <a class="text-muted" href="contractor.html" style="font-size:13px;">계약 전체 보기 →</a>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-3">
+                        <div class="statbox info" style="padding:18px 12px;">
+                            <div class="statbox-num">3</div>
+                            <div class="statbox-label">진행 중</div>
+                        </div>
+                        <div class="statbox warning" style="padding:18px 12px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">시공 중</div>
+                        </div>
+                        <div class="statbox success" style="padding:18px 12px;">
+                            <div class="statbox-num">12</div>
+                            <div class="statbox-label">종료 (누적)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 서약서 작성 강조 -->
+            <div class="urgent-action-card" onclick="window.DYLayout._soon(event, '서약서 작성 (CON07-F-SUB)')" style="cursor:pointer;">
+                <span class="urgent-action-card-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                </span>
+                <div class="urgent-action-card-body">
+                    <span class="urgent-action-card-title">서약서 작성 필요 — 청사 시설 보수공사</span>
+                    <span class="urgent-action-card-meta">기간: 2026-04-01 ~ 2026-08-31 · 작성 마감 D-7 (서약 미완료 시 시공 시작 불가)</span>
+                </div>
+                <button class="btn btn-primary" type="button">서약서 작성 →</button>
+            </div>
+
+            <!-- 2행: TBM 작성 + 내 계약 목록 -->
+            <section class="board-grid cols-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">TBM 작성 (시공 중 도급공사)</h2>
+                        <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, 'TBM 전체 (CON09-L)')">TBM 전체 →</a>
+                    </div>
+                    <div class="card-body" style="padding:14px 24px 16px;">
+                        <div style="padding:14px 16px; background:var(--page-bg); border-radius:8px; margin-bottom:10px;">
+                            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;">
+                                <strong style="font-size:14px; color:var(--main-dark2);">청사 시설 보수공사</strong>
+                                <span class="type-tag" style="margin-left:0;">공사</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-bottom:10px;">
+                                최근 TBM: 2026-05-10 (외벽 도장 · 작성자 김도급) · 누적 8회
+                            </div>
+                            <button class="btn btn-primary" style="width:100%;" type="button" onclick="window.DYLayout._soon(event, 'TBM 작성 (CON09-F)')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                오늘 TBM 작성
+                            </button>
+                        </div>
+                        <div style="font-size:11px; color:var(--text-lightgray); padding:0 6px;">
+                            도급공사(`contract_type='CONSTRUCTION'`) 시공 중인 계약에만 TBM 작성 진입점이 노출됩니다.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">내 계약 목록</h2>
+                        <a class="text-muted" href="contractor.html" style="font-size:13px;">전체 →</a>
+                    </div>
+                    <div class="card-body" style="padding:8px 24px 16px;">
+                        <div class="alert-row-list">
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='contractor.html'">
+                                <span class="alert-row-dot warning"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">청사 시설 보수공사</span>
+                                    <span class="alert-row-meta">2026-04-01 ~ 08-31 · 시공중 · 진행률 35%</span>
+                                </div>
+                                <span class="alert-row-time" style="color:var(--status-warning-fg); font-weight:600;">시공중</span>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='contractor.html'">
+                                <span class="alert-row-dot info"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">담양읍 행정복지센터 외벽 보수</span>
+                                    <span class="alert-row-meta">2026-06-01 ~ 09-30 · 결재 완료 · 시공 대기</span>
+                                </div>
+                                <span class="alert-row-time">진행중</span>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='contractor.html'">
+                                <span class="alert-row-dot danger"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">상수도사업소 본관 누수 보수</span>
+                                    <span class="alert-row-meta">결재 진행 중 · STEP 3</span>
+                                </div>
+                                <span class="alert-row-time">결재중</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 알림 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">알림 메시지 내력</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '내 알림 (NTF01-L)')">전체 →</a>
+                </div>
+                <div class="card-body" style="padding:8px 24px 16px;">
+                    <div class="alert-row-list">
+                        <div class="alert-row">
+                            <span class="alert-row-dot danger"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">서약서 작성 마감 임박 — 청사 시설 보수공사</span>
+                                <span class="alert-row-meta">D-7 · 미완료 시 시공 시작 불가</span>
+                            </div>
+                            <span class="alert-row-time">2시간 전</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">담양읍 행정복지센터 외벽 보수 — 결재 완료</span>
+                                <span class="alert-row-meta">군수 결재 완료 · 시공 시작 가능</span>
+                            </div>
+                            <span class="alert-row-time">어제</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-row-dot info"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">청사 시설 보수공사 TBM 작성 완료 (외벽 도장)</span>
+                                <span class="alert-row-meta">담당자 김도급 · 참여자 6명</span>
+                            </div>
+                            <span class="alert-row-time">2026-05-10</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════════════ -->
+        <!-- ② CON 대시보드 -->
+        <!-- ═════════════════════════════════════════════ -->
+        <div class="ext-panel" data-panel="con">
+            <!-- 1행: 위임 받은 부서·관리대상 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">위임 받은 부서·관리대상</h2>
+                    <span class="text-muted" style="font-size:13px;">2026-05-01 ~ 2026-12-31 위임</span>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-2">
+                        <div class="statbox info" style="padding:18px 12px;">
+                            <div class="statbox-num">3</div>
+                            <div class="statbox-label">위임 부서</div>
+                        </div>
+                        <div class="statbox success" style="padding:18px 12px;">
+                            <div class="statbox-num">8</div>
+                            <div class="statbox-label">위임 관리대상</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2행: 작업 대기 (강조) -->
+            <div class="urgent-action-card warning" onclick="window.DYLayout._soon(event, '위험성평가 작성 (RSK02-F)')" style="cursor:pointer;">
+                <span class="urgent-action-card-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </span>
+                <div class="urgent-action-card-body">
+                    <span class="urgent-action-card-title">위험성평가 작성 대기 — 4건</span>
+                    <span class="urgent-action-card-meta">자치행정과(2) · 농업기술센터(1) · 시설관리과(1) · 모든 항목 마감 6월 30일</span>
+                </div>
+                <button class="btn btn-primary" type="button">목록 보기 →</button>
+            </div>
+
+            <!-- 3행: 작업 대기 모듈별 + 위임 부서 목록 -->
+            <section class="board-grid cols-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">모듈별 작업 대기</h2>
+                    </div>
+                    <div class="card-body" style="padding:8px 24px 16px;">
+                        <div class="alert-row-list">
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='risk-list.html'">
+                                <span class="alert-row-dot warning"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">위험성평가 작성</span>
+                                    <span class="alert-row-meta">위임 관리대상 8건 중 4건 작성 필요</span>
+                                </div>
+                                <button class="btn-mini primary" type="button" onclick="event.stopPropagation();">4건</button>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '이행관리 (CMP02-L)')">
+                                <span class="alert-row-dot info"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">이행 점검표 작성 (Phase 3)</span>
+                                    <span class="alert-row-meta">분기별 의무이행 점검</span>
+                                </div>
+                                <button class="btn-mini primary" type="button" onclick="event.stopPropagation();">2건</button>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '안전계획 보조 (PLN02-F)')">
+                                <span class="alert-row-dot neutral"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">안전계획 수립 보조 (Phase 2)</span>
+                                    <span class="alert-row-meta">2027년 안전계획 자문 의뢰</span>
+                                </div>
+                                <button class="btn-mini" type="button" onclick="event.stopPropagation();">1건</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">위임 부서 목록</h2>
+                        <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '관리대상 (TGT01-V)')">전체 →</a>
+                    </div>
+                    <div class="card-body" style="padding:8px 24px 16px;">
+                        <div class="alert-row-list">
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '자치행정과 위임 범위')">
+                                <span class="alert-row-dot info"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">자치행정과</span>
+                                    <span class="alert-row-meta">관리대상 3건 · 위임자 이실장 · FULL</span>
+                                </div>
+                                <span class="alert-row-time">3건</span>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '농업기술센터 위임 범위')">
+                                <span class="alert-row-dot info"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">농업기술센터</span>
+                                    <span class="alert-row-meta">관리대상 4건 · 위임자 이센터장 · FULL</span>
+                                </div>
+                                <span class="alert-row-time">4건</span>
+                            </div>
+                            <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '시설관리과 위임 범위')">
+                                <span class="alert-row-dot neutral"></span>
+                                <div class="alert-row-body">
+                                    <span class="alert-row-title">시설관리과</span>
+                                    <span class="alert-row-meta">관리대상 1건 · 위임자 박과장 · READ_ONLY</span>
+                                </div>
+                                <span class="alert-row-time">1건</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 알림 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">알림 메시지 내력</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '내 알림 (NTF01-L)')">전체 →</a>
+                </div>
+                <div class="card-body" style="padding:8px 24px 16px;">
+                    <div class="alert-row-list">
+                        <div class="alert-row">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">위험성평가 작성 의뢰 — 자치행정과</span>
+                                <span class="alert-row-meta">이실장 GM이 4건 위임 · 마감 D-49</span>
+                            </div>
+                            <span class="alert-row-time">오늘 09:30</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-row-dot info"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">시설관리과 신규 위임 (READ_ONLY)</span>
+                                <span class="alert-row-meta">박과장 · 군청 옥상 누수 보수공사 자문</span>
+                            </div>
+                            <span class="alert-row-time">어제</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+        window.ExtMode = (function () {
+            function switchMode(mode) {
+                document.querySelectorAll('.ext-mode-tab').forEach(t => {
+                    t.classList.toggle('is-active', t.dataset.mode === mode);
+                });
+                document.querySelectorAll('.ext-panel').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.panel === mode);
+                });
+            }
+            return { switch: switchMode };
+        })();
+    </script>
+</body>
+</html>

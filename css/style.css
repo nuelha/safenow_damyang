@@ -2146,6 +2146,52 @@ body.sidebar-locked {
   color: currentColor;
 }
 
+/* 사이드바 권한 선택기 (대시보드 그룹 하단에 노출) */
+.dy-role-switcher {
+  margin-top: 24px;
+  padding: 14px 13px;
+  background: #ffffff;
+  border: 1px dashed var(--main);
+  border-radius: var(--radius-button);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dy-role-switcher-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--main-dark2);
+}
+.dy-role-switcher-label::before {
+  content: "⚙";
+  font-size: 13px;
+}
+.dy-role-switcher-help {
+  font-size: 11px;
+  color: var(--text-gray);
+  line-height: 1.4;
+}
+.dy-role-switcher select {
+  width: 100%;
+  height: 34px;
+  padding: 0 26px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--main-dark2);
+  background: var(--status-success-bg);
+  border: 1px solid var(--main);
+  border-radius: 6px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23209f84'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  cursor: pointer;
+}
+
 /* --- Main content area --- */
 .dy-main {
   min-width: 0;
@@ -3745,6 +3791,273 @@ body.sidebar-locked {
   margin-left: 12px;
   font-size: 13px;
   color: var(--text-gray);
+}
+
+/* =========================================
+   25. 대시보드 위젯 (Dashboard widgets)
+        DSH 모듈 — 권한별 종합 현황 화면
+   ========================================= */
+
+/* 보드 그리드 — 2-col / 3-col 위젯 배치 */
+.board-grid {
+  display: grid;
+  gap: 24px;
+}
+.board-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.board-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.board-grid.cols-3-2 {
+  grid-template-columns: 2fr 1fr;
+}
+@media (max-width: 1279px) {
+  .board-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+  .board-grid.cols-3-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .board-grid.cols-2,
+  .board-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 환영 인사 (대시보드 상단) */
+.dsh-greeting {
+  font-size: 14px;
+  color: var(--text-gray);
+  margin-bottom: 4px;
+}
+.dsh-greeting strong {
+  color: var(--main-dark2);
+  font-weight: 700;
+}
+
+/* KPI 카드 (대형 단일 카드 — 큰 숫자 + 라벨 + 보조) */
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 24px;
+  background: white;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius-card);
+}
+.kpi-card-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kpi-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-gray);
+}
+.kpi-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--status-success-bg);
+  color: var(--main);
+}
+.kpi-card-icon.info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+.kpi-card-icon.warning { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+.kpi-card-icon.danger  { background: var(--status-danger-bg);  color: var(--status-danger-fg); }
+.kpi-card-icon.neutral { background: var(--gray-100);          color: var(--text-gray); }
+.kpi-card-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--main-dark2);
+  line-height: 1;
+  letter-spacing: -0.8px;
+}
+.kpi-card-value .unit {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-gray);
+  margin-left: 2px;
+}
+.kpi-card-foot {
+  font-size: 12px;
+  color: var(--text-lightgray);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.kpi-card-foot .delta {
+  font-weight: 700;
+}
+.kpi-card-foot .delta.up    { color: var(--status-danger-fg); }
+.kpi-card-foot .delta.down  { color: var(--main); }
+
+/* 부서별 막대 차트 (가로 막대) */
+.dept-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dept-bar-item {
+  display: grid;
+  grid-template-columns: 140px 1fr 60px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+.dept-bar-name {
+  color: var(--text-black);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dept-bar-track {
+  height: 12px;
+  background: var(--gray-100);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.dept-bar-fill {
+  height: 100%;
+  background: var(--main);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+.dept-bar-fill.warning { background: var(--status-warning-fg); }
+.dept-bar-fill.danger  { background: var(--status-danger-fg); }
+.dept-bar-value {
+  text-align: right;
+  font-weight: 700;
+  color: var(--main-dark2);
+}
+
+/* 결재 대기 리스트 (라벨 chip + 제목 + 시각) */
+.alert-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.alert-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.alert-row-dot.danger  { background: var(--status-danger-fg); }
+.alert-row-dot.warning { background: var(--status-warning-fg); }
+.alert-row-dot.info    { background: var(--status-info-fg); }
+.alert-row-dot.neutral { background: var(--text-lightgray); }
+.alert-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.alert-row-title {
+  font-size: 14px;
+  color: var(--text-black);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alert-row-meta {
+  font-size: 12px;
+  color: var(--text-lightgray);
+}
+.alert-row-time {
+  font-size: 12px;
+  color: var(--text-lightgray);
+  flex-shrink: 0;
+}
+
+/* 산업안전보건법 의무 이행 카드 4분할 */
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.compliance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background: var(--page-bg);
+  border-radius: var(--radius-button);
+  border-left: 3px solid var(--main);
+}
+.compliance-card.warning { border-left-color: var(--status-warning-fg); }
+.compliance-card.danger  { border-left-color: var(--status-danger-fg); }
+.compliance-card-label {
+  font-size: 12px;
+  color: var(--text-gray);
+  font-weight: 600;
+}
+.compliance-card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--main-dark2);
+  letter-spacing: -0.4px;
+}
+.compliance-card-value .accent { color: var(--main); }
+.compliance-card-meta {
+  font-size: 11px;
+  color: var(--text-lightgray);
+}
+
+/* 단순 막대 차트 (CSS bar chart) — 사고·아차사고 추이 12개월 */
+.mini-bar-chart {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+  height: 140px;
+  align-items: end;
+  padding: 0 8px;
+}
+.mini-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.mini-bar-rect {
+  width: 100%;
+  background: var(--main-light);
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+}
+.mini-bar-rect.alt { background: var(--chart-series-b); }
+.mini-bar-label {
+  font-size: 10px;
+  color: var(--text-lightgray);
+}
+.mini-bar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding-top: 8px;
+  font-size: 11px;
+  color: var(--text-gray);
+}
+.mini-bar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.mini-bar-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
 }
 
 /* 결재 안내 인라인 액션 */

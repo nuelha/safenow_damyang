@@ -186,10 +186,52 @@
                             `;
                         }).join('')}
                     </nav>
+                    ${activeGroup.id === 'dashboard' ? renderRoleSwitcher() : ''}
                 </div>
             </aside>
             <div class="dy-sidebar-backdrop" id="dy-sidebar-backdrop"></div>
         `;
+    }
+
+    /* 권한 선택기 (대시보드 그룹 LNB 하단) — 프로토타입 임시
+     * data-role attribute(body) 또는 localStorage('dy-role')로 현재 권한 식별
+     */
+    const ROLE_MAP = {
+        ceo: { label: '군수 (CEO)',               href: 'index.html'         },
+        gm:  { label: '실·과·단·소장 (GM)',       href: 'dashboard-gm.html'  },
+        mgr: { label: '팀장·담당자 (SM/SHM)',     href: 'dashboard-mgr.html' },
+        wkr: { label: '근로자 (WKR)',             href: 'dashboard-wkr.html' },
+        ext: { label: '외부 사용자 (SUB/CON)',    href: 'dashboard-ext.html' },
+    };
+
+    function getCurrentRole() {
+        const dataRole = document.body.getAttribute('data-role');
+        if (dataRole && ROLE_MAP[dataRole]) return dataRole;
+        try {
+            const stored = localStorage.getItem('dy-role');
+            if (stored && ROLE_MAP[stored]) return stored;
+        } catch (e) {}
+        return 'ceo';
+    }
+
+    function renderRoleSwitcher() {
+        const current = getCurrentRole();
+        const options = Object.keys(ROLE_MAP).map(k =>
+            `<option value="${k}"${k === current ? ' selected' : ''}>${ROLE_MAP[k].label}</option>`
+        ).join('');
+        return html`
+            <div class="dy-role-switcher">
+                <span class="dy-role-switcher-label">권한 전환 (임시)</span>
+                <select onchange="window.DYLayout._switchRole(this.value)">${options}</select>
+                <span class="dy-role-switcher-help">DSH01~05 권한별 대시보드 (프로토타입 둘러보기용)</span>
+            </div>
+        `;
+    }
+
+    function switchRole(role) {
+        if (!ROLE_MAP[role]) return;
+        try { localStorage.setItem('dy-role', role); } catch (e) {}
+        window.location.href = ROLE_MAP[role].href;
     }
 
     function mount() {
@@ -420,6 +462,7 @@
     window.DYLayout = {
         mount,
         _soon: showComingSoon,
+        _switchRole: switchRole,
         renderPagination,
         renderFilterRow,
         NAV,

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팀장·담당자 대시보드 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 시기도래 행의 모듈 chip + 액션 버튼 */
+        .task-row {
+            display: grid;
+            grid-template-columns: 70px 1fr 100px 80px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .task-row:last-child { border-bottom: none; }
+        .task-row-mod {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 3px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+        }
+        .task-row-mod.rsk { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .task-row-mod.cmp { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .task-row-mod.ins { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .task-row-mod.edu { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .task-row-due {
+            font-size: 12px; font-weight: 600;
+            text-align: center;
+        }
+        .task-row-due.overdue { color: var(--status-danger-fg); }
+        .task-row-due.today   { color: var(--status-warning-fg); }
+        .task-row-due.week    { color: var(--status-info-fg); }
+    </style>
+</head>
+<body data-dy-page="index" data-role="mgr" data-page-title="내 업무" data-page-subtitle="자치행정과 · 김안전 (SHM) — 본인 담당 업무 진행 현황">
+    <main>
+        <div class="dsh-greeting">
+            안녕하세요, <strong>김안전 (자치행정과 · SHM · 7급)</strong>님. 오늘은 <strong>2026-05-12 (월)</strong>입니다.
+        </div>
+
+        <!-- ─── 1행: 내 업무 요약 + 평가자 지정 ─── -->
+        <section class="board-grid cols-3-2">
+            <!-- 내 업무 요약 (3분할) -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 업무 요약</h2>
+                    <span class="text-muted" style="font-size:13px;">2026년 누적</span>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-3">
+                        <div class="statbox info" style="padding:18px 12px;">
+                            <div class="statbox-num">8</div>
+                            <div class="statbox-label">진행 중</div>
+                        </div>
+                        <div class="statbox success" style="padding:18px 12px;">
+                            <div class="statbox-num">23</div>
+                            <div class="statbox-label">완료</div>
+                        </div>
+                        <div class="statbox danger" style="padding:18px 12px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">기한초과</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 평가자 지정 (CON05-F 연계) -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">평가자 지정 — 작성 대기</h2>
+                    <span class="text-muted" style="font-size:13px;">2건</span>
+                </div>
+                <div class="card-body" style="padding:8px 24px 14px;">
+                    <div class="alert-row-list">
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '수급업체 안전평가 (CON08-D)')">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">A건설 — 청사 시설 보수</span>
+                                <span class="alert-row-meta">평가서 미작성</span>
+                            </div>
+                            <button class="btn-mini primary" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '평가서 작성')">작성</button>
+                        </div>
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '수급업체 안전평가 (CON08-D)')">
+                            <span class="alert-row-dot info"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">B용역 — 청소·시설관리 연간</span>
+                                <span class="alert-row-meta">평가 진행 중</span>
+                            </div>
+                            <button class="btn-mini primary" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '평가서 이어 작성')">이어쓰기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 2행: 시기도래 내 업무 (큰 카드) ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">시기도래 내 업무</h2>
+                <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '이행관리 (CMP01-V)')">전체 보기 →</a>
+            </div>
+            <div class="card-body">
+                <div class="statbox-grid cols-4" style="margin-bottom:14px;">
+                    <div class="statbox danger" style="padding:10px 12px;">
+                        <div class="statbox-num">1</div>
+                        <div class="statbox-label">기한초과</div>
+                    </div>
+                    <div class="statbox warning" style="padding:10px 12px;">
+                        <div class="statbox-num">2</div>
+                        <div class="statbox-label">오늘 마감</div>
+                    </div>
+                    <div class="statbox info" style="padding:10px 12px;">
+                        <div class="statbox-num">4</div>
+                        <div class="statbox-label">1주 이내</div>
+                    </div>
+                    <div class="statbox neutral" style="padding:10px 12px;">
+                        <div class="statbox-num">7</div>
+                        <div class="statbox-label">1개월</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="task-row">
+                        <span class="task-row-mod rsk">RSK</span>
+                        <span style="font-size:14px; color:var(--text-black); font-weight:500;">2025 청사 정기 위험성평가 — <span style="color:var(--text-gray);">위험요인 검토 마감</span></span>
+                        <span class="task-row-due overdue">D+3</span>
+                        <button class="btn-mini primary" type="button" onclick="window.location.href='risk-detail.html'">작성</button>
+                    </div>
+                    <div class="task-row">
+                        <span class="task-row-mod ins">INS</span>
+                        <span style="font-size:14px; color:var(--text-black); font-weight:500;">정기 안전점검 실시 — <span style="color:var(--text-gray);">군청 청사 본관 전기실</span></span>
+                        <span class="task-row-due today">오늘</span>
+                        <button class="btn-mini primary" type="button" onclick="window.DYLayout._soon(event, '점검 실시 (INS02-D)')">실시</button>
+                    </div>
+                    <div class="task-row">
+                        <span class="task-row-mod edu">EDU</span>
+                        <span style="font-size:14px; color:var(--text-black); font-weight:500;">정기 안전보건교육 이수 — <span style="color:var(--text-gray);">관리감독자 2시간</span></span>
+                        <span class="task-row-due today">오늘</span>
+                        <button class="btn-mini primary" type="button" onclick="window.DYLayout._soon(event, '교육 이수 (EDU)')">이수</button>
+                    </div>
+                    <div class="task-row">
+                        <span class="task-row-mod cmp">CMP</span>
+                        <span style="font-size:14px; color:var(--text-black); font-weight:500;">분기 안전보건 협의체 회의록 작성</span>
+                        <span class="task-row-due week">D-3</span>
+                        <button class="btn-mini primary" type="button" onclick="window.DYLayout._soon(event, '이행 항목 (CMP02-D)')">이행</button>
+                    </div>
+                    <div class="task-row">
+                        <span class="task-row-mod rsk">RSK</span>
+                        <span style="font-size:14px; color:var(--text-black); font-weight:500;">옥상 누수 보수공사 위험성평가 — <span style="color:var(--text-gray);">결재 진행 대기</span></span>
+                        <span class="task-row-due week">D-5</span>
+                        <button class="btn-mini primary" type="button" onclick="window.location.href='risk-detail.html'">작성</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 3행: 내 담당 관리대상 + 위험성평가 진행 ─── -->
+        <section class="board-grid cols-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 담당 관리대상</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '내 담당 (TGT01-V?assigned_to=me)')">전체 보기 →</a>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-3" style="margin-bottom:14px;">
+                        <div class="statbox info" style="padding:14px 12px;">
+                            <div class="statbox-num">3</div>
+                            <div class="statbox-label">시설</div>
+                        </div>
+                        <div class="statbox success" style="padding:14px 12px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">업무</div>
+                        </div>
+                        <div class="statbox warning" style="padding:14px 12px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">사업</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--page-bg); border-radius:6px;">
+                            <span class="type-tag" style="margin-left:0;">시설</span>
+                            <span style="font-size:13px; color:var(--text-black);">군청 청사 관리</span>
+                            <span class="active-chip is-active" style="margin-left:auto;">RESPONSIBLE</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--page-bg); border-radius:6px;">
+                            <span class="type-tag" style="margin-left:0;">시설</span>
+                            <span style="font-size:13px; color:var(--text-black);">담양읍 행정복지센터</span>
+                            <span class="active-chip is-active" style="margin-left:auto;">SAFETY_MGR</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--page-bg); border-radius:6px;">
+                            <span class="type-tag" style="margin-left:0;">사업</span>
+                            <span style="font-size:13px; color:var(--text-black);">옥상 누수 보수공사</span>
+                            <span class="active-chip is-active" style="margin-left:auto;">SAFETY_MGR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">위험성평가 진행 (담당)</h2>
+                    <a class="text-muted" href="risk-list.html" style="font-size:13px;">전체 →</a>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-4" style="margin-bottom:12px;">
+                        <div class="statbox neutral" style="padding:12px 8px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">사전준비</div>
+                        </div>
+                        <div class="statbox info" style="padding:12px 8px;">
+                            <div class="statbox-num">3</div>
+                            <div class="statbox-label">진행중</div>
+                        </div>
+                        <div class="statbox success" style="padding:12px 8px;">
+                            <div class="statbox-num">7</div>
+                            <div class="statbox-label">완료</div>
+                        </div>
+                        <div class="statbox warning" style="padding:12px 8px;">
+                            <div class="statbox-num">2</div>
+                            <div class="statbox-label">결재중</div>
+                        </div>
+                    </div>
+                    <div class="alert-row-list">
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='risk-detail.html'">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">청사 위험성평가 2026 — 결재 진행 중</span>
+                                <span class="alert-row-meta">군청 청사 · 정기</span>
+                            </div>
+                            <span class="alert-row-time">오늘 14:23</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 4행: 개선조치 + 의견청취 (SHM) ─── -->
+        <section class="board-grid cols-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">개선조치 (담당)</h2>
+                    <a class="text-muted" href="imp-list.html" style="font-size:13px;">전체 →</a>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-3" style="margin-bottom:12px;">
+                        <div class="statbox info" style="padding:14px 12px;">
+                            <div class="statbox-num">5</div>
+                            <div class="statbox-label">진행 중</div>
+                        </div>
+                        <div class="statbox danger" style="padding:14px 12px;">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">기한초과</div>
+                        </div>
+                        <div class="statbox success" style="padding:14px 12px;">
+                            <div class="statbox-num">14</div>
+                            <div class="statbox-label">완료 (올해)</div>
+                        </div>
+                    </div>
+                    <div class="alert-row-list">
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.location.href='imp-detail.html'">
+                            <span class="alert-row-dot danger"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">옥상 안전난간 고정 볼트 부식 — 교체</span>
+                                <span class="alert-row-meta">군청 청사 · 위험성평가 출처</span>
+                            </div>
+                            <span class="alert-row-time" style="color:var(--status-danger-fg); font-weight:600;">D+4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 의견청취 — SHM 전용 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">의견청취 (SHM 처리 대기) <span class="active-chip is-active" style="margin-left:6px;">SHM</span></h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '의견 전체 (OPN01-L)')">전체 →</a>
+                </div>
+                <div class="card-body" style="padding:8px 24px 14px;">
+                    <div class="alert-row-list">
+                        <div class="alert-row" style="cursor:pointer; padding:14px 0;" onclick="window.DYLayout._soon(event, '작업중지요청 처리 (OPN02-D)')">
+                            <span class="alert-row-dot danger" style="width:10px; height:10px;"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title" style="color:var(--status-danger-fg); font-weight:700;">⚠ 작업중지요청 (긴급) — 옥상 누수공사</span>
+                                <span class="alert-row-meta">근로자 박근로 · 2026-05-12 09:14</span>
+                            </div>
+                            <span class="alert-row-time" style="color:var(--status-danger-fg); font-weight:700;">3시간 전</span>
+                        </div>
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '의견 처리 (OPN02-D)')">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">3층 작업장 소음 관련 건의</span>
+                                <span class="alert-row-meta">근로자 이근로 · 안전제안</span>
+                            </div>
+                            <span class="alert-row-time">어제</span>
+                        </div>
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '의견 처리 (OPN02-D)')">
+                            <span class="alert-row-dot info"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">지하 주차장 환기 시설 — 위험요인 신고</span>
+                                <span class="alert-row-meta">근로자 최근로 · SFR-019 위험 신고</span>
+                            </div>
+                            <span class="alert-row-time">3일 전</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 알림 메시지 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">알림 메시지 내력</h2>
+                <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '내 알림 (NTF01-L)')">전체 →</a>
+            </div>
+            <div class="card-body" style="padding:8px 24px 16px;">
+                <div class="alert-row-list">
+                    <div class="alert-row">
+                        <span class="alert-row-dot danger"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">작업중지요청 접수 — 옥상 누수공사</span>
+                            <span class="alert-row-meta">박근로 근로자가 작업중지요청을 등록했습니다</span>
+                        </div>
+                        <span class="alert-row-time">3시간 전</span>
+                    </div>
+                    <div class="alert-row">
+                        <span class="alert-row-dot info"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">청사 위험성평가 2026 결재 진행 중</span>
+                            <span class="alert-row-meta">이실장 부서장 결재 대기</span>
+                        </div>
+                        <span class="alert-row-time">오늘 14:23</span>
+                    </div>
+                    <div class="alert-row">
+                        <span class="alert-row-dot warning"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">개선조치 기한 임박 — 옥상 안전난간 교체</span>
+                            <span class="alert-row-meta">기한 D-4 · 진행 기록 등록 필요</span>
+                        </div>
+                        <span class="alert-row-time">어제</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

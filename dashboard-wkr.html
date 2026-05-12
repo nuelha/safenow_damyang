@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>근로자 대시보드 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 큰 신고 액션 버튼 — WKR 대시보드 핵심 */
+        .report-btn-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 1023px) { .report-btn-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px)  { .report-btn-grid { grid-template-columns: 1fr; } }
+        .report-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 24px 16px;
+            background: white;
+            border: 2px solid var(--card-line);
+            border-radius: var(--radius-card);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+        .report-btn:hover {
+            border-color: var(--main);
+            background: var(--status-success-bg);
+            transform: translateY(-2px);
+        }
+        .report-btn.urgent {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+        }
+        .report-btn.urgent:hover {
+            background: var(--status-danger-fg);
+            border-color: var(--status-danger-fg);
+        }
+        .report-btn.urgent:hover * { color: white !important; }
+        .report-btn-icon {
+            width: 44px; height: 44px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--status-success-bg);
+            color: var(--main);
+        }
+        .report-btn.urgent .report-btn-icon { background: white; color: var(--status-danger-fg); }
+        .report-btn-title {
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            text-align: center;
+        }
+        .report-btn.urgent .report-btn-title { color: var(--status-danger-fg); }
+        .report-btn-desc {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-align: center;
+        }
+
+        /* 안전관리자 연락처 카드 */
+        .contact-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--page-bg);
+            border-radius: var(--radius-button);
+        }
+        .contact-card-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--main);
+            color: white;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .contact-card-text { flex: 1; min-width: 0; }
+        .contact-card-name { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .contact-card-meta { font-size: 12px; color: var(--text-gray); }
+        .contact-card-tel {
+            font-size: 14px; font-weight: 700;
+            color: var(--main);
+            text-decoration: none;
+        }
+        .contact-card-tel:hover { text-decoration: underline; }
+
+        /* 교육 진행률 */
+        .edu-progress {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .edu-progress-bar {
+            position: relative;
+            height: 24px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .edu-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%);
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+        .edu-progress-label {
+            position: absolute;
+            inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+    </style>
+</head>
+<body data-dy-page="index" data-role="wkr" data-page-title="안녕하세요, 박근로 주무관님" data-page-subtitle="자치행정과 · 사무직 — 오늘도 안전한 하루 보내세요">
+    <main>
+        <!-- ─── 1행: 위험·아차사고 신고 (강조 — WKR 핵심 진입점) ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">위험·아차사고 신고</h2>
+                <span class="text-muted" style="font-size:13px;">본인이 신고한 건 <strong style="color:var(--main);">3건</strong></span>
+            </div>
+            <div class="card-body">
+                <div class="report-btn-grid">
+                    <a class="report-btn urgent" href="#" onclick="window.DYLayout._soon(event, '작업중지요청 (OPN01-F?category=work_stop)')">
+                        <span class="report-btn-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        </span>
+                        <span class="report-btn-title">작업중지요청</span>
+                        <span class="report-btn-desc">긴급 · 즉시 처리</span>
+                    </a>
+                    <a class="report-btn" href="#" onclick="window.DYLayout._soon(event, '위험요인 신고 (OPN01-F?category=hazard_report)')">
+                        <span class="report-btn-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </span>
+                        <span class="report-btn-title">위험요인 신고</span>
+                        <span class="report-btn-desc">SFR-019</span>
+                    </a>
+                    <a class="report-btn" href="#" onclick="window.DYLayout._soon(event, '아차사고 보고 (OPN01-F?category=near_miss)')">
+                        <span class="report-btn-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"/><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/></svg>
+                        </span>
+                        <span class="report-btn-title">아차사고 보고</span>
+                        <span class="report-btn-desc">실제 사고로 이어질 뻔한 사건</span>
+                    </a>
+                    <a class="report-btn" href="#" onclick="window.DYLayout._soon(event, '안전제안 (OPN01-F?category=safety_proposal)')">
+                        <span class="report-btn-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </span>
+                        <span class="report-btn-title">안전제안 등록</span>
+                        <span class="report-btn-desc">개선 아이디어 공유</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 2행: 내 안전보건교육 + 의견청취 응답 ─── -->
+        <section class="board-grid cols-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 안전보건교육</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '교육 이수 보기 (EDU)')">교육 이수 보기 →</a>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px;">
+                        <div>
+                            <span style="font-size:13px; color:var(--text-gray);">이번 반기 (사무직 정기교육)</span>
+                            <div style="font-size:24px; font-weight:800; color:var(--main-dark2); letter-spacing:-0.4px;">4<span style="font-size:16px; color:var(--text-gray);">h</span> / 6<span style="font-size:16px; color:var(--text-gray);">h</span></div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:11px; color:var(--text-lightgray);">다음 마감</span>
+                            <div style="font-size:14px; font-weight:700; color:var(--status-warning-fg);">2026-06-30 (D-50)</div>
+                        </div>
+                    </div>
+                    <div class="edu-progress">
+                        <div class="edu-progress-bar">
+                            <div class="edu-progress-fill" style="width:67%;"></div>
+                            <span class="edu-progress-label">67% 진행</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--text-gray);">
+                        <div>✓ 신규채용자 교육 (2026-01-15) — 8h 이수</div>
+                        <div>✓ 정기 안전교육 1차 (2026-03-20) — 2h 이수</div>
+                        <div>✓ 정기 안전교육 2차 (2026-04-25) — 2h 이수</div>
+                        <div style="color:var(--text-lightgray);">▢ 정기 안전교육 3차 (예정) — 2h 필요</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">의견청취 응답 요청</h2>
+                    <span class="text-muted" style="font-size:13px;">2건</span>
+                </div>
+                <div class="card-body" style="padding:8px 24px 14px;">
+                    <div class="alert-row-list">
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '의견 응답 (OPN02-F)')">
+                            <span class="alert-row-dot warning"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">2026 상반기 안전보건 의견청취</span>
+                                <span class="alert-row-meta">김안전 SHM · 응답 마감 D-3</span>
+                            </div>
+                            <button class="btn-mini primary" type="button" onclick="event.stopPropagation();">응답</button>
+                        </div>
+                        <div class="alert-row" style="cursor:pointer;" onclick="window.DYLayout._soon(event, '의견 응답 (OPN02-F)')">
+                            <span class="alert-row-dot info"></span>
+                            <div class="alert-row-body">
+                                <span class="alert-row-title">청사 환기 시스템 개선 의견 수렴</span>
+                                <span class="alert-row-meta">시설관리과 · 응답 마감 D-7</span>
+                            </div>
+                            <button class="btn-mini primary" type="button" onclick="event.stopPropagation();">응답</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 3행: 내 소속 정보 + 관리대상 안전관리자 연락처 ─── -->
+        <section class="board-grid cols-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 소속 정보</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">이름·직급</span>
+                        <span class="info-grid-value">박근로 <span class="text-gray">(주무관 · 8급)</span></span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">부서</span>
+                        <span class="info-grid-value">자치행정과</span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">직종</span>
+                        <span class="info-grid-value">사무직 <span class="text-gray">(정기교육 반기 6h 기준)</span></span>
+                    </div>
+                    <div class="info-grid-row last-row">
+                        <span class="info-grid-label">소속 관리대상</span>
+                        <span class="info-grid-value">
+                            군청 청사 관리
+                            <span class="type-tag">시설</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">내 관리대상 안전관리자</h2>
+                    <span class="text-muted" style="font-size:13px;">긴급 시 연락</span>
+                </div>
+                <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="contact-card">
+                        <span class="contact-card-avatar">김</span>
+                        <div class="contact-card-text">
+                            <div class="contact-card-name">김안전 (안전관리자)</div>
+                            <div class="contact-card-meta">자치행정과 · SHM · 7급</div>
+                        </div>
+                        <a class="contact-card-tel" href="tel:063-0000-1234">063-0000-1234</a>
+                    </div>
+                    <div class="contact-card">
+                        <span class="contact-card-avatar" style="background:var(--main-dark2);">이</span>
+                        <div class="contact-card-text">
+                            <div class="contact-card-name">이실장 (관리책임자)</div>
+                            <div class="contact-card-meta">자치행정과 · GM · 과장</div>
+                        </div>
+                        <a class="contact-card-tel" href="tel:063-0000-1100">063-0000-1100</a>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-lightgray); padding:6px 12px; background:var(--page-bg); border-radius:6px;">
+                        💡 최근 위험성평가: 2026-04-15 (완료) · 다음 정기 평가 2026-10
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 4행: 알림 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">알림 메시지 내력</h2>
+                <a class="text-muted" href="#" style="font-size:13px;" onclick="window.DYLayout._soon(event, '내 알림 (NTF01-L)')">전체 →</a>
+            </div>
+            <div class="card-body" style="padding:8px 24px 16px;">
+                <div class="alert-row-list">
+                    <div class="alert-row">
+                        <span class="alert-row-dot warning"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">의견청취 응답 요청 — 2026 상반기 안전보건 의견청취</span>
+                            <span class="alert-row-meta">김안전 SHM이 발송한 의견청취 · 응답 마감 D-3</span>
+                        </div>
+                        <span class="alert-row-time">오늘 09:00</span>
+                    </div>
+                    <div class="alert-row">
+                        <span class="alert-row-dot info"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">내가 등록한 위험요인 신고 처리 완료</span>
+                            <span class="alert-row-meta">"지하 주차장 환기 시설" → 개선조치 imp-12로 등록</span>
+                        </div>
+                        <span class="alert-row-time">3일 전</span>
+                    </div>
+                    <div class="alert-row">
+                        <span class="alert-row-dot neutral"></span>
+                        <div class="alert-row-body">
+                            <span class="alert-row-title">정기 안전교육 2차 이수 완료 (2시간)</span>
+                            <span class="alert-row-meta">2026 상반기 누적 4h / 6h</span>
+                        </div>
+                        <span class="alert-row-time">2026-04-25</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>
