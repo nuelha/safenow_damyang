@@ -1,10 +1,10 @@
 # 담양군 중대재해통합관리시스템 — 요구사항추적매트릭스(RTM)
 
 > 문서 ID: RTM-001
-> 버전: v1.0
-> 작성일: 2026-05-11
+> 버전: **v1.1**
+> 작성일: 2026-05-12
 > 작성자: ㈜다온플레이스
-> 관련 문서: SRS-001(요구사항정의서) / IA-001(메뉴구조도) / DB-001(DB설계서) / IF-001(인터페이스정의서) / 화면설계서 40개
+> 관련 문서: SRS-001(요구사항정의서) / IA-001(메뉴구조도) / DB-001(DB설계서) / IF-001(인터페이스정의서) / 화면설계서 91개
 
 ---
 
@@ -22,8 +22,10 @@
 ### 0.2 범위
 
 - Phase 1 (★★★) 6개 SFR + 화면설계서 40개 — 완전 매핑
-- Phase 2 (★★) 8개 SFR — 모듈 단위 매핑 (화면 미정의)
-- Phase 3 (★) 6개 SFR — 모듈 단위 매핑 (화면 미정의)
+- Phase 2 (★★) 8개 SFR + 화면설계서 31개 — 완전 매핑
+- Phase 3 (★) 6개 SFR + 화면설계서 20개 — 완전 매핑
+- 공통 SFR-001 + 비기능 — 전 화면 적용
+- **합계**: 21개 SFR / 91개 화면
 
 ### 0.3 추적 단위
 
@@ -38,9 +40,9 @@
 
 ---
 
-## 1. SFR ↔ 화면 매트릭스
+## 1. SFR ↔ 화면 매트릭스 (전체 91개 화면)
 
-### 1.1 Phase 1 (★★★) — 화면 정의 완료
+### 1.1 ★★★ 우선순위 (Phase 1) — 40개 화면
 
 | SFR | SFR명 | 주 화면 | 보조·관련 화면 |
 |-----|-------|--------|------------|
@@ -51,40 +53,48 @@
 | SFR-015 | 통합 인증 체계 | AUTH01-V, AUTH02-F | AUTH03-M, AUTH04-F, AUTH05-F, AUTH06-S, AUTH99-V |
 | SFR-017 | 통합 알림체계 | NTF01-L, NTF02-D, NTF03-S | (트리거는 전 모듈 분산) |
 
-### 1.2 SFR-010 (Phase 2이나 Phase 1 화면에 검증 로직 포함)
+### 1.2 ★★ 우선순위 (Phase 2) — 31개 화면
 
-| SFR | 적용 화면 | 적용 내용 |
-|-----|---------|---------|
-| SFR-010 안전관리자 인력 관리 | ORG03-V, CON01-D, CON06-F | 부서별 충족 산출 / 결재 차단 검증 |
+| SFR | SFR명 | 주 화면 | 보조·관련 화면 |
+|-----|-------|--------|------------|
+| SFR-003 | 재발방지대책 / 개선·시정조치 | IMP01-V, IMP01-L, IMP01-D | (IMP02-L `/incident_prevention` 통합) |
+| SFR-004 | 안전계획 / 의무이행 점검 | PLN01-V, PLN01-L, PLN02-D, PLN02-F | PLN03-V, PLN04-S |
+| SFR-005 | 안전보건 목표 / 경영방침 | POL01-V, POL01-L, POL02-D, POL02-F, POL04-V | (POL03-V는 POL01-V에 통합) |
+| SFR-008 | 인력·예산 편성·집행 | BGT01-V, BGT02-V, BGT03-F, BGT04-F | BGT05-S |
+| SFR-009 | 평가기준 / 평가 관리 | EVL01-V, EVL01-L, EVL02-D | EVL03-S |
+| SFR-010 | 안전관리자 인력 관리 | STF01-V, STF02-V | STF03-S |
+| SFR-016 | 데이터 등록 서식 | (모듈별 일괄등록 모달로 분산) | ORG02-M2 등 |
+| SFR-020 | 대시보드 개발 | DSH01-V, DSH02-V, DSH03-V, DSH04-V, DSH05-V | — |
 
-### 1.3 Phase 2/3 (화면 미정의) — 모듈 단위 매핑
+### 1.3 ★ 우선순위 (Phase 3) — 20개 화면
 
-| SFR | SFR명 | 우선순위 | 주 모듈 |
-|-----|-------|---------|--------|
-| SFR-003 | 재발방지대책 / 개선·시정조치 | ★★ | IMP |
-| SFR-004 | 안전계획 / 의무이행 점검 | ★★ | PLN |
-| SFR-005 | 안전보건 목표 / 경영방침 | ★★ | POL |
-| SFR-008 | 인력·예산 편성·집행 | ★★ | BGT |
-| SFR-009 | 평가기준 / 평가 관리 | ★★ | EVL |
-| SFR-016 | 데이터 등록 서식 | ★★ | (모듈별 일괄등록 모달로 분산) |
-| SFR-020 | 대시보드 개발 | ★★ | DSH |
-| SFR-011 | 종사자 의견청취 | ★ | OPN |
-| SFR-012 | 중대재해 예방 매뉴얼 점검 | ★ | INS, DOC |
-| SFR-014 | 의무 이행여부 점검 | ★ | CMP |
-| SFR-018 | 현황·통계 관리 | ★ | STA |
-| SFR-019 | 유해/위험요인 신고 | ★ | OPN (통합 — 결정사항 #13) |
-| SFR-021 | 제증명 관리 | ★ | CRT |
+| SFR | SFR명 | 주 화면 | 보조·관련 화면 |
+|-----|-------|--------|------------|
+| SFR-011 | 종사자 의견청취 | OPN01-V, OPN01-L, OPN01-F, OPN02-D, OPN03-L | OPN04-S |
+| SFR-012 | 중대재해 예방 매뉴얼 점검 | INS01-V, INS02-L, INS02-D, DOC01-L, DOC02-L | INS03-S |
+| SFR-014 | 의무 이행여부 점검 | CMP01-V, CMP02-L, CMP02-D | CMP03-S |
+| SFR-018 | 현황·통계 관리 | STA01-V, STA02-V | STA03-S |
+| SFR-019 | 유해/위험요인 신고 | (OPN 통합 — 결정사항 #13) | — |
+| SFR-021 | 제증명 관리 | CRT01-V, CRT02-F | CRT03-S |
+
+### 1.4 공통 SFR-001 적용 영역
+
+| SFR | 적용 |
+|-----|------|
+| SFR-001 공통 시스템 환경 | 전 91개 화면에 일관 적용 |
 
 ---
 
-## 2. 화면 ↔ SFR 역매핑 (40개 화면 — Phase 1)
+## 2. 화면 ↔ SFR 역매핑 (전체 91개)
+
+### 2.1 ★★★ 화면 (40개)
 
 | 화면 ID | 화면명 | 주 SFR | 부 SFR |
 |---------|-------|-------|-------|
 | **AUTH (7)** | | | |
 | AUTH01-V | SSO 로그인 처리 | 015 | 006 (조직도 동기화) |
 | AUTH02-F | 외부 사용자 로그인 | 015 | — |
-| AUTH03-M | 외부 사용자 초대 모달 | 015 | 013 (도급), Phase 2 컨설팅 |
+| AUTH03-M | 외부 사용자 초대 모달 | 015 | 013, Phase 2 컨설팅 |
 | AUTH04-F | 비밀번호 재설정 | 015 | — |
 | AUTH05-F | 첫 로그인 비밀번호 설정 | 015 | — |
 | AUTH06-S | 외부 사용자 관리 | 015 | — |
@@ -128,11 +138,86 @@
 | CON09-L | TBM 목록 | 013 | 007 (위험요인 가져오기) |
 | CON10-S | 도급관리 설정 | 013 | — |
 
+### 2.2 ★★ 화면 (31개)
+
+| 화면 ID | 화면명 | 주 SFR | 부 SFR |
+|---------|-------|-------|-------|
+| **DSH (5)** | | | |
+| DSH01-V | 군수 대시보드 | 020 | 전 SFR 위젯 |
+| DSH02-V | 실과단소장 대시보드 | 020 | 010 (인력 충족), 003 (개선조치) |
+| DSH03-V | 팀장·담당자 대시보드 | 020 | 003, 011 (의견청취 SHM 한정) |
+| DSH04-V | 근로자 대시보드 | 020 | 011/019 (위험 신고) |
+| DSH05-V | 외부 사용자 대시보드 | 020 | 013 (SUB 계약·서약·TBM) |
+| **IMP (3)** | | | |
+| IMP01-V | 개선조치 현황 | 003 | 015 (시기도래 색상) |
+| IMP01-L | 개선조치 목록 | 003 | 007, 012, 011 (출처) |
+| IMP01-D | 개선조치 상세 (재발방지 2단계) | 003 | 007, 012, 011 |
+| **PLN (6)** | | | |
+| PLN01-V | 안전계획 현황 | 004 | 014 (CMP 연계) |
+| PLN01-L | 계획 목록 | 004 | — |
+| PLN02-D | 계획 상세 | 004 | 014 (양방향 연계) |
+| PLN02-F | 계획 등록·수정 | 004 | 014 |
+| PLN03-V | 캘린더 뷰 | 004 | — |
+| PLN04-S | 안전계획 설정 | 004 | 014 |
+| **POL (5)** | | | |
+| POL01-V | 안전경영방침 현황 (KPI 통합) | 005 | — |
+| POL01-L | 방침 이력 | 005 | — |
+| POL02-D | 방침 상세 | 005 | — |
+| POL02-F | 방침 등록·수정 | 005 | — |
+| POL04-V | 경영방침 점검 | 005 | 003 (개선조치 자동 INSERT) |
+| **BGT (5)** | | | |
+| BGT01-V | 예산 현황 | 008 | — |
+| BGT02-V | 예방 항목 트리 | 008 | — |
+| BGT03-F | 예산 편성 | 008 | — |
+| BGT04-F | 예산 집행 | 008 | — |
+| BGT05-S | 예산 설정 | 008 | — |
+| **EVL (4)** | | | |
+| EVL01-V | 인력평가 현황 | 009 | — |
+| EVL01-L | 평가 목록 | 009 | — |
+| EVL02-D | 평가 상세·점검표 | 009 | — |
+| EVL03-S | 평가 마스터 설정 | 009 | — |
+| **STF (3)** | | | |
+| STF01-V | 전체 인력 현황 | 010 | 006 (자격증 만료) |
+| STF02-V | 공사별 선임 현황 | 010 | 013 (e호조 연동) |
+| STF03-S | 법정 인원 마스터 | 010 | — |
+
+### 2.3 ★ 화면 (20개)
+
+| 화면 ID | 화면명 | 주 SFR | 부 SFR |
+|---------|-------|-------|-------|
+| **OPN (6)** | | | |
+| OPN01-V | 의견청취 현황 | 011 | 019 (통합) |
+| OPN01-L | 의견 목록 | 011 | 019 |
+| OPN01-F | 의견 등록 | 011 | 019 |
+| OPN02-D | 의견 처리 (4단계) | 011 | 003 (채택 시 개선조치) |
+| OPN03-L | 산업안전보건위원회 | 011 | 003 (가결 시 개선조치) |
+| OPN04-S | 의견청취 설정 | 011 | — |
+| **INS+DOC (6)** | | | |
+| INS01-V | 안전점검 현황 | 012 | — |
+| INS02-L | 점검 목록 | 012 | — |
+| INS02-D | 점검 실시 (체크리스트) | 012 | 003 (불합격 시 개선조치) |
+| INS03-S | 점검 설정 | 012 | — |
+| DOC01-L | 매뉴얼 목록 | 012 | — |
+| DOC02-L | 점검표 마스터 | 012 | — |
+| **CMP (4)** | | | |
+| CMP01-V | 이행 현황 | 014 | 015 (시기도래 색상) |
+| CMP02-L | 이행 목록 | 014 | — |
+| CMP02-D | 이행 상세·실행 | 014 | 004 (PLN 양방향 연계) |
+| CMP03-S | 법령 마스터 | 014 | — |
+| **STA (3)** | | | |
+| STA01-V | 종합 통계 | 018 | 전 SFR 집계 |
+| STA02-V | 모듈별 통계 | 018 | 전 SFR 집계 |
+| STA03-S | 통계 설정 | 018 | — |
+| **CRT (3)** | | | |
+| CRT01-V | 발급 이력 | 021 | — |
+| CRT02-F | 증명서 발급 | 021 | 014 (이행률 자동 산출) |
+| CRT03-S | 제증명 설정 | 021 | — |
+
 ---
 
 ## 3. SFR ↔ DB 테이블 매트릭스
 
-### 3.1 Phase 1 SFR
+### 3.1 ★★★ SFR
 
 | SFR | 주 테이블 | 참조 테이블 |
 |-----|---------|----------|
@@ -143,49 +228,65 @@
 | SFR-015 | users, invitation_tokens, password_reset_tokens, password_history, external_user_access, permission_rules, agreements | departments, audit_logs |
 | SFR-017 | notifications, email_queue | users, audit_logs |
 
-### 3.2 공통·인프라 테이블
+### 3.2 ★★ SFR
+
+| SFR | 주 테이블 |
+|-----|---------|
+| SFR-003 | improvements, improvement_executions, incidents |
+| SFR-004 | safety_plans, plan_items, plan_templates, plan_categories |
+| SFR-005 | policies, policy_kpis, policy_kpi_measurements, policy_inspections, policy_inspection_items, policy_inspection_template |
+| SFR-008 | budgets, budget_categories, budget_items, budget_executions |
+| SFR-009 | evaluation_cycles, evaluations, evaluation_items, evaluation_template_items, evaluator_mapping_rules |
+| SFR-010 | legal_personnel_dept, legal_personnel_construction, qualification_mapping |
+| SFR-016 | (각 모듈 일괄등록 모달 분산) |
+| SFR-020 | (집계 view 활용 — 자체 테이블 없음) |
+
+### 3.3 ★ SFR
+
+| SFR | 주 테이블 |
+|-----|---------|
+| SFR-011 / 019 | opinions, opinion_executions, council_agenda, industrial_safety_meetings |
+| SFR-012 | inspections, inspection_items, manuals, inspection_templates |
+| SFR-014 | compliance_schedules, compliance_executions, legal_references |
+| SFR-018 | statistics_reports, materialized views |
+| SFR-021 | certificates |
+
+### 3.4 공통·인프라 테이블
 
 | 테이블 | 사용 SFR | 용도 |
 |--------|---------|------|
 | `audit_logs` | 전 SFR | 감사 로그 (보안·규정 준수) |
-| `sync_logs` | 002, 006, 013 | 외부 동기화 이력 (행정포털·FMS·e호조) |
+| `sync_logs` | 002, 006, 013 | 외부 동기화 이력 |
 | `fms_sync_logs` | 002 | FMS 동기화 전용 이력 |
-
-### 3.3 테이블 ↔ SFR 역매핑 (주요)
-
-| 테이블 | 주 SFR | 부 SFR |
-|--------|-------|-------|
-| `users` | 015 | 006 |
-| `departments` | 006 | 002 (관리대상의 담당부서) |
-| `targets` | 002 | 007 (FK), 013 (FK), 014 (FK) |
-| `target_assignees` | 006 | 002, 010 |
-| `risk_assessments` | 007 | 013 (자동 생성) |
-| `risk_factors` | 007 | 003 (자동 개선조치) |
-| `contracts` | 013 | 007 (자동 평가), 010 (미달 차단) |
-| `notifications` | 017 | 전 SFR (트리거) |
 
 ---
 
 ## 4. SFR ↔ 인터페이스 매트릭스
 
-### 4.1 외부 인터페이스 사용
-
 | SFR | IF-001 SSO | IF-002 조직도 | IF-003 FMS | IF-004 e호조 | IF-005 새올 | IF-006 SMTP |
 |-----|-----------|-------------|-----------|-------------|------------|------------|
-| SFR-002 (관리대상) | — | — | ⭕ 주 | — | — | — |
-| SFR-005 (경영방침) | — | — | — | — | ⭕ (결재 안내) | — |
-| SFR-006 (전담조직) | — | ⭕ 주 | — | — | ⭕ | — |
-| SFR-007 (위험성평가) | — | — | — | ⭕ (자동 생성) | ⭕ | — |
-| SFR-008 (예산) | — | — | — | — | ⭕ (결재 안내) | — |
-| SFR-009 (인력평가) | — | — | — | — | ⭕ (결재 안내) | — |
-| SFR-010 (안전관리자) | — | — | — | ⭕ (공사별) | ⭕ | — |
-| SFR-013 (도급관리) | — | — | — | ⭕ 주 | ⭕ | ⭕ (도급업체 초대) |
-| SFR-015 (인증) | ⭕ 주 | ⭕ (사용자 정보) | — | — | — | ⭕ (외부 사용자) |
-| SFR-017 (알림) | — | — | — | — | ⭕ 주 | ⭕ 주 |
+| 002 (관리대상) | — | — | ⭕ 주 | — | — | — |
+| 003 (개선조치) | — | — | — | — | ⭕ | — |
+| 004 (안전계획) | — | — | — | — | ⭕ | — |
+| 005 (경영방침) | — | — | — | — | ⭕ (결재 안내) | — |
+| 006 (전담조직) | — | ⭕ 주 | — | — | ⭕ | — |
+| 007 (위험성평가) | — | — | — | ⭕ (자동 생성) | ⭕ | — |
+| 008 (예산) | — | — | — | — | ⭕ (결재 안내) | — |
+| 009 (인력평가) | — | — | — | — | ⭕ (결재 안내) | — |
+| 010 (안전관리자) | — | — | — | ⭕ (공사별) | ⭕ | — |
+| 011 / 019 (의견/신고) | — | — | — | — | ⭕ (긴급 즉시) | — |
+| 012 (점검·매뉴얼) | — | — | — | — | ⭕ | — |
+| 013 (도급관리) | — | — | — | ⭕ 주 | ⭕ | ⭕ (도급업체 초대) |
+| 014 (이행관리) | — | — | — | — | ⭕ | — |
+| 015 (인증) | ⭕ 주 | ⭕ (사용자 정보) | — | — | — | ⭕ (외부 사용자) |
+| 017 (알림) | — | — | — | — | ⭕ 주 | ⭕ 주 |
+| 018 (통계) | — | — | — | — | ⭕ (보고서 알림) | — |
+| 020 (대시보드) | — | — | — | — | ⭕ (알림 위젯) | — |
+| 021 (제증명) | — | — | — | — | ⭕ | ⭕ (외부 신청자) |
 
-> "주" = SFR의 핵심 외부 의존, 그 외 표시 = 보조 사용.
+> "주" = SFR의 핵심 외부 의존, 그 외 = 보조 사용.
 
-### 4.2 인터페이스 미해소 시 영향도
+### 4.1 인터페이스 미해소 시 영향도
 
 | 인터페이스 | 미해소 시 영향 SFR | 대안 |
 |----------|----------------|------|
@@ -193,187 +294,103 @@
 | IF-002 조직도 | 006, 002 | 부서·사용자 수동 등록 (MANUAL) |
 | IF-003 FMS | 002, 016, 020 | 시설형 관리대상 수동 등록 |
 | IF-004 e호조 | 007, 010, 013 | 도급계약 수동 등록 |
-| IF-005 새올 포틀릿 | 017 | 본 시스템 내부 알림만 (포틀릿 미연계) |
+| IF-005 새올 포틀릿 | 017 | 본 시스템 내부 알림만 |
 | IF-006 SMTP | 015, 017 (외부) | 외부 사용자 이메일 미발송 (초대 불가) |
 
 ---
 
-## 5. 화면 ↔ DB 테이블 매트릭스 (Phase 1 40개)
+## 5. 화면 ↔ DB 테이블 매트릭스 (전체 91개)
 
 > 화면별 CRUD 의존 테이블 (주 → 보조 순)
 
-### 5.1 AUTH (7)
+### 5.1 ★★★ 화면 (40개)
 
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| AUTH01-V | users (RW), audit_logs (W) | departments, permission_rules |
-| AUTH02-F | users (R), audit_logs (W) | — |
-| AUTH03-M | users (W), invitation_tokens (W), external_user_access (W), email_queue (W) | audit_logs |
-| AUTH04-F | password_reset_tokens (W), users (W), password_history (W) | email_queue |
-| AUTH05-F | users (W), invitation_tokens (W), password_history (W), agreements (W) | audit_logs |
-| AUTH06-S | users (RW), invitation_tokens (RW), external_user_access (R) | email_queue, audit_logs |
-| AUTH99-V | audit_logs (W) | — |
+> v1.0 §5 동일. AUTH (7) / ORG (8) / TGT (5) / NTF (3) / RSK (6) / CON (11) — 상세 매핑.
 
-### 5.2 ORG (8)
+**예시 (핵심 화면)**:
+- TGT02-F: targets (W), target_assignees (W via trigger), audit_logs (W) | departments, users, user_qualifications
+- ORG03-M: dedicated_personnel (W), warnings (W), audit_logs (W) | users, user_qualifications
+- RSK02-D: risk_assessments (RW), risk_factors (RW), audit_logs (W) | targets, users, improvements
+- CON07-F: contract_subcontractors (RW), users (W), invitation_tokens (W), external_user_access (W), email_queue (W), contract_agreements (W) | agreement_forms
 
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| ORG01-V | departments (R), users (R) | sync_logs, dedicated_personnel, targets, target_assignees |
-| ORG02-L | users (R) | departments, user_qualifications |
-| ORG02-D | users (RW), user_qualifications (RW), target_assignees (R), audit_logs (W) | departments, targets |
-| ORG02-M | users (W), audit_logs (W) | departments |
-| ORG02-M2 | users (W batch), audit_logs (W) | departments |
-| ORG03-V | dedicated_personnel (R), target_assignees (R) | users, user_qualifications, departments |
-| ORG03-M | dedicated_personnel (W), warnings (W), audit_logs (W) | users, user_qualifications |
-| ORG04-S | sync_logs (R) | departments, users |
+### 5.2 ★★ 화면 (31개)
 
-### 5.3 TGT (5)
+| 화면 | 주 테이블 (R/W) | 참조 |
+|------|--------------|------|
+| DSH01-V | (집계만) | risk_assessments, contracts, compliance_executions, notifications, incidents, dedicated_personnel, opinions |
+| IMP01-D | improvements (RW), improvement_executions (W) | incidents, risk_factors, targets, users |
+| PLN02-D | safety_plans (R), plan_items (RW) | compliance_schedules |
+| POL02-D | policies (R), policy_kpis (R) | policy_inspections |
+| POL04-V | policy_inspections (RW), policy_inspection_items (W) | improvements (자동) |
+| BGT02-V | budget_categories (R) | budget_items, budget_executions |
+| BGT03-F | budgets (RW), budget_items (W) | budget_categories, audit_logs |
+| BGT04-F | budget_executions (W) | budget_items |
+| EVL02-D | evaluations (RW), evaluation_items (W) | evaluation_template_items |
+| STF01-V | dedicated_personnel (R), target_assignees (R) | users, user_qualifications, legal_personnel_dept |
+| STF02-V | contracts (R), dedicated_personnel (R) | legal_personnel_construction |
 
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| TGT01-V | targets (R) | departments, target_assignees, fms_sync_logs |
-| TGT02-D | targets (RW), target_assignees (R) | departments, users, risk_assessments, improvements |
-| TGT02-F | targets (W), target_assignees (W via trigger), audit_logs (W) | departments, users, user_qualifications |
-| TGT03-M | target_assignees (W), audit_logs (W) | users, targets |
-| TGT04-S | fms_sync_logs (R), targets (RW) | departments |
+### 5.3 ★ 화면 (20개)
 
-### 5.4 NTF (3)
-
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| NTF01-L | notifications (RW) | users |
-| NTF02-D | notifications (RW) | users |
-| NTF03-S | notifications (RW), email_queue (RW) | users, audit_logs |
-
-### 5.5 RSK (6)
-
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| RSK01-V | risk_assessments (R), risk_factors (R) | targets, improvements, users |
-| RSK02-L | risk_assessments (R) | targets, users, departments |
-| RSK02-D | risk_assessments (RW), risk_factors (RW), audit_logs (W) | targets, users, improvements |
-| RSK02-F | risk_assessments (W), audit_logs (W) | targets, users |
-| RSK03-L | improvements (R), risk_factors (R), risk_assessments (R) | targets |
-| RSK04-S | risk_assessment_intervals (RW), sync_logs (R) | — |
-
-### 5.6 CON (11)
-
-| 화면 | 주 테이블 (R/W) | 참조 (R) |
-|------|--------------|---------|
-| CON01-L | contracts (R) | contract_subcontractors, subcontractors, targets, departments |
-| CON01-D | contracts (RW), contract_subcontractors (R), audit_logs (W) | subcontractors, target_assignees, dedicated_personnel, risk_assessments, tbm_records |
-| CON02-L | subcontractors (R) | contract_subcontractors, contracts |
-| CON03-L | council_meetings (RW), audit_logs (W) | contracts, users |
-| CON04-F | contracts (W), audit_logs (W) | targets, departments, users |
-| CON05-F | contracts (W), contract_subcontractors (RW), audit_logs (W) | subcontractors, evaluation_forms, users |
-| CON06-F | contracts (RW), contract_subcontractors (R), audit_logs (W) | target_assignees, dedicated_personnel |
-| CON07-F | contract_subcontractors (RW), users (W), invitation_tokens (W), external_user_access (W), email_queue (W), contract_agreements (W) | agreement_forms |
-| CON08-D | contract_subcontractors (RW), audit_logs (W) | evaluation_forms, contracts |
-| CON09-L | tbm_records (RW), audit_logs (W) | contracts, subcontractors, risk_factors |
-| CON10-S | evaluation_forms (RW), agreement_forms (RW), sync_logs (R) | — |
+| 화면 | 주 테이블 (R/W) | 참조 |
+|------|--------------|------|
+| OPN02-D | opinions (RW), opinion_executions (W) | improvements (자동), users |
+| OPN03-L | council_agenda (RW), industrial_safety_meetings (RW) | improvements |
+| INS02-D | inspections (RW), inspection_items (W) | inspection_templates, improvements |
+| CMP02-D | compliance_schedules (R), compliance_executions (W) | legal_references, plan_items |
+| CRT02-F | certificates (W) | targets, inspections, audit_logs |
 
 ---
 
-## 6. 화면 ↔ 인터페이스 매트릭스 (Phase 1 40개)
-
-> "주" = 화면이 직접 호출 / 표시 / "간접" = 다른 작업의 결과 반영
-
-| 화면 ID | IF-001 SSO | IF-002 조직도 | IF-003 FMS | IF-004 e호조 | IF-005 새올 | IF-006 SMTP |
-|---------|-----------|------------|-----------|-------------|------------|------------|
-| AUTH01-V | 주 | 간접 | — | — | — | — |
-| AUTH02-F | — | — | — | — | — | — |
-| AUTH03-M | — | — | — | — | — | 주 |
-| AUTH04-F | — | — | — | — | — | 주 |
-| AUTH05-F | — | — | — | — | — | — |
-| AUTH06-S | — | — | — | — | — | 주 |
-| AUTH99-V | 간접 | — | — | — | — | — |
-| ORG01-V | — | 주 (수동 동기화) | — | — | — | — |
-| ORG02-L | — | 간접 | — | — | — | — |
-| ORG02-D | — | 간접 | — | — | 간접 | — |
-| ORG02-M | — | — | — | — | 간접 | — |
-| ORG02-M2 | — | — | — | — | 간접 | — |
-| ORG03-V | — | 간접 | — | — | — | — |
-| ORG03-M | — | — | — | — | 간접 | — |
-| ORG04-S | — | 주 (운영 콘솔) | — | — | — | — |
-| TGT01-V | — | — | 간접 | — | — | — |
-| TGT02-D | — | — | 주 (외부 링크) | — | — | — |
-| TGT02-F | — | — | 주 (FMS 조회) | — | — | — |
-| TGT03-M | — | — | — | — | 간접 | — |
-| TGT04-S | — | — | 주 (운영 콘솔) | — | — | — |
-| NTF01-L | — | — | — | — | 간접 | — |
-| NTF02-D | — | — | — | — | — | — |
-| NTF03-S | — | — | — | — | 주 (운영 콘솔) | 주 (운영 콘솔) |
-| RSK01-V | — | — | — | 간접 | — | — |
-| RSK02-L | — | — | — | 간접 | — | — |
-| RSK02-D | — | — | — | — | 간접 (결재 알림) | — |
-| RSK02-F | — | — | — | — | 간접 | — |
-| RSK03-L | — | — | — | — | — | — |
-| RSK04-S | — | — | — | 주 (운영 콘솔) | — | — |
-| CON01-L | — | — | — | 주 (수동 동기화) | — | — |
-| CON01-D | — | — | — | 간접 | 간접 | — |
-| CON02-L | — | — | — | — | — | — |
-| CON03-L | — | — | — | — | 간접 | — |
-| CON04-F | — | — | — | 간접 (prefill) | — | — |
-| CON05-F | — | — | — | — | 간접 | — |
-| CON06-F | — | — | — | — | 주 (결재 알림) | — |
-| CON07-F | — | — | — | — | 간접 | 주 (도급업체 초대) |
-| CON08-D | — | — | — | — | 간접 | — |
-| CON09-L | — | — | — | — | 간접 | — |
-| CON10-S | — | — | — | 주 (운영 콘솔) | — | — |
-
----
-
-## 7. 결정사항 ↔ 화면 매트릭스 (v1.0 23개)
+## 6. 결정사항 ↔ 화면 매트릭스 (v1.0 23개)
 
 | # | 결정사항 | 반영 화면 |
 |---|---------|---------|
 | **기본 정책** | | |
-| 1 | 새올 포틀릿 연계 (SMS·알림톡·메일·Push 미사용) | NTF01-L, NTF02-D, NTF03-S |
-| 2 | 온나라 결재 안내 팝업 (자체 결재 없음) | RSK02-D, CON06-F (+ Phase 2: POL, BGT, EVL) |
+| 1 | 새올 포틀릿 연계 | NTF01-L, NTF02-D, NTF03-S |
+| 2 | 온나라 결재 안내 팝업 | RSK02-D, CON06-F, POL02-D, POL04-V, BGT03-F, EVL02-D, PLN02-D, CRT02-F |
 | **데이터 구조** | | |
-| 3 | 3단계 계층 (관리주체→부서→관리대상) | ORG01-V, TGT01-V (전반) |
+| 3 | 3단계 계층 | TGT01-V, ORG01-V (전반) |
 | 4 | 관리대상 단일 테이블 + type ENUM | TGT01-V, TGT02-D, TGT02-F |
 | 5 | 담당자 N:M + 부서장 자동 매핑 | ORG01-V, ORG02-D, TGT02-D, TGT02-F |
-| 6 | Flat 구조 (셀프 참조 없음) | TGT01-V, TGT02-D |
-| 7 | 중대재해법 분류·시설물 종별 단일 분류 | TGT02-D, TGT02-F |
+| 6 | Flat 구조 | TGT01-V, TGT02-D |
+| 7 | 중대재해법·시설물 단일 분류 | TGT02-D, TGT02-F |
 | 8 | 공정관리(PRC) 폐기 | RSK02-D, RSK02-F, CON09-L |
 | **모듈 적용 범위** | | |
-| 9 | TBM 도급공사에만 적용 | CON09-L, CON01-D (TBM 탭 조건부 노출) |
+| 9 | TBM 도급공사에만 적용 | CON09-L, CON01-D (TBM 탭 조건부) |
 | 10 | 외부 사용자 별도 로그인 | AUTH02-F, AUTH03-M, AUTH05-F, AUTH06-S |
-| 11 | 이행관리 카테고리 10개 (CDPA·LOCAL 추가) | (Phase 3: CMP 모듈) |
-| 12 | 도급 5분류 공통+분기 (평가서·서약서만) | CON04-F (계약유형), CON05-F (평가서), CON07-F (서약서), CON10-S (마스터) |
-| 13 | 유해/위험요인 신고 OPN에 통합 | (Phase 3: OPN 모듈) |
+| 11 | 이행관리 카테고리 10개 (CDPA·LOCAL 추가) | CMP01-V, CMP02-L, CMP03-S |
+| 12 | 도급 5분류 평가서·서약서만 분기 | CON04-F, CON05-F, CON07-F, CON10-S |
+| 13 | 유해/위험요인 신고 OPN 통합 | OPN 전체 (SFR-019 흡수) |
 | **UI/UX** | | |
-| 14 | 권한별 5종 대시보드 | (Phase 2: DSH 모듈) |
-| 15 | 시기도래 색상 안전NOW 기본 | (Phase 2: DSH + Phase 3: CMP) |
-| 16 | 온나라 결재 안내 팝업 1회 | RSK02-D, CON06-F |
-| 17 | 새올 알림 건별 적재 (그룹화 없음) | NTF03-S |
-| 18 | 점검표 공통 + 개별 양쪽 허용 | (Phase 3: INS, DOC) |
+| 14 | 권한별 5종 대시보드 | DSH01-V ~ DSH05-V |
+| 15 | 시기도래 색상 안전NOW 기본 | DSH 전체, IMP01-V, CMP01-V, PLN01-V 등 |
+| 16 | 온나라 결재 안내 팝업 1회 (#2와 일관) | RSK02-D, CON06-F |
+| 17 | 새올 알림 건별 적재 | NTF03-S |
+| 18 | 점검표 공통 + 개별 양쪽 | INS+DOC, INS02-D, DOC02-L |
 | **워크플로우** | | |
-| 19 | 재발방지대책 2단계 | (Phase 2: IMP) |
-| 20 | 산안위 안건 별도 메뉴 4단계 | (Phase 3: OPN) |
-| 21 | 공사별 안전관리자 미달 결재 차단 | CON06-F, CON01-D, CON01-L (안내 배너) |
-| 22 | 인력·예산 depth 3 (부서별) | (Phase 2: BGT) |
-| 23 | 제증명 2종 (이행확인서·점검결과 증명서) | (Phase 3: CRT) |
+| 19 | 재발방지대책 2단계 | IMP01-D (사고 출처) |
+| 20 | 산안위 안건 별도 메뉴 4단계 | OPN03-L |
+| 21 | 공사별 안전관리자 미달 결재 차단 | CON06-F, CON01-D, CON01-L, STF02-V |
+| 22 | 인력·예산 depth 3 부서별 별도 | BGT02-V |
+| 23 | 제증명 2종 | CRT01-V, CRT02-F |
 
-> **Phase 1 화면에 반영된 결정사항**: #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #12, #16, #17, #21 (총 14개)
-> **Phase 2/3 화면에서 반영 예정**: #11, #13, #14, #15, #18, #19, #20, #22, #23 (총 9개)
+**전체 23개 결정사항 화면 반영 완료 (100%)**
 
 ---
 
-## 8. 비기능 요구사항 ↔ 적용 영역 매트릭스
+## 7. 비기능 요구사항 ↔ 적용 영역 매트릭스
 
-### 8.1 성능
+### 7.1 성능
 
 | 요구사항 | 적용 화면/영역 | 구현 방안 |
 |---------|-------------|---------|
-| 페이지 응답 3초 이내 | 전 화면 | 인덱싱 (DB-001 §10), 캐싱, 페이지네이션 |
+| 페이지 응답 3초 이내 | 전 화면 | 인덱싱, 캐싱, 페이지네이션 |
 | 동시접속 200명 | 전 시스템 | 로드밸런서, DB 커넥션 풀 |
-| 일괄등록 1,000건/5분 | ORG02-M2, SFR-016 일괄등록 | 트랜잭션 배치 처리 |
-| 동기화 5,000명/30분 | ORG04-S, IF-002 | 비동기 워커, delta sync |
-| DB 응답 200ms / 1초 | 전 화면 | 인덱스, 캐싱, 적절한 정규화 |
+| 일괄등록 1,000건/5분 | ORG02-M2, 모듈별 일괄 모달 | 트랜잭션 배치 처리 |
+| 동기화 5,000명/30분 | ORG04-S, IF-002 | delta sync, 비동기 워커 |
+| DB 응답 200ms/1초 | 전 화면 | 인덱스, materialized view |
 
-### 8.2 보안
+### 7.2 보안
 
 | 요구사항 | 적용 화면/영역 | 구현 방안 |
 |---------|-------------|---------|
@@ -384,134 +401,149 @@
 | CSRF 방어 | 전 변경 요청 | CSRF 토큰 |
 | 감사 로그 | 전 변경 요청 | audit_logs (DB-001 §2.12) |
 | TLS 1.2+ | 전 통신 | HTTPS + 인증서 |
+| 위변조 방지 | CRT 제증명 | PDF 워터마크 + QR 검증 |
 
-### 8.3 가용성
+### 7.3 가용성
 
 | 요구사항 | 적용 영역 | 구현 방안 |
 |---------|---------|---------|
 | 99% 가용성 (업무시간) | 전 시스템 | 헬스 체크, 자동 재시작 |
-| 외부 시스템 장애 대응 | 모든 외부 연동 화면 | 재시도 큐 (IF-XXX §0.3.2) + 운영자 알림 |
+| 외부 시스템 장애 대응 | 모든 외부 연동 화면 | 재시도 큐 + 운영자 알림 |
 | 백업 (일일+주간) | DB | DBMS 차원 |
 | RTO 4시간 / RPO 24시간 | 전 시스템 | 백업 복원 절차 |
 
-### 8.4 접근성
+### 7.4 접근성
 
 | 요구사항 | 적용 영역 | 구현 방안 |
 |---------|---------|---------|
 | WCAG 2.1 AA | 전 화면 | 프론트엔드 컴포넌트 표준 |
 | 브라우저 호환 (Chrome/Edge) | 전 화면 | 최신 2개 메이저 버전 |
 | 화면 해상도 1280×720+ | 전 화면 | 반응형 디자인 |
-| 모바일 웹 | 전 화면 | 반응형 + 터치 최적화 (SUB 사용자 현장 작성 등) |
+| 모바일 웹 | 전 화면 | 반응형 + 터치 최적화 |
 
-### 8.5 확장성
+### 7.5 확장성
 
 | 요구사항 | 적용 영역 | 구현 방안 |
 |---------|---------|---------|
 | 5년 누적 데이터 | DB | 파티셔닝 (DB-001 §10.2), 아카이빙 |
 | 사용자 1,000명+ | 전 시스템 | 수평 확장 가능 아키텍처 |
-| 외부 시스템 추가 | IF 표준화 | RESTful API 표준, 어댑터 패턴 |
+| 외부 시스템 추가 | IF 표준화 | RESTful API 표준 |
 
 ---
 
-## 9. 자동 처리 트리거 ↔ 화면 영향 매트릭스
-
-> DB-001 §9 자동 처리 로직 + 외부 동기화 결과가 영향을 주는 화면 매핑.
+## 8. 자동 처리 트리거 ↔ 화면 영향 매트릭스
 
 | 트리거·자동 작업 | 영향 화면 |
 |----------------|---------|
-| 부서장 자동 매핑 (departments.head_user_id 변경) | ORG01-V, TGT01-V, TGT02-D |
-| 관리대상 신규 등록 → RESPONSIBLE 자동 INSERT | TGT01-V, TGT02-D |
-| 위험요인 불허 → improvements 자동 INSERT | RSK02-D, RSK03-L, RSK01-V (위젯) |
-| 정기 평가 자동 생성 배치 (00:00) | RSK01-V, RSK02-L (source='REGULAR_AUTO') |
-| 차세대 e호조 동기화 (06:00) | CON01-L (신규 계약), RSK02-L (자동 생성 평가) |
-| 행정포털 조직도 동기화 (06:00) | ORG01-V (부서 트리), ORG02-L (사용자) |
-| FMS 동기화 (06:00) | TGT01-V (PENDING 표시), TGT04-S (운영 콘솔) |
-| 안전관리자 미달 자동 차단 | CON01-L (BLOCKED 배너), CON01-D (개요), CON06-F (결재 차단) |
-| 계약 종료일 도달 → status='COMPLETED' (00:00 배치) | CON01-L, CON01-D |
-| 새올 포틀릿 적재 (비동기 워커) | NTF01-L, NTF02-D, NTF03-S |
-| 외부 사용자 이메일 발송 (비동기 워커) | NTF03-S (이력) |
+| 부서장 자동 매핑 | ORG01-V, TGT01-V, TGT02-D, ORG04-S |
+| 관리대상 신규 등록 → RESPONSIBLE 자동 INSERT | TGT 전체 |
+| 위험요인 불허 → improvements 자동 INSERT | RSK02-D, RSK03-L, IMP 전체 |
+| 사고 등록 → 재발방지 improvements 자동 INSERT | IMP01-D |
+| 점검 불합격 → improvements 자동 INSERT | INS02-D, IMP01-L |
+| 의견 채택 → improvements 자동 INSERT | OPN02-D, IMP01-L |
+| 산안위 안건 가결 → improvements 자동 INSERT | OPN03-L |
+| 경영방침 점검 부적합 → improvements 자동 INSERT | POL04-V, IMP01-L |
+| 정기 위험성평가 자동 생성 배치 (00:00) | RSK01-V, RSK02-L |
+| 차세대 e호조 동기화 (06:00) | CON01-L, RSK02-L, STF02-V |
+| 행정포털 조직도 동기화 (06:00) | ORG01-V, ORG02-L |
+| FMS 동기화 (06:00) | TGT01-V, TGT04-S |
+| 안전관리자 미달 자동 차단 | CON01-L, CON01-D, CON06-F, STF02-V |
+| 계약 종료일 도달 → COMPLETED (00:00) | CON01-L, CON01-D |
+| 새올 포틀릿 적재 (비동기 워커) | NTF 전체 |
+| 외부 사용자 이메일 발송 | NTF03-S |
+| 안전계획 항목 완료 ↔ CMP 양방향 연계 | PLN02-D, CMP02-D |
+| 정기 통계 보고서 자동 생성 (월/분기/연) | STA01-V, STA03-S |
 
 ---
 
-## 10. 테스트 케이스 추적 (Phase 1 — 개요)
+## 9. 테스트 케이스 추적 (개요)
 
 > 화면별 핵심 테스트 시나리오. 상세 TC는 별도 테스트 문서에서 작성.
 
-### 10.1 인증 (AUTH)
+### 9.1 ★★★ 모듈 핵심 TC
 
 | TC ID | 시나리오 | 화면 | 결과 기준 |
 |-------|---------|------|---------|
-| TC-AUTH-001 | SSO 정상 로그인 → 권한별 대시보드 진입 | AUTH01-V | 정상 진입 + audit_logs |
-| TC-AUTH-002 | SSO 토큰 만료 시 오류 처리 | AUTH99-V | `sso_token_invalid` 화면 |
-| TC-AUTH-003 | LOCAL 로그인 5회 실패 → 30분 잠금 | AUTH02-F | login_failures=5, 잠금 메시지 |
-| TC-AUTH-004 | 초대 이메일 링크 → 첫 비밀번호 설정 | AUTH05-F | users.is_active=true, 자동 로그인 |
-| TC-AUTH-005 | 비밀번호 재설정 토큰 만료 | AUTH04-F | "재설정 링크가 만료되었습니다" |
-
-### 10.2 전담조직 (ORG)
-
-| TC ID | 시나리오 | 화면 | 결과 기준 |
-|-------|---------|------|---------|
-| TC-ORG-001 | 부서장 변경 → 산하 RESPONSIBLE 자동 갱신 | ORG04-S → 트리거 → TGT02-D | target_assignees(AUTO) 일괄 UPDATE |
+| TC-AUTH-001 | SSO 정상 로그인 → 권한별 대시보드 진입 | AUTH01-V | audit_logs |
+| TC-ORG-001 | 부서장 변경 → 산하 RESPONSIBLE 자동 갱신 | ORG04-S → TGT02-D | target_assignees(AUTO) UPDATE |
 | TC-ORG-002 | 자격 미보유 강제 선임 | ORG03-M | warnings INSERT + 운영자 알림 |
-| TC-ORG-003 | 일괄 등록 50건 (오류 5건 포함) | ORG02-M2 | 정상 45건 등록 + 오류 로그 |
-
-### 10.3 관리대상 (TGT)
-
-| TC ID | 시나리오 | 화면 | 결과 기준 |
-|-------|---------|------|---------|
-| TC-TGT-001 | 시설형 신규 등록 + 부서장 자동 매핑 | TGT02-F → 트리거 | targets INSERT + target_assignees(AUTO) |
-| TC-TGT-002 | FMS 동기화 → PENDING 항목 부서 지정 | TGT04-S → TGT02-D | status='ACTIVE' 전환 + 매핑 |
-| TC-TGT-003 | 부서 이동 시 RESPONSIBLE 재매핑 | TGT02-D | 새 부서장 매핑 + 알림 |
-
-### 10.4 알림 (NTF)
-
-| TC ID | 시나리오 | 화면 | 결과 기준 |
-|-------|---------|------|---------|
-| TC-NTF-001 | 새올 포틀릿 적재 성공 | (트리거) → NTF03-S | notifications.status='SENT' |
-| TC-NTF-002 | 적재 5회 실패 → FAILED | NTF03-S | retry_count=5, 실패 큐 |
-| TC-NTF-003 | 외부 사용자 이메일 발송 | (트리거) → NTF03-S | email_queue.status='SENT' |
-
-### 10.5 위험성평가 (RSK)
-
-| TC ID | 시나리오 | 화면 | 결과 기준 |
-|-------|---------|------|---------|
-| TC-RSK-001 | 위험요인 불허 + 감소대책 → 개선조치 자동 생성 | RSK02-D | improvements INSERT |
-| TC-RSK-002 | 정기 평가 주기 도래 → 자동 생성 | (배치) → RSK02-L | source='REGULAR_AUTO' |
-| TC-RSK-003 | 결재 요청 → 온나라 안내 팝업 → 결재 결과 등록 | RSK02-D | approval_status 변경 |
-| TC-RSK-004 | 종료 조건 미충족 시 종료 차단 | RSK02-D | [종료 처리] 비활성 |
-
-### 10.6 도급관리 (CON)
-
-| TC ID | 시나리오 | 화면 | 결과 기준 |
-|-------|---------|------|---------|
-| TC-CON-001 | e호조 신규 계약 → 도급공사 위험성평가 자동 생성 | CON01-L → RSK02-L | contracts + risk_assessments INSERT |
-| TC-CON-002 | 5분류 계약유형별 평가서·서약서 자동 분기 | CON05-F, CON07-F | evaluation_form / agreement_form 자동 매칭 |
+| TC-TGT-001 | 시설형 신규 등록 + 부서장 자동 매핑 | TGT02-F | targets INSERT + target_assignees(AUTO) |
+| TC-RSK-001 | 위험요인 불허 → 개선조치 자동 생성 | RSK02-D | improvements INSERT |
+| TC-CON-001 | e호조 신규 계약 → 도급공사 위험성평가 자동 | CON01-L → RSK02-L | risk_assessments INSERT |
 | TC-CON-003 | 안전관리자 미달 → 결재 차단 | CON06-F | status='BLOCKED' + 모달 |
-| TC-CON-004 | STEP 4 도급업체 초대 → 외부 로그인 발급 | CON07-F | users(LOCAL) + invitation_tokens INSERT |
-| TC-CON-005 | 모든 업체 서약 완료 → 시공 자동 시작 | CON07-F-SUB | status='IN_PROGRESS' 자동 전환 |
+| TC-NTF-001 | 새올 포틀릿 적재 성공 | NTF03-S | notifications.status='SENT' |
+
+### 9.2 ★★ 모듈 핵심 TC
+
+| TC ID | 시나리오 | 화면 | 결과 기준 |
+|-------|---------|------|---------|
+| TC-DSH-001 | 권한별 대시보드 자동 라우팅 | /dashboard | 권한별 DSH0X-V |
+| TC-IMP-001 | 사고 등록 → 재발방지 2단계 | IMP01-D | improvements(source='incident') INSERT |
+| TC-PLN-001 | 안전계획 항목 완료 → CMP 자동 갱신 | PLN02-D → CMP02-D | 양방향 연계 |
+| TC-POL-001 | 경영방침 점검 부적합 → 개선조치 | POL04-V | improvements INSERT |
+| TC-BGT-001 | 3 depth 부서별 트리 관리 | BGT02-V | 공통·부서 특화 분리 |
+| TC-EVL-001 | 반기 평가 일괄 생성 | EVL01-L | evaluations 일괄 INSERT |
+| TC-STF-001 | 공사별 안전관리자 미달 차단 | STF02-V → CON06-F | status='BLOCKED' |
+
+### 9.3 ★ 모듈 핵심 TC
+
+| TC ID | 시나리오 | 화면 | 결과 기준 |
+|-------|---------|------|---------|
+| TC-OPN-001 | 작업중지요청 긴급 즉시 알림 | OPN01-F → NTF | 즉시 새올 알림 (SHM+) |
+| TC-OPN-002 | 산안위 안건 가결 → 개선조치 자동 | OPN03-L | improvements INSERT |
+| TC-INS-001 | 점검 불합격 → 개선조치 | INS02-D | improvements INSERT |
+| TC-CMP-001 | 정기 이행 항목 다음 주기 자동 생성 | CMP02-D | compliance_schedules.next_due_date UPDATE |
+| TC-CRT-001 | 증명서 발급 + QR 검증 | CRT02-F | PDF + QR + verify URL |
 
 ---
 
-## 11. 외부 협의 필요 항목 추적
+## 10. 외부 협의 필요 항목 추적
 
 | 항목 | 영향 SFR | 영향 화면 | 우선순위 |
 |------|--------|---------|---------|
-| 행정포털 SSO 프로토콜 (OAuth2/SAML) | 015 | AUTH01-V, AUTH99-V | ★★★ (전체 진입) |
+| 행정포털 SSO 프로토콜 (OAuth2/SAML) | 015 | AUTH01-V, AUTH99-V | ★★★ |
 | 행정포털 조직도 API 스펙 | 006 | ORG01-V, ORG04-S | ★★★ |
 | FMS API 스펙 | 002, 016, 020 | TGT01-V, TGT02-F, TGT04-S | ★★★ |
-| 차세대 e호조 API 스펙 | 007, 010, 013 | CON01-L, CON10-S, RSK04-S | ★★★ |
+| 차세대 e호조 API 스펙 | 007, 010, 013 | CON01-L, CON10-S, RSK04-S, STF02-V | ★★★ |
 | 새올 포틀릿 연계 방식 | 017 | NTF03-S | ★★★ |
 | SMTP 설정 | 015, 017 | AUTH03-M, AUTH04-F, NTF03-S | ★★ |
 | 권한 매핑 규칙 초기값 | 015 | AUTH01-V, ORG02-D | ★★ |
-| 공사 규모별 법정 안전관리자 인원 | 010 | ORG03-V, CON06-F | ★★ |
+| 공사 규모별 법정 안전관리자 인원 | 010 | STF03-S, ORG03-V, CON06-F | ★★ |
 | 평가서·서약서 5분류 마스터 초기값 | 013 | CON05-F, CON07-F, CON10-S | ★★ |
+| 인력평가 항목·평가기준 마스터 | 009 | EVL02-D, EVL03-S | ★★ |
+| 예방 항목 트리 초기값 (공통 + 부서별) | 008 | BGT02-V, BGT05-S | ★★ |
 | 위험요인 마스터 / 평가 기법 마스터 | 007 | RSK02-D, RSK04-S | ★ |
+| 담양 지자체 조례 (LOCAL 카테고리) | 014 | CMP02-L, CMP03-S | ★ |
+| 점검표 표준 항목 (공통 + 개별) | 012 | DOC02-L, INS02-D | ★ |
+| 산안위 회의 주기·정족수 | 011 | OPN03-L, OPN04-S | ★ |
+| 제증명 템플릿·유효기간·수수료 | 021 | CRT02-F, CRT03-S | ★ |
 
 ---
 
-## 12. 산출물 간 일관성 검증
+## 11. 산출물 간 일관성 검증
 
-### 12.1 화면 ↔ DB 일관성
+### 11.1 SFR ↔ 화면 커버리지
+
+| 우선순위 | SFR 수 | 화면 정의 완료 | 비고 |
+|---------|--------|-------------|------|
+| ★★★ | 6 | 40개 | ✅ 완전 정의 |
+| ★★ | 8 | 31개 (SFR-016은 모듈별 분산) | ✅ |
+| ★ | 6 | 20개 (SFR-019는 OPN 통합) | ✅ |
+| 공통 | 1 | 전 화면 적용 | ✅ |
+| **합계** | **21** | **91개** | **✅ 100%** |
+
+### 11.2 결정사항 ↔ 화면 커버리지
+
+| 분류 | 결정사항 수 | 화면 반영 |
+|------|-----------|---------|
+| 기본 정책 (1~2) | 2 | 2 (100%) |
+| 데이터 구조 (3~8) | 6 | 6 (100%) |
+| 모듈 적용 범위 (9~13) | 5 | 5 (100%) |
+| UI/UX (14~18) | 5 | 5 (100%) |
+| 워크플로우 (19~23) | 5 | 5 (100%) |
+| **합계** | **23** | **23 (100%)** |
+
+### 11.3 화면 ↔ DB 일관성
 
 | 항목 | 검증 결과 |
 |------|---------|
@@ -519,59 +551,36 @@
 | 화면에서 사용하는 컬럼명은 DB-001 정의와 일치 | ✅ |
 | ENUM 값 사용은 DB-001 §8와 일치 | ✅ |
 
-### 12.2 화면 ↔ 인터페이스 일관성
+### 11.4 화면 ↔ 인터페이스 일관성
 
 | 항목 | 검증 결과 |
 |------|---------|
 | 외부 연동 호출 화면은 IF-001에 정의된 인터페이스만 사용 | ✅ |
 | 페이로드 구조는 IF-001 §1~§6와 일치 | ⏸ (외부 시스템 스펙 미수령 — 추후 검증) |
 
-### 12.3 SFR ↔ 화면 커버리지
-
-| Phase | SFR 수 | 화면 정의 완료 | 비고 |
-|-------|--------|-------------|------|
-| Phase 1 (★★★) | 6 | 40개 | ✅ 완전 정의 |
-| Phase 2 (★★) | 8 | 0 | ⏸ 차후 진행 |
-| Phase 3 (★) | 6 | 0 | ⏸ 차후 진행 |
-| SFR-001 (공통) | 1 | — | 전 화면 적용 |
-
-### 12.4 결정사항 ↔ 화면 커버리지
-
-| 분류 | 결정사항 수 | Phase 1 반영 | Phase 2/3 반영 예정 |
-|------|-----------|------------|-----------------|
-| 기본 정책 (1~2) | 2 | 2 | — |
-| 데이터 구조 (3~8) | 6 | 6 | — |
-| 모듈 적용 범위 (9~13) | 5 | 3 (#9, #10, #12) | 2 (#11, #13) |
-| UI/UX (14~18) | 5 | 2 (#16, #17) | 3 (#14, #15, #18) |
-| 워크플로우 (19~23) | 5 | 1 (#21) | 4 (#19, #20, #22, #23) |
-| **합계** | **23** | **14 (61%)** | **9 (39%)** |
-
 ---
 
-## 13. 변경 영향도 분석 (예시)
+## 12. 변경 영향도 분석
 
-### 13.1 인터페이스 스펙 변경 시 영향
-
-```
-예: IF-002 행정포털 조직도 페이로드 변경
-   → 영향 SFR: 006
-   → 영향 화면: ORG01-V, ORG02-L, ORG02-D, ORG04-S (4개)
-   → 영향 테이블: departments, users
-   → 영향 트리거: 부서장 자동 매핑 (DB-001 §9.1)
-   → 간접 영향: TGT (관리대상 자동 매핑), RSK·CON (담당자 영향)
-```
-
-### 13.2 결정사항 변경 시 영향
+### 12.1 IF-004 차세대 e호조 페이로드 변경 시
 
 ```
-예: 결정사항 #2 (온나라 결재 안내) 변경 → 자동 연동으로 변경 시
-   → 영향 화면: RSK02-D, CON06-F (Phase 1) + POL, BGT, EVL (Phase 2)
-   → 영향 인터페이스: IF-007 (신규 — 온나라 API)
-   → 영향 DB: contracts.approval_*, risk_assessments.approval_* 컬럼 추가
-   → audit_logs 정책 변경
+→ 영향 SFR: 007, 010, 013
+→ 영향 화면 (직접): CON01-L, CON04-F, CON10-S, RSK02-L, RSK04-S, STF02-V
+→ 영향 테이블: contracts, risk_assessments
+→ 영향 트리거: 도급공사 자동 위험성평가 생성, 안전관리자 미달 검증
+→ 영향 자동 작업: e호조 동기화 배치 (06:00)
 ```
 
-### 13.3 SFR 추가·삭제 시 영향
+### 12.2 결정사항 #11 카테고리 추가 시
+
+```
+→ 영향 화면: CMP01-V, CMP02-L, CMP03-S
+→ 영향 테이블: compliance_schedules.category ENUM 확장
+→ 영향 코드: 시각화 색상 매핑, 정렬 순서
+```
+
+### 12.3 SFR 추가·삭제 시
 
 ```
 예: SFR-002 관리대상 단위 변경 (시설/업무/사업 → 추가 type)
@@ -582,12 +591,13 @@
 
 ---
 
-## 14. 변경 이력
+## 13. 변경 이력
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|---------|
-| v1.0 | 2026-05-11 | 초안 작성. SFR ↔ 화면 / DB / 인터페이스 매트릭스, 결정사항 매핑, 비기능 요구사항 매트릭스, 자동 트리거 영향도, 테스트 케이스 개요, 외부 협의 필요 항목, 변경 영향도 분석 |
+| v1.0 | 2026-05-11 | 초안 작성. SFR ↔ 화면 / DB / 인터페이스 매트릭스. Phase 1 40개 화면 완전 매핑. Phase 2/3는 모듈 단위 매핑 (화면 미정의). 결정사항 23개, 비기능 요구사항 매트릭스, 자동 트리거 영향도, 테스트 케이스 개요, 외부 협의 필요 항목, 변경 영향도 분석 |
+| v1.1 | 2026-05-12 | **§1 SFR ↔ 화면 매트릭스를 Phase 1 40 → 전체 91로 확장.** Phase 2 31개 + Phase 3 20개 화면 매핑 추가. §2 화면 ↔ SFR 역매핑 91개 모두 정의. §5 화면 ↔ DB·인터페이스 매트릭스 확장. §6 결정사항 ↔ 화면 매트릭스 23개 모두 화면 반영 명시. §9 테스트 케이스 추적 확장 (★★/★ 모듈 추가). §10 외부 협의 필요 항목 확장 |
 
 ---
 
-> 📌 본 문서는 산출물 간 추적성 확보와 변경 영향도 분석에 사용됨. 외부 인터페이스 스펙 수령 후 페이로드 일관성 항목 (§12.2) 재검증 필요. Phase 2/3 진행 시 본 RTM을 확장하여 SFR 커버리지를 100% 달성할 것.
+> 📌 본 RTM은 전체 SFR 21개 / 91개 화면의 완전 추적성을 보장. 외부 인터페이스 스펙 수령 후 IF 페이로드 일관성 재검증 필요 (§11.4). 발주처 검수 시점에 산출물 검증 기초 자료로 사용.

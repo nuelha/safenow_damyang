@@ -176,7 +176,8 @@
 
 ```
 RSK01-V
-   ├─ LNB → RSK02-L / RSK03-L / RSK04-S (좌측 사이드 메뉴 이동)
+   ├─ LNB → RSK02-L / RSK04-S (좌측 사이드 메뉴 이동)
+   ├─ 개선조치 위젯 [전체보기] → IMP01-L?source=risk_assessment
    ├─ [+ 등록] → RSK02-F
    ├─ 행 [상세] → RSK02-D
    ├─ 누락 배너 [확인] → RSK02-L?filter=overdue

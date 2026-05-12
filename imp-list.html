@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>개선조치 - 담양군 중대재해예방통합관리시스템</title>
+    <title>개선조치 목록 - 담양군 중대재해예방통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
     <style>
-        /* RSK03-L 전용 — statbox-grid 글로벌 사용 */
+        /* IMP01-L 전용 — statbox-grid 글로벌 사용 */
 
 
         /* 위험요인 셀 — 큰 텍스트 + 평가명 보조 라인 */
@@ -59,7 +59,7 @@
         .imp-meta-count strong { color: var(--main); font-weight: 700; }
     </style>
 </head>
-<body data-dy-page="rsk-improve" data-page-title="개선조치" data-page-subtitle="위험성평가에서 자동 생성된 개선조치 진행 관리">
+<body data-dy-page="imp-list" data-page-title="개선조치 목록" data-page-subtitle="출처(위험성평가·점검·의견·사고·수동)별 진행 관리">
     <main>
 
         <!-- ─── 요약 카드 ─── -->
@@ -158,7 +158,7 @@
                 </thead>
                 <tbody>
                     <!-- 기한초과 행 (강조) -->
-                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">옥상 안전난간 고정 볼트 부식 — 교체 필요</span>
@@ -179,7 +179,7 @@
                         </td>
                         <td><span class="chip-status info">진행중</span></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">밀폐공간 작업 시 산소 농도 측정기 미배치</span>
@@ -200,7 +200,7 @@
                         </td>
                         <td><span class="chip-status warning">대기</span></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">정수장 약품 보관실 환기 시설 점검</span>
@@ -222,7 +222,7 @@
                         <td><span class="chip-status info">진행중</span></td>
                     </tr>
                     <!-- 일반 행 -->
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">분기별 절연저항 점검 + 누전차단기 교체</span>
@@ -240,7 +240,7 @@
                         </td>
                         <td><span class="chip-status info">진행중</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">가스누출 감지기 추가 설치 + 월 1회 점검 정례화</span>
@@ -258,7 +258,7 @@
                         </td>
                         <td><span class="chip-status info">진행중</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">화학물질 취급장 비상샤워기 설치</span>
@@ -276,7 +276,7 @@
                         </td>
                         <td><span class="chip-status warning">대기</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">고소작업 시 안전벨트 부착 의무화 교육</span>
@@ -294,7 +294,7 @@
                         </td>
                         <td><span class="chip-status success">완료</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">소방설비 정기점검 — 스프링클러 압력 보정</span>
@@ -312,7 +312,7 @@
                         </td>
                         <td><span class="chip-status success">완료</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">홍수·침수 대비 — 차수판 신규 설치</span>
@@ -330,7 +330,7 @@
                         </td>
                         <td><span class="chip-status warning">대기</span></td>
                     </tr>
-                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                    <tr class="row-link" onclick="window.location.href='imp-detail.html'">
                         <td>
                             <div class="imp-factor-cell">
                                 <span class="imp-factor-title">공원 시설물 — 노후 벤치 교체 및 안전점검</span>

@@ -68,7 +68,7 @@
             // 안전점검 (INS / SFR-012)
             { id: 'ins-status',    label: '안전점검',          icon: 'check',    soon: '점검 현황 (INS01-V)',    screen: 'INS01-V' },
             // 개선조치 (IMP / SFR-003)
-            { id: 'imp-list',      label: '개선조치',          icon: 'check',    soon: '조치 목록 (IMP01-L)',    screen: 'IMP01-L' },
+            { id: 'imp-list',      label: '개선조치',          icon: 'check',    href: 'imp-list.html',         screen: 'IMP01-L' },
             // 인력평가 (EVL / SFR-009)
             { id: 'evl-list',      label: '인력평가',          icon: 'user',     soon: '평가 목록 (EVL01-L)',    screen: 'EVL01-L' },
             // 안전관리자 인력 (STF / SFR-010)
@@ -82,10 +82,11 @@
         ]},
 
         // 4. 위험성평가 (RSK / SFR-007)
+        //    개선조치 통합 정책(2026-05-12): RSK03-L 폐지 → 위험성평가 출처 개선조치는
+        //    IMP01-L에서 ?source=risk_assessment 필터로 조회.
         { id: 'risk', label: '위험성평가', icon: 'alert', items: [
             { id: 'rsk-status',   label: '위험성평가 현황', icon: 'chart', href: 'risk-assessment.html', screen: 'RSK01-V' },
             { id: 'rsk-list',     label: '평가 목록',       icon: 'list',  href: 'risk-list.html', screen: 'RSK02-L' },
-            { id: 'rsk-improve',  label: '개선조치',        icon: 'check', href: 'risk-improvements.html', screen: 'RSK03-L' },
             { id: 'rsk-settings', label: '위험성평가 설정', icon: 'cog',   href: 'risk-settings.html', screen: 'RSK04-S' },
         ]},
 
