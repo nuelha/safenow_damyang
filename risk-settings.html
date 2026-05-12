@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위험성평가 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 서브 탭 패널 전환 */
+        .settings-panel { display: none; }
+        .settings-panel.is-active { display: block; }
+
+        /* 사이클(주기) 표 헤더 — 회색 배경 */
+        .cycle-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .cycle-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        .cycle-table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .cycle-table tbody tr:last-child td { border-bottom: none; }
+        .cycle-table .col-period { width: 110px; }
+        .cycle-table .col-action { width: 80px; text-align: right; }
+        .cycle-table .col-active { width: 80px; }
+        .cycle-table .col-code { width: 130px; }
+
+        .period-value {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-weight: 700; color: var(--main-dark2);
+        }
+        .period-value-sub { color: var(--text-gray); font-size: 12px; font-weight: 500; }
+
+        /* 위험요인 마스터 필터 */
+        .master-filter {
+            display: flex; align-items: center; gap: 10px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--card-line);
+            flex-wrap: wrap;
+        }
+        .master-filter .form-group { display: flex; align-items: center; gap: 6px; }
+        .master-filter .form-label-inline { font-size: 12px; font-weight: 600; color: var(--text-gray); }
+        .master-filter .select {
+            min-width: 120px;
+            padding: 6px 28px 6px 10px;
+            font-size: 13px;
+            border-radius: var(--radius-button);
+            height: 32px;
+        }
+        .master-filter .search-bar {
+            min-width: 220px; flex: 1; max-width: 360px;
+            height: 36px;
+        }
+        .master-filter .search-bar .search-submit { height: 28px; }
+    </style>
+</head>
+<body data-dy-page="rsk-settings" data-page-title="위험성평가 설정" data-page-subtitle="평가 주기·기법·위험요인 마스터 및 외부 시스템 연동 운영">
+    <main>
+
+        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="period" onclick="window.RskSettings.switchTab('period')">평가 주기</button>
+            <button class="sub-tab" type="button" data-panel="method" onclick="window.RskSettings.switchTab('method')">평가 기법 마스터</button>
+            <button class="sub-tab" type="button" data-panel="factor" onclick="window.RskSettings.switchTab('factor')">위험요인 마스터</button>
+            <button class="sub-tab" type="button" data-panel="ehojo" onclick="window.RskSettings.switchTab('ehojo')">차세대 e호조 연동</button>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ① 평가 주기 (PERIOD) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel is-active" data-panel="period">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">정기 평가 주기</span>
+                        <span class="settings-card-desc">
+                            관리대상 type · 중대재해법 분류별로 정기 평가 자동 생성 주기를 설정합니다. 변경 시 다음 자동 생성 배치(매일 00:00)부터 즉시 반영됩니다.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>관리대상 type</th>
+                            <th>중대재해법 분류</th>
+                            <th class="col-period">주기</th>
+                            <th>최근 변경</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td>공중이용시설</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>2026-01-15 · 김안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td>원료·제조물</td>
+                            <td><span class="period-value">6 <span class="period-value-sub">개월</span></span></td>
+                            <td>2026-01-15 · 김안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td>공중교통수단</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>2025-08-22 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-tag">업무</span> 업무형</td>
+                            <td>—</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>2025-08-22 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-tag">사업</span> 사업형</td>
+                            <td>—</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>2025-08-22 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ② 평가 기법 마스터 (METHOD) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="method">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">평가 기법 마스터</span>
+                        <span class="settings-card-desc">
+                            평가 등록(RSK02-F) 시 선택 가능한 위험성평가 기법을 관리합니다. 활성 기법만 평가 등록 폼에 노출됩니다.
+                        </span>
+                    </div>
+                    <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '평가 기법 추가 모달')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        기법 추가
+                    </button>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">코드</th>
+                            <th>표시명</th>
+                            <th>설명</th>
+                            <th class="col-active">활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">4M</code></td>
+                            <td><strong>4M 위험성평가</strong></td>
+                            <td>Man·Machine·Material·Method 4요소 분석</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">KRAS</code></td>
+                            <td><strong>KRAS 위험성평가</strong></td>
+                            <td>한국 작업장 위험성평가 기법 (Korea Risk Assessment System)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">CHECKLIST</code></td>
+                            <td><strong>체크리스트</strong></td>
+                            <td>표준 체크리스트 기반 점검형 평가</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">MATRIX</code></td>
+                            <td><strong>위험성 매트릭스</strong></td>
+                            <td>빈도 × 강도 매트릭스 (3×3 / 5×5)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">JSA</code></td>
+                            <td><strong>JSA 위험성평가</strong></td>
+                            <td>작업분석 기반 (Job Safety Analysis)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--text-gray);">PHA</code></td>
+                            <td>예비위험분석</td>
+                            <td>Preliminary Hazard Analysis (사용 안 함)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '기법 수정 모달')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ③ 위험요인 마스터 (FACTOR) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="factor">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">위험요인 마스터</span>
+                        <span class="settings-card-desc">
+                            자주 사용되는 위험요인을 사전 등록하여 평가 등록 시 선택할 수 있도록 합니다. 관리대상 type·분류별로 분류하여 검색·필터링이 가능합니다.
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 일괄 등록 (4-Step)')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            일괄 등록
+                        </button>
+                        <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '위험요인 추가 모달')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            위험요인 추가
+                        </button>
+                    </div>
+                </div>
+                <div class="master-filter">
+                    <div class="form-group">
+                        <span class="form-label-inline">type</span>
+                        <select class="select">
+                            <option>전체</option>
+                            <option>시설</option>
+                            <option>업무</option>
+                            <option>사업</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label-inline">분류</span>
+                        <select class="select">
+                            <option>전체</option>
+                            <option>전기</option>
+                            <option>기계</option>
+                            <option>화학</option>
+                            <option>추락·낙하</option>
+                            <option>화재·폭발</option>
+                            <option>공통</option>
+                        </select>
+                    </div>
+                    <div class="search-bar">
+                        <input class="search-input" type="text" placeholder="위험요인명·코드 검색">
+                        <button class="search-submit" type="button">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            검색
+                        </button>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">코드</th>
+                            <th>위험요인명</th>
+                            <th>type</th>
+                            <th>분류</th>
+                            <th>사용</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-001</code></td>
+                            <td><strong>전기 누전·감전</strong></td>
+                            <td><span class="type-tag">시설</span></td>
+                            <td><span class="type-tag">전기</span></td>
+                            <td>12회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제 (사용 중이면 비활성만 가능)');">삭제</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-002</code></td>
+                            <td><strong>추락 위험</strong></td>
+                            <td><span class="type-tag">시설</span></td>
+                            <td><span class="type-tag">공통</span></td>
+                            <td>18회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제');">삭제</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-003</code></td>
+                            <td><strong>화학물질 누출</strong></td>
+                            <td><span class="type-tag">시설</span></td>
+                            <td><span class="type-tag">화학</span></td>
+                            <td>7회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제');">삭제</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-004</code></td>
+                            <td><strong>화재·폭발</strong></td>
+                            <td><span class="type-tag">시설</span></td>
+                            <td><span class="type-tag">화재·폭발</span></td>
+                            <td>9회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제');">삭제</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-005</code></td>
+                            <td><strong>중장비 작업 시 끼임·충돌</strong></td>
+                            <td><span class="type-tag">사업</span></td>
+                            <td><span class="type-tag">기계</span></td>
+                            <td>4회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제');">삭제</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">RF-006</code></td>
+                            <td><strong>밀폐공간 작업 — 산소결핍·유독가스</strong></td>
+                            <td><span class="type-tag">업무</span></td>
+                            <td><span class="type-tag">화학</span></td>
+                            <td>3회</td>
+                            <td class="col-action">
+                                <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '위험요인 수정 모달')">수정</button>
+                                <button class="btn-mini danger" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '위험요인 삭제');">삭제</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ④ 차세대 e호조 연동 (EHOJO) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="ehojo">
+            <!-- 연동 상태 카드 -->
+            <section class="card">
+                <div class="card-body" style="padding:20px 24px;">
+                    <div class="integration-status">
+                        <div class="integration-status-dot">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="integration-status-text">
+                            <span class="integration-status-title">연결됨</span>
+                            <span class="integration-status-meta">마지막 동기화: 2026-05-12 06:00 · 다음 동기화: 2026-05-13 06:00 (매일 06:00)</span>
+                        </div>
+                        <div class="integration-status-actions">
+                            <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'API 테스트 호출')">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                테스트
+                            </button>
+                            <button class="btn-mini primary" type="button" onclick="window.DYLayout._soon(event, '수동 전체 동기화')">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                전체 동기화
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 연동 설정 -->
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">연동 설정</span>
+                        <span class="settings-card-desc">차세대 e호조 API 연결 정보 및 자동 동기화 정책 (CEO/GM만 수정 가능)</span>
+                    </div>
+                    <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '연동 설정 수정 모달')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        수정
+                    </button>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-row-label">API 엔드포인트</span>
+                    <span class="settings-row-value">
+                        <code style="font-size:13px; color:var(--text-black);">https://ehojo.gov.kr/api/v1/contracts</code>
+                    </span>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-row-label">인증 토큰</span>
+                    <span class="settings-row-value">
+                        <code style="font-size:13px; color:var(--text-gray);">eyJhbGciOi••••••••••••••••••••••••••••</code>
+                    </span>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-row-label">동기화 주기</span>
+                    <span class="settings-row-value">매일 06:00</span>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-row-label">도급공사 평가 자동 생성</span>
+                    <span class="settings-row-value">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-switch-slider"></span>
+                        </label>
+                        <span class="active-chip is-active">활성</span>
+                        <span class="text-muted" style="font-size:12px;">OFF 시 contracts만 INSERT, risk_assessments 생성 안 함</span>
+                    </span>
+                </div>
+            </section>
+
+            <!-- 동기화 이력 -->
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">동기화 이력</span>
+                        <span class="settings-card-desc">최근 30건 (행 클릭 시 상세 로그)</span>
+                    </div>
+                </div>
+                <table class="sync-log-table">
+                    <thead>
+                        <tr>
+                            <th>일시</th>
+                            <th>결과</th>
+                            <th>신규 계약</th>
+                            <th>변경 계약</th>
+                            <th>자동 생성 평가</th>
+                            <th>소요</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2026-05-12 06:00</td>
+                            <td><span class="sync-result-chip success">성공</span></td>
+                            <td>+3</td>
+                            <td>~1</td>
+                            <td>+2 (공사 2건)</td>
+                            <td>2.4초</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-11 06:00</td>
+                            <td><span class="sync-result-chip success">성공</span></td>
+                            <td>+0</td>
+                            <td>~2</td>
+                            <td>+0</td>
+                            <td>1.8초</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-10 06:00</td>
+                            <td><span class="sync-result-chip success">성공</span></td>
+                            <td>+1</td>
+                            <td>~0</td>
+                            <td>+1 (공사 1건)</td>
+                            <td>2.1초</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-09 06:00</td>
+                            <td><span class="sync-result-chip fail">실패</span></td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>timeout</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-08 06:00</td>
+                            <td><span class="sync-result-chip success">성공</span></td>
+                            <td>+0</td>
+                            <td>~3</td>
+                            <td>+0</td>
+                            <td>1.6초</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-07 06:00</td>
+                            <td><span class="sync-result-chip success">성공</span></td>
+                            <td>+2</td>
+                            <td>~1</td>
+                            <td>+1 (공사 1건)</td>
+                            <td>2.3초</td>
+                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+        // ─── 서브 탭 전환 ───
+        window.RskSettings = (function () {
+            'use strict';
+
+            function switchTab(panelName) {
+                // 탭 active 토글
+                document.querySelectorAll('.sub-tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.panel === panelName);
+                });
+                // 패널 표시
+                document.querySelectorAll('.settings-panel').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.panel === panelName);
+                });
+                // URL 쿼리 동기화
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('section', panelName);
+                    window.history.replaceState(null, '', url);
+                } catch (e) {}
+            }
+
+            function init() {
+                // URL ?section=xxx 로 진입 시 해당 탭 활성화
+                try {
+                    const params = new URL(window.location.href).searchParams;
+                    const initial = params.get('section');
+                    if (initial && ['period','method','factor','ehojo'].includes(initial)) {
+                        switchTab(initial);
+                    }
+                } catch (e) {}
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            return { switchTab };
+        })();
+    </script>
+</body>
+</html>

@@ -5,24 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>안전경영방침 - 담양군 중대재해통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        sidebar: '#1e293b',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
     <style>
         .modal-content.modal-lg { max-width: 720px; }
@@ -38,8 +21,7 @@
         #legal-modal .modal-content, #legal-detail-modal .modal-content { z-index: 1102; }
         /* 담양 사이드바 미세 조정 */
         .sidebar-logo.damyang { background: linear-gradient(135deg, #047857, #10b981); }
-        .toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
-        .toast.show { opacity: 1; pointer-events: auto; }
+        /* 토스트 CSS는 style.css §24 글로벌 정의 사용 */
         .dy-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 2px 8px; border-radius: 999px;

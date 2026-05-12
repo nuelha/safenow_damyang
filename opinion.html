@@ -5,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>종사자 의견청취 - 담양군 중대재해예방통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, sidebar: '#1e293b' } } } }
-    </script>
+    <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
     <style>
         .modal-content.modal-lg { max-width: 720px; }
         .modal-content.modal-md { max-width: 560px; }
         .sidebar-logo.damyang { background: linear-gradient(135deg, #047857, #10b981); }
         .dy-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-        .toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
-        .toast.show { opacity: 1; pointer-events: auto; }
+        /* 토스트 CSS는 style.css §24 글로벌 정의 사용 */
         .legal-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
         .legal-tag .x { cursor: pointer; opacity: 0.7; }
         .legal-tag .x:hover { opacity: 1; }

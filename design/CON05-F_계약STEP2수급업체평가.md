@@ -146,7 +146,7 @@
 | `[평가 진행중]` (비활성) | 관리 컬럼 | 비활성 (title: "{평가자명}이 진행 중") | 지정됨 + 미완료 |
 | `[평가수정]` (행) | 관리 컬럼 | CON08-D 편집 모드 (계약담당자는 read-only) | status='DONE' |
 | 업체명 클릭 | 목록 | 수급업체 상세 모달 (선택) | |
-| 관리계획서 클릭 | 관리계획서 컬럼 | 첨부 파일 새 탭 다운로드 | management_plan_url IS NOT NULL |
+| 관리계획서 클릭 | 관리계획서 컬럼 | 첨부 파일 새 창 다운로드 | management_plan_url IS NOT NULL |
 | `[이전]` | 푸터 좌측 | STEP 1 복귀 (입력값 유지) | |
 | `[취소]` | 푸터 | CON01-L 복귀 (alert) | |
 | `[임시저장]` | 푸터 우측 | contracts UPSERT (step=2 유지, status='EVALUATING') → 토스트 | |

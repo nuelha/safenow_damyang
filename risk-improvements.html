@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개선조치 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* RSK03-L 전용 — statbox-grid 글로벌 사용 */
+
+
+        /* 위험요인 셀 — 큰 텍스트 + 평가명 보조 라인 */
+        .imp-factor-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .imp-factor-title { font-weight: 600; color: var(--text-black); }
+        .imp-factor-source {
+            font-size: 12px; color: var(--text-gray);
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .imp-factor-source a {
+            color: var(--main);
+            text-decoration: none;
+        }
+        .imp-factor-source a:hover { text-decoration: underline; }
+
+        /* 기한 셀 — 기한초과 시 ⚠ + 빨강 */
+        .imp-due-overdue {
+            color: var(--status-danger-fg);
+            font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .imp-due-near {
+            color: var(--status-warning-fg);
+            font-weight: 600;
+        }
+        .imp-due-dday {
+            margin-left: 4px;
+            font-size: 11px;
+            color: var(--text-lightgray);
+            font-weight: 500;
+        }
+
+        /* 결과 카운트 + 초기화 줄 */
+        .imp-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .imp-meta-count {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+        .imp-meta-count strong { color: var(--main); font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="rsk-improve" data-page-title="개선조치" data-page-subtitle="위험성평가에서 자동 생성된 개선조치 진행 관리">
+    <main>
+
+        <!-- ─── 요약 카드 ─── -->
+        <section class="statbox-grid cols-4">
+            <div class="statbox danger" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">3</div>
+                <div class="statbox-label">기한초과</div>
+            </div>
+            <div class="statbox info" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">8</div>
+                <div class="statbox-label">조치중</div>
+            </div>
+            <div class="statbox neutral" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">5</div>
+                <div class="statbox-label">예정</div>
+            </div>
+            <div class="statbox success" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">24</div>
+                <div class="statbox-label">완료</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 검색 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>문화관광과</option>
+                    <option>상수도사업소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">담당자</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>본인</option>
+                    <option>김안전</option>
+                    <option>박안전</option>
+                    <option>이안전</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>대기</option>
+                    <option>진행중</option>
+                    <option>완료</option>
+                    <option>취소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">기한</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>기한초과</option>
+                    <option>1주 이내</option>
+                    <option>1개월 이내</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="위험요인·평가명 검색">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- ─── 결과 카운트 ─── -->
+        <div class="imp-meta-row">
+            <span class="imp-meta-count">전체 <strong>40</strong>건 · 현재 페이지 1–10</span>
+        </div>
+
+        <!-- ─── 목록 테이블 ─── -->
+        <section class="card">
+            <table class="table-figma">
+                <colgroup>
+                    <col><col style="width:200px;"><col style="width:110px;"><col style="width:150px;"><col style="width:100px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>위험요인 · 출처 평가</th>
+                        <th>관리대상</th>
+                        <th>담당자</th>
+                        <th>기한</th>
+                        <th>상태</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 기한초과 행 (강조) -->
+                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">옥상 안전난간 고정 볼트 부식 — 교체 필요</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">청사 위험성평가 2026</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>군청 청사 <span class="type-tag">시설</span></td>
+                        <td>김안전</td>
+                        <td>
+                            <span class="imp-due-overdue">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                2026-05-08
+                            </span>
+                            <span class="imp-due-dday">D+4</span>
+                        </td>
+                        <td><span class="chip-status info">진행중</span></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">밀폐공간 작업 시 산소 농도 측정기 미배치</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">밀폐공간 작업 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>환경자원시설 <span class="type-tag">업무</span></td>
+                        <td>박성민</td>
+                        <td>
+                            <span class="imp-due-overdue">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                2026-04-30
+                            </span>
+                            <span class="imp-due-dday">D+12</span>
+                        </td>
+                        <td><span class="chip-status warning">대기</span></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">정수장 약품 보관실 환기 시설 점검</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">정수장 정기 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>상수도사업소 본관 <span class="type-tag">시설</span></td>
+                        <td>이안전</td>
+                        <td>
+                            <span class="imp-due-overdue">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                2026-05-02
+                            </span>
+                            <span class="imp-due-dday">D+10</span>
+                        </td>
+                        <td><span class="chip-status info">진행중</span></td>
+                    </tr>
+                    <!-- 일반 행 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">분기별 절연저항 점검 + 누전차단기 교체</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">청사 위험성평가 2026</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>군청 청사 <span class="type-tag">시설</span></td>
+                        <td>김안전</td>
+                        <td>
+                            2026-06-30
+                            <span class="imp-due-dday">D-49</span>
+                        </td>
+                        <td><span class="chip-status info">진행중</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">가스누출 감지기 추가 설치 + 월 1회 점검 정례화</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">청사 위험성평가 2026</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>군청 청사 <span class="type-tag">시설</span></td>
+                        <td>김안전</td>
+                        <td>
+                            <span class="imp-due-near">2026-05-20</span>
+                            <span class="imp-due-dday">D-8</span>
+                        </td>
+                        <td><span class="chip-status info">진행중</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">화학물질 취급장 비상샤워기 설치</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">화학물질 취급 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>환경자원시설 <span class="type-tag">업무</span></td>
+                        <td>박성민</td>
+                        <td>
+                            <span class="imp-due-near">2026-05-18</span>
+                            <span class="imp-due-dday">D-6</span>
+                        </td>
+                        <td><span class="chip-status warning">대기</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">고소작업 시 안전벨트 부착 의무화 교육</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">고소작업 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>군민체육관 <span class="type-tag">시설</span></td>
+                        <td>정하나</td>
+                        <td>
+                            2026-06-15
+                            <span class="imp-due-dday">D-34</span>
+                        </td>
+                        <td><span class="chip-status success">완료</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">소방설비 정기점검 — 스프링클러 압력 보정</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">소방설비 정기점검 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>담양읍 행정복지센터 <span class="type-tag">시설</span></td>
+                        <td>이지영</td>
+                        <td>
+                            2026-07-10
+                            <span class="imp-due-dday">D-59</span>
+                        </td>
+                        <td><span class="chip-status success">완료</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">홍수·침수 대비 — 차수판 신규 설치</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">홍수·침수 시설 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>상수도사업소 본관 <span class="type-tag">시설</span></td>
+                        <td>최성호</td>
+                        <td>
+                            2026-08-15
+                            <span class="imp-due-dday">D-95</span>
+                        </td>
+                        <td><span class="chip-status warning">대기</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '개선조치 상세 (IMP01-D)')">
+                        <td>
+                            <div class="imp-factor-cell">
+                                <span class="imp-factor-title">공원 시설물 — 노후 벤치 교체 및 안전점검</span>
+                                <span class="imp-factor-source">
+                                    출처:
+                                    <a href="risk-detail.html" onclick="event.stopPropagation();">공원·광장 시설물 위험성평가</a>
+                                </span>
+                            </div>
+                        </td>
+                        <td>죽녹원 <span class="type-tag">시설</span></td>
+                        <td>신예지</td>
+                        <td>
+                            2026-06-05
+                            <span class="imp-due-dday">D-24</span>
+                        </td>
+                        <td><span class="chip-status neutral">취소</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 (layout.js가 자동 렌더) -->
+            <div data-pagination data-current="1" data-total="4"></div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

@@ -23,7 +23,7 @@
 
 - CON06-F `[다음 →]` (`approval_status='APPROVED'` 충족 후)
 - CON01-D 스텝 인디케이터 [STEP 4] 클릭
-- CON01-D 서약서 탭에서 초대 관리 영역
+- CON01-D 서약서 영역에서 초대 관리
 
 ## 3. 레이아웃 (관리자 측 — CON07-F)
 

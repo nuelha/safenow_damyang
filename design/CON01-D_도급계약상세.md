@@ -28,15 +28,17 @@
 
 ## 3. 레이아웃
 
-### 3.1 탭 구성
+### 3.1 화면 내부 서브 탭 구성
+
+> 본 상세 화면은 한 도급계약의 정보를 8개 영역으로 분할 표시 — 페이지 내부 서브 탭으로 전환 (모듈 화면 간 이동과 무관 / 같은 화면 안의 컨텍스트 전환).
 
 ```
 [개요] [수급업체] [평가] [위험성평가] [협의체] [TBM] [서약서] [개선조치]
 ```
 
-> TBM 탭은 `contract_type='CONSTRUCTION'` 일 때만 노출.
+> TBM 영역은 `contract_type='CONSTRUCTION'` 일 때만 노출.
 
-### 3.2 개요 탭
+### 3.2 개요 영역
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -68,7 +70,7 @@
 └──────────────────────────────────────────────────────────┘
 ```
 
-## 4. 표시 항목 (개요 탭)
+## 4. 표시 항목 (개요 영역)
 
 ### 4.1 상단 헤더
 
@@ -135,9 +137,9 @@ target_assignees + dedicated_personnel 집계 → 충족 여부 산출
 | 협의체 회의 수 | `COUNT(council_meetings WHERE contract_id)` | |
 | 개선조치 (도급 관련) | `COUNT(improvements WHERE source_id=contract_id)` | |
 
-## 5. 탭별 내용
+## 5. 영역별 내용
 
-### 5.1 수급업체 탭
+### 5.1 수급업체 영역
 
 해당 계약의 선정 업체 목록 + 평가 점수 + 서약 상태:
 
@@ -151,27 +153,27 @@ target_assignees + dedicated_personnel 집계 → 충족 여부 산출
 | 초대 상태 | `invited_at`, `signed_at` 기반 산출 (PENDING/ACCEPTED/EXPIRED/REVOKED) |
 | 서약 완료일 | `signed_at` |
 
-### 5.2 평가 탭
+### 5.2 평가 영역
 
 CON05-F STEP 2의 평가서·평가 결과 표시 (CON01-D 내 read-only 뷰)
 
-### 5.3 위험성평가 탭
+### 5.3 위험성평가 영역
 
 `source_contract_id` 기반 자동 생성된 위험성평가 목록 표시. [위험성평가 상세] → RSK02-D 이동.
 
-### 5.4 협의체 탭
+### 5.4 협의체 영역
 
 해당 계약의 협의체 회의 목록 (CON03-L의 본 계약 필터링 뷰)
 
-### 5.5 TBM 탭 (도급공사만)
+### 5.5 TBM 영역 (도급공사만)
 
 해당 계약의 TBM 기록 목록 (CON09-L의 본 계약 필터링 뷰). [+ TBM 작성] 진입 가능.
 
-### 5.6 서약서 탭
+### 5.6 서약서 영역
 
 선정 업체별 서약서 작성 상태 + 서약서 본문 + 첨부 파일 표시
 
-### 5.7 개선조치 탭
+### 5.7 개선조치 영역
 
 해당 계약에서 발생한 개선조치 목록 (도급공사 위험성평가 결과의 개선조치 등)
 
@@ -187,10 +189,10 @@ CON05-F STEP 2의 평가서·평가 결과 표시 (CON01-D 내 read-only 뷰)
 | `[관리대상 보기]` | 기본정보 | TGT02-D 이동 | |
 | `[온나라 결재 진행하기]` | 결재 상태 | 안내 팝업 (RSK02-D §7.1 동일 구조) | `approval_status='NOT_REQUESTED'` |
 | `[결재 결과 업데이트]` | 결재 상태 | 결재 결과 입력 모달 (RSK02-D §7.1.2 동일 구조) | `approval_status='REQUESTED'` |
-| 탭 클릭 | 탭 바 | 해당 탭 데이터 로드 | TBM 탭은 `contract_type='CONSTRUCTION'`일 때만 노출 |
-| 위험성평가 행 클릭 | 위험성평가 탭 | RSK02-D 이동 | |
-| TBM 행 클릭 | TBM 탭 | CON09-D 이동 (TBM 상세) | |
-| `[+ TBM 작성]` | TBM 탭 | CON09-F 이동 (?contract_id=) | SHM+ / 본인 계약 SUB |
+| 화면 내부 서브 탭 클릭 | 서브 탭 바 | 해당 영역 데이터 로드 | TBM 영역은 `contract_type='CONSTRUCTION'`일 때만 노출 |
+| 위험성평가 행 클릭 | 위험성평가 영역 | RSK02-D 이동 | |
+| TBM 행 클릭 | TBM 영역 | CON09-D 이동 (TBM 상세) | |
+| `[+ TBM 작성]` | TBM 영역 | CON09-F 이동 (?contract_id=) | SHM+ / 본인 계약 SUB |
 
 ## 7. 자동 처리 로직
 
@@ -229,7 +231,7 @@ contracts.end_date < NOW():
 | GM | 본 부서 산하 관리대상 관련 계약 |
 | SM/SHM | 본인 담당 + 본 부서 |
 | WKR | 본 화면 접근 불가 |
-| SUB | `external_user_access.access_type='CONTRACT'` 본인 계약만. 일부 탭만 접근 (개요·서약서·TBM) |
+| SUB | `external_user_access.access_type='CONTRACT'` 본인 계약만. 일부 영역만 접근 (개요·서약서·TBM) |
 | CON | 위임 범위 계약 |
 
 ## 9. 검증 규칙
@@ -267,11 +269,11 @@ CON01-D
 ## 12. 관련 DB 테이블
 
 - `contracts` (DB-001 §5.1): 계약 본체
-- `contract_subcontractors` (DB-001 §5.3): 수급업체 탭
+- `contract_subcontractors` (DB-001 §5.3): 수급업체 영역
 - `subcontractors` (DB-001 §5.2): 업체 정보
-- `contract_agreements` (DB-001 §5.6): 서약서 탭
-- `tbm_records` (DB-001 §5.7): TBM 탭 (공사만)
-- `risk_assessments` (DB-001 §4.1): 위험성평가 탭
+- `contract_agreements` (DB-001 §5.6): 서약서 영역
+- `tbm_records` (DB-001 §5.7): TBM 영역 (공사만)
+- `risk_assessments` (DB-001 §4.1): 위험성평가 영역
 - `target_assignees`, `dedicated_personnel` (DB-001 §2.4, §6.1): 안전관리자 충족 검증
 - `targets`, `departments`, `users` (JOIN): 관리대상·부서·담당자 정보
 
@@ -287,3 +289,4 @@ CON01-D
 | 버전 | 날짜 | 내용 |
 |------|------|------|
 | v1.0 | 2026-05-11 | 초안 작성. 8개 탭 구조 + 4단계 스텝 인디케이터 + 안전관리자 미달 차단 (D-3) |
+| v1.1 | 2026-05-12 | 화면 내부 서브 탭(개요/수급업체/평가/위험성평가/협의체/TBM/서약서/개선조치)으로 명시. "X 탭" 표기 → "X 영역"으로 통일 |

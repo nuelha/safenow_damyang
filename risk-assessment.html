@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위험성평가 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── RSK01-V 전용 ─── */
+
+        /* 필터 바 */
+        .rsk-filter-bar {
+            display: flex; align-items: center; gap: 12px;
+            flex-wrap: wrap;
+        }
+        .rsk-filter-bar .form-group {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .rsk-filter-bar .form-label-inline {
+            font-size: 14px; font-weight: 600; color: var(--text-black);
+        }
+        .rsk-filter-bar .select {
+            min-width: 140px;
+            padding: 8px 32px 8px 12px;
+            font-size: 14px;
+        }
+
+        /* KPI 4분할 카드 (시안 §6.9 패턴) */
+        .rsk-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: #ffffff;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .rsk-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 132px;
+            justify-content: center;
+        }
+        .rsk-kpi-cell:last-child { border-right: none; }
+        .rsk-kpi-label {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .rsk-kpi-title {
+            font-size: 16px; font-weight: 600; color: var(--text-black);
+            letter-spacing: -0.4px;
+        }
+        .rsk-kpi-value {
+            font-size: 26px; font-weight: 800; color: var(--main);
+            letter-spacing: -0.8px; line-height: 1;
+        }
+        .rsk-kpi-value .small {
+            font-size: 15px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .rsk-kpi-sub {
+            font-size: 12px; color: var(--text-gray);
+        }
+        .rsk-kpi-tag {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px; border-radius: 5px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid transparent;
+        }
+        .rsk-kpi-tag.gray  { background: var(--status-neutral-bg); border-color: var(--status-neutral-border); color: var(--status-neutral-fg); }
+        .rsk-kpi-tag.blue  { background: var(--status-info-bg);    border-color: var(--status-info-border);    color: var(--status-info-fg); }
+        .rsk-kpi-tag.purple{ background: #F4ECFB;                 border-color: #DCC5EF;                       color: #7E3CC6; }
+        .rsk-kpi-tag.green { background: var(--status-success-bg); border-color: var(--status-success-border); color: var(--status-success-fg); }
+
+        /* 위험등급 cell · statbox grid 는 style.css 글로벌 정의 사용 */
+
+        /* 누락 배너 */
+        .rsk-warning-banner {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 20px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            color: var(--status-warning-fg);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .rsk-warning-banner .icon {
+            width: 20px; height: 20px; flex-shrink: 0;
+        }
+        .rsk-warning-banner .msg { flex: 1; }
+        .rsk-warning-banner .action {
+            display: inline-flex; align-items: center; gap: 4px;
+            color: var(--status-warning-fg);
+            font-size: 14px; font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .rsk-warning-banner .action:hover { text-decoration: underline; }
+
+        /* 두 컬럼 레이아웃 (개선조치 + 위험등급) */
+        .rsk-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1279px) {
+            .rsk-two-col { grid-template-columns: 1fr; }
+            .rsk-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .rsk-kpi-cell:nth-child(2) { border-right: none; }
+            .rsk-kpi-cell:nth-child(1), .rsk-kpi-cell:nth-child(2) { border-bottom: 1px solid var(--card-line); }
+        }
+        @media (max-width: 767px) {
+            .rsk-kpi-grid { grid-template-columns: 1fr; }
+            .rsk-kpi-cell { border-right: none; border-bottom: 1px solid var(--card-line); }
+            .rsk-kpi-cell:last-child { border-bottom: none; }
+        }
+
+        /* 테이블 우측 액션 영역 */
+        .rsk-table-toolbar {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* 카드 사용 시 body padding 조정 */
+        .rsk-card-body-tight { padding: 16px 24px; }
+
+        /* 행 액션 버튼 */
+        .table-action-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 12px;
+            font-size: 13px; font-weight: 500;
+            color: var(--main);
+            background: var(--status-success-bg);
+            border: 1px solid var(--status-success-border);
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .table-action-btn:hover { background: var(--main); color: white; border-color: var(--main); }
+
+        /* 작은 타입 배지 (관리대상 type 등) */
+        .type-tag {
+            display: inline-flex; align-items: center;
+            padding: 2px 6px;
+            font-size: 11px; font-weight: 500;
+            border-radius: 4px;
+            margin-left: 6px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+        }
+    </style>
+</head>
+<body data-dy-page="rsk-status" data-page-title="위험성평가 현황" data-page-subtitle="안전건설과 산하 관리대상 평가 현황 요약">
+    <main>
+        <!-- ─── 필터 바 ─── -->
+        <div class="rsk-filter-bar">
+            <div class="form-group">
+                <span class="form-label-inline">기준연도</span>
+                <select class="select">
+                    <option>2026년</option>
+                    <option>2025년</option>
+                    <option>2024년</option>
+                    <option>전체</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리팀</option>
+                    <option>상수도사업소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">관리대상</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>군청 청사</option>
+                    <option>군민체육관</option>
+                    <option>상수도사업소 본관</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- ─── 요약 카드 4개 ─── -->
+        <section class="rsk-kpi-grid">
+            <div class="rsk-kpi-cell">
+                <div class="rsk-kpi-label">
+                    <span class="rsk-kpi-title">전체</span>
+                    <span class="rsk-kpi-tag green">완료 2건</span>
+                </div>
+                <div class="rsk-kpi-value">4<span class="small">/2건</span></div>
+                <div class="rsk-kpi-sub">준비·진행 / 완료</div>
+            </div>
+            <div class="rsk-kpi-cell">
+                <div class="rsk-kpi-label">
+                    <span class="rsk-kpi-title">정기</span>
+                    <span class="rsk-kpi-tag blue">완료 1건</span>
+                </div>
+                <div class="rsk-kpi-value">2<span class="small">/1건</span></div>
+                <div class="rsk-kpi-sub">준비·진행 / 완료</div>
+            </div>
+            <div class="rsk-kpi-cell">
+                <div class="rsk-kpi-label">
+                    <span class="rsk-kpi-title">수시</span>
+                    <span class="rsk-kpi-tag purple">완료 0건</span>
+                </div>
+                <div class="rsk-kpi-value">2<span class="small">/0건</span></div>
+                <div class="rsk-kpi-sub">준비·진행 / 완료</div>
+            </div>
+            <div class="rsk-kpi-cell">
+                <div class="rsk-kpi-label">
+                    <span class="rsk-kpi-title">완료율</span>
+                </div>
+                <div class="rsk-kpi-value">33<span class="small">%</span></div>
+                <div class="progress" style="height:10px; margin-top:6px;">
+                    <div class="progress-bar green" style="width:33%;"></div>
+                </div>
+                <div class="rsk-kpi-sub">완료 2 / 전체 6건</div>
+            </div>
+        </section>
+
+        <!-- ─── 정기 평가 누락 배너 ─── -->
+        <div class="rsk-warning-banner">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span class="msg"><strong>정기 평가 누락</strong> 관리대상 <strong>3건</strong>이 있습니다. 마지막 평가 후 정기 주기가 지났습니다.</span>
+            <a class="action" href="#" onclick="window.DYLayout._soon(event, '평가 목록 (RSK02-L) - 누락 필터')">확인
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+        </div>
+
+        <!-- ─── 위험성평가 현황 목록 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">위험성평가 현황</h2>
+                <div class="rsk-table-toolbar">
+                    <select class="select" style="min-width:120px;">
+                        <option>평가유형 전체</option>
+                        <option>정기</option>
+                        <option>최초</option>
+                        <option>수시</option>
+                    </select>
+                    <select class="select" style="min-width:120px;">
+                        <option>진행상태 전체</option>
+                        <option>사전준비</option>
+                        <option>진행중</option>
+                        <option>완료</option>
+                    </select>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='risk-form.html'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        등록
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>평가명</th>
+                            <th>관리대상</th>
+                            <th style="width:90px;">유형</th>
+                            <th style="width:100px;">진행상태</th>
+                            <th style="width:100px;">담당자</th>
+                            <th style="width:180px;">기간</th>
+                            <th style="width:80px; text-align:center;">상세</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>청사 위험성평가 2026</strong></td>
+                            <td>군청 청사 <span class="type-tag">시설</span></td>
+                            <td><span class="badge badge-info">정기</span></td>
+                            <td><span class="badge badge-warning">진행중</span></td>
+                            <td>김안전</td>
+                            <td>2026-04-01 ~ 2026-05-31</td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="window.DYLayout._soon(event, '평가 상세 (RSK02-D)')">상세</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>군민체육관 정기 위험성평가</strong></td>
+                            <td>군민체육관 <span class="type-tag">시설</span></td>
+                            <td><span class="badge badge-info">정기</span></td>
+                            <td><span class="badge badge-success">완료</span></td>
+                            <td>박안전</td>
+                            <td>2026-02-15 ~ 2026-03-15</td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="window.DYLayout._soon(event, '평가 상세 (RSK02-D)')">상세</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>상수도사업소 본관 보수공사 위험성평가</strong></td>
+                            <td>상수도사업소 본관 <span class="type-tag">사업</span></td>
+                            <td><span class="badge" style="background:#F4ECFB; border-color:#DCC5EF; color:#7E3CC6;">수시</span></td>
+                            <td><span class="badge badge-gray">사전준비</span></td>
+                            <td>이안전</td>
+                            <td>2026-05-10 ~ 2026-06-10</td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="window.DYLayout._soon(event, '평가 상세 (RSK02-D)')">상세</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>주차장 안전시설 보강 위험성평가</strong></td>
+                            <td>군청 주차장 <span class="type-tag">시설</span></td>
+                            <td><span class="badge" style="background:#F4ECFB; border-color:#DCC5EF; color:#7E3CC6;">수시</span></td>
+                            <td><span class="badge badge-warning">진행중</span></td>
+                            <td>김안전</td>
+                            <td>2026-04-20 ~ 2026-05-20</td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="window.DYLayout._soon(event, '평가 상세 (RSK02-D)')">상세</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ─── 개선조치 + 위험등급 (2분할) ─── -->
+        <div class="rsk-two-col">
+            <!-- 개선조치 현황 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">개선조치 현황</h2>
+                    <a class="text-muted" href="risk-improvements.html" style="font-size:14px;">전체보기 →</a>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-3">
+                        <div class="statbox danger">
+                            <div class="statbox-num">2</div>
+                            <div class="statbox-label">기한초과</div>
+                        </div>
+                        <div class="statbox warning">
+                            <div class="statbox-num">5</div>
+                            <div class="statbox-label">조치중</div>
+                        </div>
+                        <div class="statbox neutral">
+                            <div class="statbox-num">3</div>
+                            <div class="statbox-label">예정</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 위험등급별 현황 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">위험등급별 현황</h2>
+                    <span class="text-muted" style="font-size:14px;">2026년 · 위험요인 128건</span>
+                </div>
+                <div class="card-body">
+                    <div class="statbox-grid cols-5">
+                        <div class="rsk-level-cell danger">
+                            <div class="rsk-level-num">5</div>
+                            <div class="rsk-level-label">매우높음</div>
+                            <div class="rsk-level-range">16~25</div>
+                        </div>
+                        <div class="rsk-level-cell warning">
+                            <div class="rsk-level-num">12</div>
+                            <div class="rsk-level-label">높음</div>
+                            <div class="rsk-level-range">12~15</div>
+                        </div>
+                        <div class="rsk-level-cell info">
+                            <div class="rsk-level-num">28</div>
+                            <div class="rsk-level-label">보통</div>
+                            <div class="rsk-level-range">8~11</div>
+                        </div>
+                        <div class="rsk-level-cell success">
+                            <div class="rsk-level-num">45</div>
+                            <div class="rsk-level-label">낮음</div>
+                            <div class="rsk-level-range">4~7</div>
+                        </div>
+                        <div class="rsk-level-cell neutral">
+                            <div class="rsk-level-num">38</div>
+                            <div class="rsk-level-label">매우낮음</div>
+                            <div class="rsk-level-range">1~3</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 토스트 -->
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>
