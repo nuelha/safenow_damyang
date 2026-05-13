@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전경영방침 이력 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── POL01-L / POL02-D 전용 ─── */
+
+        /* 서브 탭 (safety-policy와 동일 패턴) */
+        .pol-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pol-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+            text-decoration: none;
+        }
+        .pol-tab:hover { color: var(--main-dark); }
+        .pol-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
+        /* KPI 그리드 (이전 POL과 동일 패턴) */
+        .pol-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .pol-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .pol-kpi-cell:last-child { border-right: none; }
+        .pol-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .pol-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .pol-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .pol-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .pol-kpi-icon.warn    { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .pol-kpi-icon.info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+        .pol-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .pol-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .pol-kpi-value.success { color: var(--status-success-fg); }
+        .pol-kpi-value.warning { color: var(--status-warning-fg); }
+        .pol-kpi-value.info    { color: var(--status-info-fg); }
+        .pol-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .pol-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 버전 chip */
+        .pol-version {
+            display: inline-flex; align-items: center;
+            padding: 3px 10px;
+            font-size: 13px; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            border-radius: 6px;
+            background: var(--main);
+            color: white;
+            letter-spacing: -0.2px;
+        }
+        .pol-version.current {
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+            box-shadow: 0 2px 6px rgba(32,159,132,0.3);
+        }
+        .pol-version.draft { background: var(--status-info-fg); }
+        .pol-version.old { background: var(--text-lightgray); }
+
+        /* 결재 상태 chip */
+        .pol-approval-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .pol-approval-chip.approved {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .pol-approval-chip.requested {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .pol-approval-chip.rejected {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+        .pol-approval-chip.not-req {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            border-color: var(--card-line);
+        }
+
+        /* 현재 적용 indicator */
+        .pol-current-ind {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 9px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            border: 1px solid var(--status-success-border);
+            white-space: nowrap;
+        }
+        .pol-current-ind .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--main);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(32, 159, 132, 0.4); }
+            50%      { box-shadow: 0 0 0 4px rgba(32, 159, 132, 0); }
+        }
+        .pol-current-empty {
+            color: var(--text-lightgray);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 결과 카운트 */
+        .pol-meta-row { display: flex; align-items: center; gap: 12px; }
+        .pol-meta-count { font-size: 14px; color: var(--text-gray); }
+        .pol-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 방침 상세 모달 (POL02-D) */
+        .pol-detail-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .pol-detail-backdrop.is-open { display: flex; }
+        .pol-detail {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 880px;
+            max-height: 92vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+
+        /* 모달 헤더 - 미니 배너 형태 */
+        .pol-detail-banner {
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+            color: white;
+            padding: 24px 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pol-detail-banner.old {
+            background: linear-gradient(135deg, #6b7280 0%, #475569 100%);
+        }
+        .pol-detail-banner.draft {
+            background: linear-gradient(135deg, var(--status-info-fg) 0%, #0078a8 100%);
+        }
+        .pol-detail-banner::before {
+            content: ""; position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .pol-detail-banner-inner {
+            position: relative;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .pol-detail-banner-main { flex: 1; min-width: 0; }
+        .pol-detail-banner-meta {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: rgba(255,255,255,0.85);
+            margin-bottom: 6px;
+        }
+        .pol-detail-banner-meta .ver {
+            background: rgba(255,255,255,0.18);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            color: white;
+        }
+        .pol-detail-banner-title {
+            font-size: 20px; font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        .pol-detail-banner-sub {
+            font-size: 13px; color: rgba(255,255,255,0.85);
+        }
+        .pol-detail-close {
+            width: 36px; height: 36px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border: none; cursor: pointer;
+            color: white;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+        .pol-detail-close:hover { background: rgba(255,255,255,0.25); }
+
+        .pol-detail-body {
+            padding: 22px 28px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .pol-detail-section + .pol-detail-section { margin-top: 22px; }
+        .pol-detail-section h3 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .pol-detail-section h3::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .pol-info-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 8px; column-gap: 12px;
+            font-size: 13px;
+        }
+        .pol-info-grid .k { color: var(--text-gray); font-weight: 500; line-height: 22px; }
+        .pol-info-grid .v { color: var(--text-black); font-weight: 600; line-height: 22px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        /* 본문 미리보기 */
+        .pol-body-preview {
+            background: #fafbfb;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 18px 22px;
+            font-size: 13px; line-height: 1.7;
+            color: var(--text-black);
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .pol-body-preview h4 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin: 12px 0 6px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pol-body-preview h4:first-child { margin-top: 0; }
+        .pol-body-preview h4 .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px;
+            background: var(--main); color: white;
+            border-radius: 5px;
+            font-size: 11px; font-weight: 800;
+        }
+
+        /* 근거 법령 매칭 */
+        .pol-law-list {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .pol-law-row {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+        }
+        .pol-law-row:last-child { border-bottom: none; }
+        .pol-law-name { color: var(--text-black); font-weight: 600; }
+        .pol-law-sections { display: flex; gap: 4px; flex-wrap: wrap; }
+        .pol-law-sections .chip {
+            padding: 2px 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+        }
+
+        /* KPI 정의 */
+        .pol-kpi-defs {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .pol-kpi-defs > div {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pol-kpi-defs > div:last-child { border-bottom: none; }
+        .pol-kpi-defs > div.head {
+            background: #fafbfb;
+            font-weight: 700;
+            color: var(--main-dark2);
+            font-size: 11px;
+        }
+        .pol-kpi-defs .name { color: var(--text-black); font-weight: 600; }
+        .pol-kpi-defs .target { color: var(--main-dark); font-weight: 700; }
+        .pol-kpi-defs .formula { color: var(--text-gray); font-family: 'SF Mono', Consolas, monospace; font-size: 11px; }
+
+        /* 첨부 */
+        .pol-attach {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .pol-attach-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .pol-attach-row:hover { border-color: var(--main); background: var(--brand-50); }
+        .pol-attach-icon {
+            width: 24px; height: 24px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            border-radius: 5px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .pol-attach .name { flex: 1; color: var(--text-black); font-weight: 600; }
+        .pol-attach .size { color: var(--text-gray); font-size: 11px; }
+
+        /* 결재 진행 (modal 내) */
+        .pol-approval-flow {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .pol-approval-step {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-button);
+            background: var(--gray-100);
+        }
+        .pol-approval-step.done { background: var(--status-success-bg); }
+        .pol-approval-step.current { background: var(--status-info-bg); }
+        .pol-approval-step .dot {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: white;
+            color: var(--text-lightgray);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800;
+            flex-shrink: 0;
+            border: 1px solid var(--card-line);
+        }
+        .pol-approval-step.done .dot {
+            background: var(--status-success-fg);
+            color: white;
+            border-color: var(--status-success-fg);
+        }
+        .pol-approval-step.current .dot {
+            background: var(--status-info-fg);
+            color: white;
+            border-color: var(--status-info-fg);
+        }
+        .pol-approval-step .label {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+            flex: 1;
+        }
+        .pol-approval-step .ts {
+            font-size: 11px; color: var(--text-gray);
+        }
+
+        .pol-detail-footer {
+            padding: 14px 28px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+        .pol-detail-footer .left { display: flex; gap: 8px; }
+        .pol-detail-footer .right { display: flex; gap: 8px; }
+
+        /* 현재 적용 변경 확인 모달 */
+        .pol-confirm-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+        .pol-confirm-backdrop.is-open { display: flex; }
+        .pol-confirm {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 440px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .pol-confirm-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 16px; font-weight: 700; color: var(--main-dark2);
+        }
+        .pol-confirm-body {
+            padding: 18px 24px;
+            font-size: 14px; color: var(--text-black);
+            line-height: 1.6;
+        }
+        .pol-confirm-body .warn {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 12px;
+            color: var(--status-warning-fg);
+        }
+        .pol-confirm-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        @media (max-width: 1023px) {
+            .pol-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .pol-detail-banner-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+            .pol-law-row { grid-template-columns: 1fr; gap: 4px; }
+            .pol-kpi-defs > div { grid-template-columns: 1fr; gap: 4px; }
+        }
+    </style>
+</head>
+<body data-dy-page="safety-policy" data-page-title="안전경영방침 — 방침 이력" data-page-subtitle="버전별 제정·개정 이력 및 결재 관리">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="pol-tabs" role="tablist">
+            <a class="pol-tab" href="safety-policy.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <button class="pol-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                방침 이력
+            </button>
+            <button class="pol-tab" type="button" onclick="window.DYLayout._soon(event, '경영방침 점검 (POL04-V)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                경영방침 점검
+            </button>
+            <button class="pol-tab" type="button" onclick="window.DYLayout._soon(event, 'KPI·점검 설정 (POL05-S)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="pol-kpi-grid">
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">전체 버전</span>
+                    <span class="pol-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value">9<span class="small">건</span></div>
+                <div class="pol-kpi-sub">2021년부터 누적 · 평균 개정 주기 <strong>6개월</strong></div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">현재 적용</span>
+                    <span class="pol-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value success">v2.5</div>
+                <div class="pol-kpi-sub">2026-01-20 시행 · 결재 완료</div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">결재 완료</span>
+                    <span class="pol-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value success">8<span class="small">건</span></div>
+                <div class="pol-kpi-sub">군수 결재 완료된 정식 방침</div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">결재 진행</span>
+                    <span class="pol-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value warning">1<span class="small">건</span></div>
+                <div class="pol-kpi-sub">v2.6 개정 진행 중 (실무 검토 단계)</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 등록 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>결재 완료</option>
+                    <option>결재 진행</option>
+                    <option>미요청</option>
+                    <option>반려</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">연도</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>2026</option>
+                    <option>2025</option>
+                    <option>2024</option>
+                    <option>2023</option>
+                    <option>2022</option>
+                    <option>2021</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="버전 · 제목 검색">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <div class="pol-meta-row">
+            <span class="pol-meta-count">전체 <strong>9</strong>건 표시 중</span>
+        </div>
+
+        <!-- ─── 이력 테이블 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">버전별 방침 이력</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '신규 방침 등록 (POL02-F)')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    신규 방침 등록
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:80px;"><col><col style="width:130px;"><col style="width:140px;"><col style="width:110px;"><col style="width:120px;"><col style="width:90px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th style="text-align:center;">버전</th>
+                        <th>제목</th>
+                        <th>시행일</th>
+                        <th>작성자</th>
+                        <th style="text-align:center;">결재</th>
+                        <th style="text-align:center;">적용</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.openDetail('v2.6')">
+                        <td style="text-align:center;"><span class="pol-version draft">v2.6</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침 (개정안)</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">중대재해 예방 강화 · 위험성평가 KPI 추가</div>
+                        </td>
+                        <td>2026-07-01 <span class="imp-due-dday">예정</span></td>
+                        <td>박안전 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip requested">결재 진행</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v2.6')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v2.5')">
+                        <td style="text-align:center;"><span class="pol-version current">v2.5</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">2026년 신규 방침 · KPI 5종 정의</div>
+                        </td>
+                        <td>2026-01-20</td>
+                        <td>김안전 (자치행정과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-ind"><span class="dot"></span> 현재 적용</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v2.5')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v2.0')">
+                        <td style="text-align:center;"><span class="pol-version old">v2.0</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">2025년 신규 방침 · 전담조직 운영 명시</div>
+                        </td>
+                        <td>2025-01-15</td>
+                        <td>박과장 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">이전 적용</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v2.0')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.5')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.5</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">시행령 개정 반영 (제4조 보강)</div>
+                        </td>
+                        <td>2024-03-10</td>
+                        <td>박과장 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.5')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.4')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.4</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">조직 개편 반영</div>
+                        </td>
+                        <td>2023-09-05</td>
+                        <td>박과장 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.4')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.3')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.3</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">중대재해처벌법 시행 보강</div>
+                        </td>
+                        <td>2023-02-01</td>
+                        <td>박과장 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.3')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.2')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.2</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">하반기 운영 보완</div>
+                        </td>
+                        <td>2022-07-15</td>
+                        <td>박과장 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.2')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.1')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.1</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">실무 검토 결과 반영</div>
+                        </td>
+                        <td>2022-01-10</td>
+                        <td>최과장 (자치행정과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.1')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('v1.0')">
+                        <td style="text-align:center;"><span class="pol-version old">v1.0</span></td>
+                        <td>
+                            <strong>담양군 안전보건 경영방침 (최초 제정)</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">중대재해처벌법 대응 최초 방침</div>
+                        </td>
+                        <td>2021-06-01</td>
+                        <td>최과장 (자치행정과)</td>
+                        <td style="text-align:center;"><span class="pol-approval-chip approved">결재 완료</span></td>
+                        <td style="text-align:center;"><span class="pol-current-empty">—</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('v1.0')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         방침 상세 모달 (POL02-D)
+    ============================================================ -->
+    <div class="pol-detail-backdrop" id="detail-modal">
+        <div class="pol-detail" role="dialog" aria-modal="true">
+            <!-- 헤더 (배너 형태) -->
+            <div class="pol-detail-banner" id="detail-banner">
+                <div class="pol-detail-banner-inner">
+                    <div class="pol-detail-banner-main">
+                        <div class="pol-detail-banner-meta">
+                            <span class="ver" id="detail-ver">v2.5</span>
+                            <span id="detail-status">현재 적용 중</span>
+                        </div>
+                        <div class="pol-detail-banner-title" id="detail-title">담양군 안전보건 경영방침</div>
+                        <div class="pol-detail-banner-sub" id="detail-sub">시행일 2026-01-20 · 결재 완료</div>
+                    </div>
+                    <button type="button" class="pol-detail-close" onclick="window.closeDetail()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 본문 -->
+            <div class="pol-detail-body" id="detail-body">
+                <!-- JS 렌더 -->
+            </div>
+
+            <!-- 푸터 -->
+            <div class="pol-detail-footer">
+                <div class="left" id="detail-footer-left">
+                    <!-- 결재 상태에 따라 변경 -->
+                </div>
+                <div class="right" id="detail-footer-right">
+                    <!-- 결재 상태에 따라 변경 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 현재 적용 변경 확인 모달 -->
+    <div class="pol-confirm-backdrop" id="confirm-modal">
+        <div class="pol-confirm" role="dialog" aria-modal="true">
+            <div class="pol-confirm-header">현재 적용 방침 변경</div>
+            <div class="pol-confirm-body" id="confirm-body">
+                <strong id="confirm-target"></strong>을 현재 적용 방침으로 설정하시겠습니까?
+                <div class="warn">
+                    ⚠ 기존 v2.5 적용이 해제되며, 이 방침의 KPI·근거 법령이 즉시 시스템 전반에 반영됩니다.
+                </div>
+            </div>
+            <div class="pol-confirm-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeConfirm()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.confirmCurrent()">현재 적용으로 설정</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 방침 데이터 ─── */
+        const POLICIES = {
+            'v2.6': {
+                ver: 'v2.6', title: '담양군 안전보건 경영방침 (개정안)',
+                effective: '2026-07-01 (예정)', author: '박안전 (안전건설과)',
+                status: 'draft', current: false,
+                approvalStatus: '결재 진행 중', approvalLabel: '실무 검토 단계',
+                summary: '중대재해 예방 강화 · 위험성평가 KPI 추가 · 도급사업 안전관리 의무 명시',
+                approvalFlow: [
+                    { label: '초안 작성 — 박안전', ts: '2026-04-12 09:30', state: 'done' },
+                    { label: '실무 검토 — 안전건설과장', ts: '진행 중', state: 'current' },
+                    { label: '부군수 결재', ts: '대기', state: 'pending' },
+                    { label: '군수 최종 결재', ts: '대기', state: 'pending' },
+                ],
+                sections: [
+                    { num: 1, title: '안전보건 경영의지', body: '담양군은 군민·종사자의 안전과 건강을 모든 가치에 우선합니다. 본 개정안은 중대재해 예방 의지를 강화하고 위험성평가를 정기·수시로 시행함을 약속합니다.' },
+                    { num: 2, title: '안전보건관리체계의 구축', body: '안전건설과를 전담조직으로 두며 부군수를 안전총괄책임자로 지정합니다. (변경 없음)' },
+                    { num: 3, title: '도급사업 안전관리 (신설)', body: '도급공사에 대해 발주자 의무를 명확히 하고, 50억 이상 공사는 안전관리자 미달 시 결재를 차단합니다.' },
+                ],
+                laws: [
+                    { name: '중대재해처벌법 시행령 제4조', sections: ['§1', '§2'] },
+                    { name: '산업안전보건법 제5조', sections: ['§1'] },
+                    { name: '산업안전보건법 제63조 (도급)', sections: ['§3'] },
+                ],
+                kpis: [
+                    { name: '산업재해 발생률', target: '0건', formula: 'COUNT(severity IN MAJOR/SERIOUS)' },
+                    { name: '정기 위험성평가 시행률', target: '100%', formula: '완료 / 계획 × 100' },
+                    { name: '수시 위험성평가 시행 (신설)', target: '연 12건', formula: 'COUNT(year=:y AND type=AD_HOC)' },
+                    { name: '도급사업 안전관리자 충족률 (신설)', target: '100%', formula: 'COUNT(배치 ≥ 법정) / COUNT(전체)' },
+                ],
+                attachments: [
+                    { name: '방침_v2.6_개정안_초안.docx', size: '380KB' },
+                    { name: '실무_검토_의견서.pdf', size: '120KB' },
+                ],
+            },
+            'v2.5': {
+                ver: 'v2.5', title: '담양군 안전보건 경영방침',
+                effective: '2026-01-20', author: '김안전 (자치행정과)',
+                status: 'current', current: true,
+                approvalStatus: '결재 완료', approvalLabel: '2026-01-20 군수 결재',
+                summary: '2026년 신규 방침 · KPI 5종 정의 · 전 부서 적용',
+                approvalFlow: [
+                    { label: '초안 작성 — 김안전', ts: '2026-01-08 14:20', state: 'done' },
+                    { label: '실무 검토 — 안전건설과장', ts: '2026-01-12 16:35', state: 'done' },
+                    { label: '부군수 결재', ts: '2026-01-18 09:40', state: 'done' },
+                    { label: '군수 최종 결재', ts: '2026-01-20 11:10', state: 'done' },
+                ],
+                sections: [
+                    { num: 1, title: '안전보건 경영의지', body: '담양군은 군민·종사자의 안전과 건강을 모든 가치에 우선합니다.' },
+                    { num: 2, title: '안전보건관리체계의 구축', body: '안전건설과를 전담조직으로 두어 안전보건 업무를 총괄합니다. 부군수를 안전총괄책임자로 지정합니다.' },
+                    { num: 3, title: '사업주 의무 이행', body: '산업안전보건법 제5조에 따라 유해·위험요인 파악, 위험성평가, 법령 안전조치를 적극 이행합니다.' },
+                    { num: 4, title: '안전보건관리책임자', body: '부서별 안전보건관리책임자를 지정·운영하며 부서장이 자동 매핑됩니다.' },
+                    { num: 5, title: '안전관리자·보건관리자', body: '전 부서에 안전관리자·보건관리자를 선임·운영합니다.' },
+                ],
+                laws: [
+                    { name: '중대재해처벌법 시행령 제4조', sections: ['§1', '§2'] },
+                    { name: '산업안전보건법 제5조', sections: ['§3'] },
+                    { name: '산업안전보건법 제15조', sections: ['§4'] },
+                    { name: '산업안전보건법 제17조', sections: ['§5'] },
+                    { name: '산업안전보건법 제18조', sections: ['§5'] },
+                ],
+                kpis: [
+                    { name: '산업재해 발생률', target: '0건', formula: 'COUNT(severity IN MAJOR/SERIOUS)' },
+                    { name: '정기 위험성평가 시행률', target: '100%', formula: '완료 / 계획 × 100' },
+                    { name: '안전보건교육 이수율', target: '100%', formula: '이수 / 전체 × 100' },
+                    { name: '안전점검 실시율', target: '100%', formula: '실시 / 계획 × 100' },
+                    { name: '의견청취 처리율', target: '90%', formula: '처리 / 접수 × 100' },
+                ],
+                attachments: [
+                    { name: '방침_v2.5_확정본.pdf', size: '420KB' },
+                    { name: '의견수렴_결과.pdf', size: '95KB' },
+                    { name: '군수_결재_문서.pdf', size: '210KB' },
+                ],
+            },
+        };
+
+        const DEFAULT_OLD = {
+            title: '담양군 안전보건 경영방침',
+            effective: '-', author: '-',
+            status: 'old', current: false,
+            approvalStatus: '결재 완료', approvalLabel: '이전 적용 방침',
+            summary: '이전 버전 — 보존 목적으로 유지됩니다.',
+            approvalFlow: [
+                { label: '초안 작성', ts: '-', state: 'done' },
+                { label: '실무 검토', ts: '-', state: 'done' },
+                { label: '부군수 결재', ts: '-', state: 'done' },
+                { label: '군수 최종 결재', ts: '-', state: 'done' },
+            ],
+            sections: [
+                { num: 1, title: '안전보건 경영의지', body: '담양군은 군민·종사자의 안전과 건강을 우선합니다.' },
+                { num: 2, title: '안전보건관리체계', body: '전담조직 운영 및 책임자 지정에 관한 조항이 포함됩니다.' },
+            ],
+            laws: [
+                { name: '중대재해처벌법 시행령 제4조', sections: ['§1', '§2'] },
+                { name: '산업안전보건법 제5조', sections: ['§3'] },
+            ],
+            kpis: [
+                { name: '산업재해 발생률', target: '0건', formula: 'COUNT(severity)' },
+                { name: '위험성평가 시행률', target: '100%', formula: '완료/계획×100' },
+            ],
+            attachments: [{ name: '방침_확정본.pdf', size: '350KB' }]
+        };
+
+        /* ─── 상세 모달 ─── */
+        window.openDetail = function (ver) {
+            const data = POLICIES[ver] || { ...DEFAULT_OLD, ver,
+                effective: getDateForOld(ver), author: getAuthorForOld(ver) };
+
+            // 헤더
+            document.getElementById('detail-ver').textContent = data.ver;
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-status').textContent =
+                data.current ? '현재 적용 중' : (data.status === 'draft' ? '개정 진행' : '이전 적용');
+            document.getElementById('detail-sub').textContent =
+                `시행일 ${data.effective} · ${data.approvalStatus}`;
+
+            const banner = document.getElementById('detail-banner');
+            banner.classList.remove('old', 'draft');
+            if (data.status === 'old') banner.classList.add('old');
+            else if (data.status === 'draft') banner.classList.add('draft');
+
+            // 본문
+            const sectionsHtml = data.sections.map(s => `
+                <h4><span class="num">${s.num}</span> ${s.title}</h4>
+                <p style="margin-bottom:8px;">${s.body}</p>
+            `).join('');
+
+            const lawsHtml = data.laws.map(l => `
+                <div class="pol-law-row">
+                    <span class="pol-law-name">${l.name}</span>
+                    <div class="pol-law-sections">
+                        ${l.sections.map(s => `<span class="chip">${s}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            const kpisHtml = `
+                <div class="head"><span>KPI</span><span>목표</span><span>산출 공식</span></div>
+                ${data.kpis.map(k => `
+                    <div>
+                        <span class="name">${k.name}</span>
+                        <span class="target">${k.target}</span>
+                        <span class="formula">${k.formula}</span>
+                    </div>
+                `).join('')}
+            `;
+
+            const attachHtml = data.attachments.map(a => `
+                <div class="pol-attach-row" onclick="window.DYLayout._soon({preventDefault:()=>{}}, '${a.name} 다운로드')">
+                    <span class="pol-attach-icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </span>
+                    <span class="name">${a.name}</span>
+                    <span class="size">${a.size}</span>
+                </div>
+            `).join('');
+
+            const flowHtml = data.approvalFlow.map(f => `
+                <div class="pol-approval-step ${f.state}">
+                    <span class="dot">
+                        ${f.state === 'done' ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                        ${f.state === 'current' ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>' : ''}
+                    </span>
+                    <span class="label">${f.label}</span>
+                    <span class="ts">${f.ts}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('detail-body').innerHTML = `
+                <div class="pol-detail-section">
+                    <h3>기본 정보</h3>
+                    <div class="pol-info-grid">
+                        <span class="k">버전</span><span class="v"><span class="pol-version ${data.status === 'current' ? 'current' : (data.status === 'draft' ? 'draft' : 'old')}">${data.ver}</span></span>
+                        <span class="k">시행일</span><span class="v">${data.effective}</span>
+                        <span class="k">작성자</span><span class="v">${data.author}</span>
+                        <span class="k">결재 상태</span><span class="v">
+                            <span class="pol-approval-chip ${data.approvalStatus === '결재 완료' ? 'approved' : 'requested'}">${data.approvalStatus}</span>
+                            <span style="font-size:12px; color:var(--text-gray);">${data.approvalLabel}</span>
+                        </span>
+                        <span class="k">요약</span><span class="v" style="font-weight:500;">${data.summary}</span>
+                    </div>
+                </div>
+
+                <div class="pol-detail-section">
+                    <h3>방침 본문 (미리보기)</h3>
+                    <div class="pol-body-preview">${sectionsHtml}</div>
+                </div>
+
+                <div class="pol-detail-section">
+                    <h3>근거 법령 매칭</h3>
+                    <div class="pol-law-list">${lawsHtml}</div>
+                </div>
+
+                <div class="pol-detail-section">
+                    <h3>안전보건 목표 (KPI 정의)</h3>
+                    <div class="pol-kpi-defs">${kpisHtml}</div>
+                </div>
+
+                <div class="pol-detail-section">
+                    <h3>결재 진행</h3>
+                    <div class="pol-approval-flow">${flowHtml}</div>
+                </div>
+
+                <div class="pol-detail-section">
+                    <h3>첨부 파일</h3>
+                    <div class="pol-attach">${attachHtml}</div>
+                </div>
+            `;
+
+            // 푸터 액션
+            const left = document.getElementById('detail-footer-left');
+            const right = document.getElementById('detail-footer-right');
+            const isApproved = data.approvalStatus === '결재 완료';
+            const canEdit = !isApproved;
+            const canSetCurrent = isApproved && !data.current;
+            const canRequest = data.approvalStatus === '결재 진행 중' || data.status === 'draft';
+
+            left.innerHTML = canSetCurrent ? `
+                <button class="btn btn-outline" type="button" onclick="window.openConfirm('${data.ver}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    현재 적용으로 설정
+                </button>
+            ` : '';
+
+            right.innerHTML = `
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 다운로드 - ${data.ver}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    PDF
+                </button>
+                ${canEdit ? `<button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '방침 수정 (POL02-F) - ${data.ver}')">수정</button>` : ''}
+                ${canRequest ? `<button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '결재 진행 상태 업데이트 - ${data.ver}')">결재 결과 업데이트</button>` : ''}
+                ${(!canRequest && !isApproved) ? `<button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '결재 요청 - ${data.ver}')">결재 요청</button>` : ''}
+            `;
+
+            document.getElementById('detail-modal').classList.add('is-open');
+        };
+
+        window.closeDetail = function () {
+            document.getElementById('detail-modal').classList.remove('is-open');
+        };
+
+        function getDateForOld(ver) {
+            const map = { 'v2.0': '2025-01-15', 'v1.5': '2024-03-10', 'v1.4': '2023-09-05', 'v1.3': '2023-02-01', 'v1.2': '2022-07-15', 'v1.1': '2022-01-10', 'v1.0': '2021-06-01' };
+            return map[ver] || '-';
+        }
+        function getAuthorForOld(ver) {
+            const map = { 'v2.0': '박과장 (안전건설과)', 'v1.5': '박과장 (안전건설과)', 'v1.4': '박과장 (안전건설과)', 'v1.3': '박과장 (안전건설과)', 'v1.2': '박과장 (안전건설과)', 'v1.1': '최과장 (자치행정과)', 'v1.0': '최과장 (자치행정과)' };
+            return map[ver] || '-';
+        }
+
+        /* ─── 현재 적용 확인 모달 ─── */
+        let pendingVer = null;
+        window.openConfirm = function (ver) {
+            pendingVer = ver;
+            document.getElementById('confirm-target').textContent = `${ver} 버전`;
+            document.getElementById('confirm-modal').classList.add('is-open');
+        };
+        window.closeConfirm = function () {
+            document.getElementById('confirm-modal').classList.remove('is-open');
+            pendingVer = null;
+        };
+        window.confirmCurrent = function () {
+            const v = pendingVer;
+            window.closeConfirm();
+            window.closeDetail();
+            showToast(`${v} 버전이 현재 적용 방침으로 설정되었습니다. (목업)`);
+        };
+
+        document.querySelectorAll('.pol-detail-backdrop, .pol-confirm-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

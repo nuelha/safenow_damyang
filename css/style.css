@@ -4091,14 +4091,16 @@ body.sidebar-locked {
   width: 40px;
   height: 40px;
   margin-right: 8px;
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: #ffffff;
   border-radius: var(--radius-button);
   cursor: pointer;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.25);
 }
-.dy-mobile-menu:hover {
-  background: rgba(255, 255, 255, 0.12);
+.dy-mobile-menu:hover,
+.dy-mobile-menu:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* --- Responsive --- */

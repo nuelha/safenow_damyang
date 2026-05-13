@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예산 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── BGT01-V 전용 ─── */
+
+        /* 서브 탭 (POL/EVL/STF 패턴) */
+        .bgt-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .bgt-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+        }
+        .bgt-tab:hover { color: var(--main-dark); }
+        .bgt-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
+        /* 필터 + 연도 */
+        .bgt-filter {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .bgt-filter-year {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .bgt-filter-year .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .bgt-filter-year select {
+            padding: 6px 24px 6px 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            border: none;
+            background-color: transparent;
+        }
+        .bgt-filter .form-group {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .bgt-filter .form-group label {
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+        }
+        .bgt-filter-meta {
+            margin-left: auto;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .bgt-filter-meta strong { color: var(--text-black); font-weight: 700; }
+
+        /* 예방 총괄표 — 3 + 1 카드 */
+        .bgt-summary-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1.4fr 1fr 1fr;
+            gap: 14px;
+        }
+        .bgt-summary-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bgt-summary-card.primary {
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+            color: white;
+        }
+        .bgt-summary-card.primary::before {
+            content: ""; position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .bgt-summary-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; position: relative;
+        }
+        .bgt-summary-title {
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+        }
+        .bgt-summary-card.primary .bgt-summary-title {
+            color: rgba(255,255,255,0.85);
+        }
+        .bgt-summary-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .bgt-summary-card.primary .bgt-summary-icon {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .bgt-summary-icon.info  { background: var(--status-info-bg);    color: var(--status-info-fg); }
+        .bgt-summary-icon.warn  { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+
+        .bgt-summary-value {
+            display: flex; align-items: baseline; gap: 4px;
+            font-size: 30px; font-weight: 800;
+            color: var(--main-dark2);
+            line-height: 1; letter-spacing: -0.8px;
+            position: relative;
+        }
+        .bgt-summary-card.primary .bgt-summary-value { color: white; }
+        .bgt-summary-value .unit {
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+        }
+        .bgt-summary-card.primary .bgt-summary-value .unit { color: rgba(255,255,255,0.85); }
+        .bgt-summary-sub {
+            font-size: 12px; color: var(--text-gray);
+            position: relative;
+        }
+        .bgt-summary-card.primary .bgt-summary-sub { color: rgba(255,255,255,0.85); }
+        .bgt-summary-sub strong { color: var(--text-black); font-weight: 700; }
+        .bgt-summary-card.primary .bgt-summary-sub strong { color: white; }
+
+        .bgt-summary-progress {
+            height: 8px; border-radius: 999px;
+            background: rgba(0,0,0,0.05);
+            overflow: hidden;
+            position: relative;
+            margin-top: 2px;
+        }
+        .bgt-summary-card.primary .bgt-summary-progress {
+            background: rgba(255,255,255,0.18);
+        }
+        .bgt-summary-progress > div {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--main);
+        }
+        .bgt-summary-card.primary .bgt-summary-progress > div {
+            background: white;
+        }
+
+        /* 결재 상태 요약 */
+        .bgt-approval-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            flex-wrap: wrap;
+        }
+        .bgt-approval-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-approval-label::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .bgt-approval-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px;
+            font-size: 13px; font-weight: 600;
+            border-radius: 999px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            border: 1px solid var(--card-line);
+        }
+        .bgt-approval-pill .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-lightgray);
+        }
+        .bgt-approval-pill .count {
+            font-weight: 800;
+            font-size: 16px;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-black);
+        }
+        .bgt-approval-pill.warning {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .bgt-approval-pill.warning .dot { background: var(--status-warning-fg); }
+        .bgt-approval-pill.warning .count { color: var(--status-warning-fg); }
+        .bgt-approval-pill.success {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .bgt-approval-pill.success .dot { background: var(--status-success-fg); }
+        .bgt-approval-pill.success .count { color: var(--status-success-fg); }
+
+        /* 2-column: 부서별 + 카테고리별 */
+        .bgt-two-col {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 16px;
+        }
+
+        /* 금액 셀 */
+        .bgt-amount {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--text-black);
+        }
+        .bgt-amount .unit {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .bgt-amount.exec {
+            color: var(--main-dark);
+        }
+
+        /* 집행률 막대 */
+        .bgt-rate-cell {
+            display: flex; align-items: center; gap: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+        .bgt-rate-bar {
+            flex: 1;
+            height: 6px; border-radius: 999px;
+            background: var(--gray-100);
+            overflow: hidden;
+            max-width: 70px;
+        }
+        .bgt-rate-bar > div {
+            height: 100%; border-radius: 999px;
+        }
+        .bgt-rate-text {
+            font-size: 12px; font-weight: 700;
+            min-width: 36px; text-align: right;
+            color: var(--text-black);
+        }
+        .bgt-rate-text.warn   { color: var(--status-warning-fg); }
+        .bgt-rate-text.danger { color: var(--status-danger-fg); }
+        .bgt-rate-text.success { color: var(--status-success-fg); }
+
+        /* 카테고리 아이콘 */
+        .bgt-cat-name {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600; color: var(--text-black);
+        }
+        .bgt-cat-icon {
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        .bgt-cat-icon.edu     { background: #5b9ad9; }
+        .bgt-cat-icon.inspect { background: #e58a3c; }
+        .bgt-cat-icon.risk    { background: var(--status-danger-fg); }
+        .bgt-cat-icon.gear    { background: var(--main); }
+        .bgt-cat-icon.contract{ background: var(--status-purple-fg); }
+
+        /* 월별 집행 추이 차트 */
+        .bgt-trend-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-trend-body {
+            padding: 22px 24px 18px;
+        }
+        .bgt-trend-chart {
+            position: relative;
+            height: 240px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            padding-top: 10px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .bgt-trend-col {
+            position: relative;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            align-items: center;
+            gap: 2px;
+        }
+        .bgt-trend-col .bar-exec {
+            width: 100%; max-width: 26px;
+            background: linear-gradient(180deg, var(--main) 0%, var(--main-dark) 100%);
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            transition: filter .12s ease;
+            min-height: 6px;
+            position: relative;
+        }
+        .bgt-trend-col .bar-exec:hover { filter: brightness(1.1); }
+        .bgt-trend-col .bar-exec.future {
+            background: repeating-linear-gradient(45deg, var(--brand-100), var(--brand-100) 4px, white 4px, white 8px);
+            border: 1px solid var(--status-success-border);
+        }
+        .bgt-trend-col .bar-exec .tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            background: var(--main-dark2);
+            color: white;
+            font-size: 11px; font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 5px;
+            z-index: 5;
+        }
+        .bgt-trend-col .bar-exec .tooltip::after {
+            content: ""; position: absolute;
+            top: 100%; left: 50%; transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: var(--main-dark2);
+        }
+        .bgt-trend-col .bar-exec:hover .tooltip { display: block; }
+
+        .bgt-trend-labels {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            padding-top: 6px;
+        }
+        .bgt-trend-label {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+        .bgt-trend-label.current {
+            color: var(--main-dark2);
+            font-weight: 700;
+        }
+
+        .bgt-trend-legend {
+            display: flex; gap: 18px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--card-line);
+            font-size: 12px; color: var(--text-gray);
+        }
+        .bgt-trend-legend-item { display: flex; align-items: center; gap: 6px; }
+        .bgt-trend-legend-item .swatch {
+            width: 12px; height: 12px;
+            border-radius: 3px;
+        }
+        .bgt-trend-legend-item .swatch.exec {
+            background: linear-gradient(180deg, var(--main) 0%, var(--main-dark) 100%);
+        }
+        .bgt-trend-legend-item .swatch.future {
+            background: repeating-linear-gradient(45deg, var(--brand-100), var(--brand-100) 3px, white 3px, white 6px);
+            border: 1px solid var(--status-success-border);
+        }
+
+        /* 매트릭스 모달 */
+        .bgt-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .bgt-modal-backdrop.is-open { display: flex; }
+        .bgt-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 1120px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .bgt-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .bgt-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .bgt-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .bgt-modal-body { padding: 20px 24px; overflow: auto; flex: 1; }
+        .bgt-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        /* 매트릭스 테이블 */
+        .bgt-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .bgt-matrix th, .bgt-matrix td {
+            padding: 8px 10px;
+            border: 1px solid var(--card-line);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .bgt-matrix thead th {
+            background: var(--main-dark2);
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            font-size: 11px;
+        }
+        .bgt-matrix tbody th {
+            background: #fafbfb;
+            color: var(--text-black);
+            font-weight: 600;
+            text-align: left;
+            position: sticky; left: 0;
+        }
+        .bgt-matrix tbody tr:hover td { background: var(--brand-50); }
+        .bgt-matrix .total-row th,
+        .bgt-matrix .total-row td {
+            background: var(--brand-100) !important;
+            font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .bgt-matrix .total-col {
+            background: var(--brand-50);
+            font-weight: 700;
+            color: var(--main-dark);
+        }
+        .bgt-matrix .cell-amount .small {
+            display: block;
+            font-size: 10px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+        .bgt-matrix td .rate {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+        }
+        .bgt-matrix .rate.high { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .bgt-matrix .rate.mid  { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .bgt-matrix .rate.low  { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+
+        @media (max-width: 1023px) {
+            .bgt-summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .bgt-two-col { grid-template-columns: 1fr; }
+            .bgt-trend-chart { height: 180px; }
+        }
+    </style>
+</head>
+<body data-dy-page="bgt-status" data-page-title="예산 현황" data-page-subtitle="안전보건 예방 활동 편성·집행 총괄">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="bgt-tabs" role="tablist">
+            <button class="bgt-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </button>
+            <button class="bgt-tab" type="button" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+                예방 항목 트리
+            </button>
+            <button class="bgt-tab" type="button" onclick="window.DYLayout._soon(event, '예산 편성 (BGT03-F)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                편성
+            </button>
+            <button class="bgt-tab" type="button" onclick="window.DYLayout._soon(event, '예산 집행 (BGT04-F)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                집행
+            </button>
+            <button class="bgt-tab" type="button" onclick="window.DYLayout._soon(event, '예방 항목 마스터 설정 (BGT05-S)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="bgt-filter">
+            <div class="bgt-filter-year">
+                <span class="icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </span>
+                <select>
+                    <option>2026년</option>
+                    <option>2025년</option>
+                    <option>2024년</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>부서</label>
+                <select class="select">
+                    <option>전체</option>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>보건소</option>
+                    <option>담양읍사무소</option>
+                    <option>상수도사업소</option>
+                    <option>문화관광과</option>
+                </select>
+            </div>
+            <span class="bgt-filter-meta">
+                예산 기간 <strong>2026-01-01 ~ 2026-12-31</strong> · 최근 갱신 <strong>2026-05-12 18:00</strong>
+            </span>
+        </div>
+
+        <!-- ─── 예방 총괄표 (KPI) ─── -->
+        <section class="bgt-summary-grid">
+            <!-- 편성액 -->
+            <div class="bgt-summary-card primary">
+                <div class="bgt-summary-head">
+                    <span class="bgt-summary-title">편성액 합계</span>
+                    <span class="bgt-summary-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </span>
+                </div>
+                <div class="bgt-summary-value">1,250,000<span class="unit">천원</span></div>
+                <div class="bgt-summary-sub">12억 5천만원 · 9개 부서 편성</div>
+            </div>
+            <!-- 집행액 -->
+            <div class="bgt-summary-card">
+                <div class="bgt-summary-head">
+                    <span class="bgt-summary-title">집행액 합계</span>
+                    <span class="bgt-summary-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </span>
+                </div>
+                <div class="bgt-summary-value">825,000<span class="unit">천원</span></div>
+                <div class="bgt-summary-sub">5월 누적 · 잔액 <strong>425,000천원</strong></div>
+            </div>
+            <!-- 집행률 -->
+            <div class="bgt-summary-card">
+                <div class="bgt-summary-head">
+                    <span class="bgt-summary-title">집행률</span>
+                    <span class="bgt-summary-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </span>
+                </div>
+                <div class="bgt-summary-value">66.0<span class="unit">%</span></div>
+                <div class="bgt-summary-progress">
+                    <div style="width:66%;"></div>
+                </div>
+                <div class="bgt-summary-sub">전년 동기 <strong>61%</strong> · <span style="color:var(--status-success-fg);">+5%p</span></div>
+            </div>
+            <!-- 잔여 예산 -->
+            <div class="bgt-summary-card">
+                <div class="bgt-summary-head">
+                    <span class="bgt-summary-title">잔여 예산</span>
+                    <span class="bgt-summary-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="bgt-summary-value">425,000<span class="unit">천원</span></div>
+                <div class="bgt-summary-sub">7개월 잔여 · 월평균 <strong>61,000천원</strong> 가능</div>
+            </div>
+        </section>
+
+        <!-- ─── 결재 상태 요약 ─── -->
+        <div class="bgt-approval-row">
+            <span class="bgt-approval-label">예산 편성 결재 상태</span>
+            <span class="bgt-approval-pill">
+                <span class="dot"></span>
+                미요청 <span class="count">1</span>건
+            </span>
+            <span class="bgt-approval-pill warning">
+                <span class="dot"></span>
+                결재 진행 중 <span class="count">2</span>건
+            </span>
+            <span class="bgt-approval-pill success">
+                <span class="dot"></span>
+                결재 완료 <span class="count">8</span>건
+            </span>
+            <a href="#" style="margin-left:auto; font-size:13px; color:var(--main); font-weight:600; text-decoration:none;" onclick="event.preventDefault(); window.DYLayout._soon(event, '예산 편성 (BGT03-F) - 결재 현황 필터')">
+                결재 상세 →
+            </a>
+        </div>
+
+        <!-- ─── 부서별 + 카테고리별 (2분할) ─── -->
+        <div class="bgt-two-col">
+
+            <!-- 부서별 편성·집행 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">부서별 편성·집행</h2>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.openMatrixModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        매트릭스 보기
+                    </button>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col><col style="width:120px;"><col style="width:120px;"><col style="width:140px;"><col style="width:110px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>부서</th>
+                            <th style="text-align:right;">편성액</th>
+                            <th style="text-align:right;">집행액</th>
+                            <th style="text-align:center;">집행률</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 자치행정과')">
+                            <td><strong>자치행정과</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">250,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">180,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:72%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text success">72%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;">
+                                <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a>
+                            </td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 안전건설과')">
+                            <td><strong>안전건설과</strong> <span class="dy-badge" style="margin-left:4px; padding:1px 6px; font-size:10px;">전담</span></td>
+                            <td style="text-align:right;"><span class="bgt-amount">230,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">170,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:74%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text success">74%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 농업기술센터')">
+                            <td><strong>농업기술센터</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">170,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">110,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:65%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text">65%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 시설관리과')">
+                            <td><strong>시설관리과</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">150,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">100,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:67%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text">67%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 보건소')">
+                            <td><strong>보건소</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">100,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">60,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:60%; background:var(--status-warning-fg);"></div></div>
+                                    <span class="bgt-rate-text warn">60%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 환경과')">
+                            <td><strong>환경과</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">85,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">55,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:65%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text">65%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 상수도사업소')">
+                            <td><strong>상수도사업소</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">100,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">70,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:70%; background:var(--main);"></div></div>
+                                    <span class="bgt-rate-text">70%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 담양읍사무소')">
+                            <td><strong>담양읍사무소</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">100,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">55,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:55%; background:var(--status-warning-fg);"></div></div>
+                                    <span class="bgt-rate-text warn">55%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예산 편성·집행 (BGT03-F) - 문화관광과')">
+                            <td><strong>문화관광과</strong></td>
+                            <td style="text-align:right;"><span class="bgt-amount">65,000<span class="unit">천원</span></span></td>
+                            <td style="text-align:right;"><span class="bgt-amount exec">25,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:38%; background:var(--status-danger-fg);"></div></div>
+                                    <span class="bgt-rate-text danger">38%</span>
+                                </div>
+                            </td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '편성/집행 (BGT03-F)')">편성/집행</a></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:var(--brand-100); font-weight:700;">
+                            <td style="color:var(--main-dark2);"><strong>합계 (9개 부서)</strong></td>
+                            <td style="text-align:right; color:var(--main-dark2);"><strong>1,250,000<span style="font-size:11px; font-weight:500;">천원</span></strong></td>
+                            <td style="text-align:right; color:var(--main-dark2);"><strong>825,000<span style="font-size:11px; font-weight:500;">천원</span></strong></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <div class="bgt-rate-bar"><div style="width:66%; background:var(--main-dark);"></div></div>
+                                    <span class="bgt-rate-text" style="color:var(--main-dark2);">66%</span>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </section>
+
+            <!-- 예방 항목별 (1단계) -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">예방 항목별 집행</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="event.preventDefault(); window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V)')">트리 상세 →</a>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col><col style="width:100px;"><col style="width:100px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>1단계 카테고리</th>
+                            <th style="text-align:right;">편성</th>
+                            <th style="text-align:right;">집행률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V) - 안전보건교육')">
+                            <td>
+                                <span class="bgt-cat-name">
+                                    <span class="bgt-cat-icon edu">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                    </span>
+                                    안전보건교육
+                                </span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:34px;">집행 245,000 / 잔액 105,000</span>
+                            </td>
+                            <td style="text-align:right;"><span class="bgt-amount">350,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <span class="bgt-rate-text">70%</span>
+                                </div>
+                                <div class="bgt-rate-bar" style="max-width:none; margin-top:4px;"><div style="width:70%; background:#5b9ad9;"></div></div>
+                            </td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V) - 시설 안전 점검')">
+                            <td>
+                                <span class="bgt-cat-name">
+                                    <span class="bgt-cat-icon inspect">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                    </span>
+                                    시설 안전 점검
+                                </span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:34px;">집행 180,000 / 잔액 100,000</span>
+                            </td>
+                            <td style="text-align:right;"><span class="bgt-amount">280,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <span class="bgt-rate-text">64%</span>
+                                </div>
+                                <div class="bgt-rate-bar" style="max-width:none; margin-top:4px;"><div style="width:64%; background:#e58a3c;"></div></div>
+                            </td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V) - 위험성평가 시행')">
+                            <td>
+                                <span class="bgt-cat-name">
+                                    <span class="bgt-cat-icon risk">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    </span>
+                                    위험성평가 시행
+                                </span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:34px;">집행 98,000 / 잔액 52,000</span>
+                            </td>
+                            <td style="text-align:right;"><span class="bgt-amount">150,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <span class="bgt-rate-text">65%</span>
+                                </div>
+                                <div class="bgt-rate-bar" style="max-width:none; margin-top:4px;"><div style="width:65%; background:var(--status-danger-fg);"></div></div>
+                            </td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V) - 보호장비 구입')">
+                            <td>
+                                <span class="bgt-cat-name">
+                                    <span class="bgt-cat-icon gear">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    </span>
+                                    보호장비 구입
+                                </span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:34px;">집행 150,000 / 잔액 50,000</span>
+                            </td>
+                            <td style="text-align:right;"><span class="bgt-amount">200,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <span class="bgt-rate-text success">75%</span>
+                                </div>
+                                <div class="bgt-rate-bar" style="max-width:none; margin-top:4px;"><div style="width:75%; background:var(--main);"></div></div>
+                            </td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '예방 항목 트리 (BGT02-V) - 도급사업 안전관리')">
+                            <td>
+                                <span class="bgt-cat-name">
+                                    <span class="bgt-cat-icon contract">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                                    </span>
+                                    도급사업 안전관리
+                                </span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:34px;">집행 152,000 / 잔액 118,000</span>
+                            </td>
+                            <td style="text-align:right;"><span class="bgt-amount">270,000<span class="unit">천원</span></span></td>
+                            <td>
+                                <div class="bgt-rate-cell" style="justify-content:flex-end;">
+                                    <span class="bgt-rate-text warn">56%</span>
+                                </div>
+                                <div class="bgt-rate-bar" style="max-width:none; margin-top:4px;"><div style="width:56%; background:var(--status-purple-fg);"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ─── 월별 집행 추이 ─── -->
+        <section class="bgt-trend-card">
+            <div class="card-header">
+                <h2 class="card-title">월별 집행 추이</h2>
+                <span class="text-muted" style="font-size:13px;">2026년 · 단위 천원</span>
+            </div>
+            <div class="bgt-trend-body">
+                <div class="bgt-trend-chart" id="trend-chart">
+                    <!-- 12 columns dynamically rendered -->
+                </div>
+                <div class="bgt-trend-labels">
+                    <div class="bgt-trend-label">1월</div>
+                    <div class="bgt-trend-label">2월</div>
+                    <div class="bgt-trend-label">3월</div>
+                    <div class="bgt-trend-label">4월</div>
+                    <div class="bgt-trend-label current">5월 ●</div>
+                    <div class="bgt-trend-label">6월</div>
+                    <div class="bgt-trend-label">7월</div>
+                    <div class="bgt-trend-label">8월</div>
+                    <div class="bgt-trend-label">9월</div>
+                    <div class="bgt-trend-label">10월</div>
+                    <div class="bgt-trend-label">11월</div>
+                    <div class="bgt-trend-label">12월</div>
+                </div>
+                <div class="bgt-trend-legend">
+                    <span class="bgt-trend-legend-item"><span class="swatch exec"></span> 월별 집행액 (실적)</span>
+                    <span class="bgt-trend-legend-item"><span class="swatch future"></span> 잔여 계획 (6~12월)</span>
+                    <span style="margin-left:auto; color:var(--text-black);">5월 누적 집행 <strong>825,000천원</strong> · 연말 추정 <strong>1,180,000천원</strong></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         매트릭스 모달 — 부서 × 카테고리
+    ============================================================ -->
+    <div class="bgt-modal-backdrop" id="matrix-modal">
+        <div class="bgt-modal" role="dialog" aria-modal="true">
+            <div class="bgt-modal-header">
+                <div class="bgt-modal-title">부서 × 예방 항목 매트릭스</div>
+                <button type="button" class="bgt-modal-close" onclick="window.closeMatrixModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="bgt-modal-body">
+                <p style="font-size:13px; color:var(--text-gray); margin-bottom:14px;">
+                    행: 부서 9개 · 열: 1단계 예방 항목 5개 · 셀: 편성 / 집행 (단위 천원) + 집행률
+                </p>
+                <table class="bgt-matrix">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; min-width:130px;">부서</th>
+                            <th>안전보건교육</th>
+                            <th>시설 안전 점검</th>
+                            <th>위험성평가 시행</th>
+                            <th>보호장비 구입</th>
+                            <th>도급사업 안전관리</th>
+                            <th style="background:var(--main-dark);">합계</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>자치행정과</th>
+                            <td class="cell-amount">75,000<span class="small">/ 55,000</span><span class="rate high">73%</span></td>
+                            <td class="cell-amount">60,000<span class="small">/ 45,000</span><span class="rate high">75%</span></td>
+                            <td class="cell-amount">35,000<span class="small">/ 25,000</span><span class="rate mid">71%</span></td>
+                            <td class="cell-amount">40,000<span class="small">/ 30,000</span><span class="rate high">75%</span></td>
+                            <td class="cell-amount">40,000<span class="small">/ 25,000</span><span class="rate mid">63%</span></td>
+                            <td class="total-col">250,000<span class="small">/ 180,000</span><span class="rate high">72%</span></td>
+                        </tr>
+                        <tr>
+                            <th>안전건설과</th>
+                            <td class="cell-amount">50,000<span class="small">/ 40,000</span><span class="rate high">80%</span></td>
+                            <td class="cell-amount">60,000<span class="small">/ 45,000</span><span class="rate high">75%</span></td>
+                            <td class="cell-amount">30,000<span class="small">/ 20,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">40,000<span class="small">/ 30,000</span><span class="rate high">75%</span></td>
+                            <td class="cell-amount">50,000<span class="small">/ 35,000</span><span class="rate high">70%</span></td>
+                            <td class="total-col">230,000<span class="small">/ 170,000</span><span class="rate high">74%</span></td>
+                        </tr>
+                        <tr>
+                            <th>농업기술센터</th>
+                            <td class="cell-amount">45,000<span class="small">/ 30,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">35,000<span class="small">/ 20,000</span><span class="rate mid">57%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 15,000</span><span class="rate high">75%</span></td>
+                            <td class="cell-amount">30,000<span class="small">/ 22,000</span><span class="rate mid">73%</span></td>
+                            <td class="cell-amount">40,000<span class="small">/ 23,000</span><span class="rate mid">58%</span></td>
+                            <td class="total-col">170,000<span class="small">/ 110,000</span><span class="rate mid">65%</span></td>
+                        </tr>
+                        <tr>
+                            <th>시설관리과</th>
+                            <td class="cell-amount">30,000<span class="small">/ 22,000</span><span class="rate mid">73%</span></td>
+                            <td class="cell-amount">50,000<span class="small">/ 35,000</span><span class="rate mid">70%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 10,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">25,000<span class="small">/ 18,000</span><span class="rate mid">72%</span></td>
+                            <td class="cell-amount">30,000<span class="small">/ 15,000</span><span class="rate low">50%</span></td>
+                            <td class="total-col">150,000<span class="small">/ 100,000</span><span class="rate mid">67%</span></td>
+                        </tr>
+                        <tr>
+                            <th>보건소</th>
+                            <td class="cell-amount">35,000<span class="small">/ 22,000</span><span class="rate mid">63%</span></td>
+                            <td class="cell-amount">25,000<span class="small">/ 12,000</span><span class="rate low">48%</span></td>
+                            <td class="cell-amount">10,000<span class="small">/ 6,000</span><span class="rate mid">60%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 12,000</span><span class="rate mid">60%</span></td>
+                            <td class="cell-amount">10,000<span class="small">/ 8,000</span><span class="rate high">80%</span></td>
+                            <td class="total-col">100,000<span class="small">/ 60,000</span><span class="rate mid">60%</span></td>
+                        </tr>
+                        <tr>
+                            <th>환경과</th>
+                            <td class="cell-amount">25,000<span class="small">/ 18,000</span><span class="rate mid">72%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 12,000</span><span class="rate mid">60%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 10,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 10,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">10,000<span class="small">/ 5,000</span><span class="rate low">50%</span></td>
+                            <td class="total-col">85,000<span class="small">/ 55,000</span><span class="rate mid">65%</span></td>
+                        </tr>
+                        <tr>
+                            <th>상수도사업소</th>
+                            <td class="cell-amount">30,000<span class="small">/ 22,000</span><span class="rate mid">73%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 14,000</span><span class="rate mid">70%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 10,000</span><span class="rate mid">67%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 12,000</span><span class="rate high">80%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 12,000</span><span class="rate mid">60%</span></td>
+                            <td class="total-col">100,000<span class="small">/ 70,000</span><span class="rate mid">70%</span></td>
+                        </tr>
+                        <tr>
+                            <th>담양읍사무소</th>
+                            <td class="cell-amount">40,000<span class="small">/ 22,000</span><span class="rate low">55%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 10,000</span><span class="rate low">50%</span></td>
+                            <td class="cell-amount">5,000<span class="small">/ 2,000</span><span class="rate low">40%</span></td>
+                            <td class="cell-amount">15,000<span class="small">/ 11,000</span><span class="rate mid">73%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 10,000</span><span class="rate low">50%</span></td>
+                            <td class="total-col">100,000<span class="small">/ 55,000</span><span class="rate low">55%</span></td>
+                        </tr>
+                        <tr>
+                            <th>문화관광과</th>
+                            <td class="cell-amount">20,000<span class="small">/ 14,000</span><span class="rate mid">70%</span></td>
+                            <td class="cell-amount">10,000<span class="small">/ 3,000</span><span class="rate low">30%</span></td>
+                            <td class="cell-amount">5,000<span class="small">/ 0</span><span class="rate low">0%</span></td>
+                            <td class="cell-amount">10,000<span class="small">/ 5,000</span><span class="rate low">50%</span></td>
+                            <td class="cell-amount">20,000<span class="small">/ 3,000</span><span class="rate low">15%</span></td>
+                            <td class="total-col">65,000<span class="small">/ 25,000</span><span class="rate low">38%</span></td>
+                        </tr>
+                        <tr class="total-row">
+                            <th>합계</th>
+                            <td>350,000<span class="small">/ 245,000</span><span class="rate mid">70%</span></td>
+                            <td>280,000<span class="small">/ 180,000</span><span class="rate mid">64%</span></td>
+                            <td>150,000<span class="small">/ 98,000</span><span class="rate mid">65%</span></td>
+                            <td>200,000<span class="small">/ 150,000</span><span class="rate high">75%</span></td>
+                            <td>270,000<span class="small">/ 152,000</span><span class="rate mid">56%</span></td>
+                            <td>1,250,000<span class="small">/ 825,000</span><span class="rate mid">66%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="bgt-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    엑셀 다운로드
+                </button>
+                <button class="btn btn-primary" type="button" onclick="window.closeMatrixModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* ─── 월별 추이 차트 렌더 ─── */
+        // 단위: 천원 — 5월까지 실적, 6~12월 계획
+        const MONTHLY = [
+            { m: 1,  exec:  25000, plan:  35000, isPast: true },
+            { m: 2,  exec:  55000, plan:  60000, isPast: true },
+            { m: 3,  exec: 110000, plan: 110000, isPast: true },
+            { m: 4,  exec: 145000, plan: 140000, isPast: true },
+            { m: 5,  exec: 165000, plan: 165000, isPast: true, isCurrent: true },
+            { m: 6,  exec:      0, plan:  85000, isPast: false },
+            { m: 7,  exec:      0, plan:  60000, isPast: false },
+            { m: 8,  exec:      0, plan:  55000, isPast: false },
+            { m: 9,  exec:      0, plan:  50000, isPast: false },
+            { m: 10, exec:      0, plan:  60000, isPast: false },
+            { m: 11, exec:      0, plan:  55000, isPast: false },
+            { m: 12, exec:      0, plan:  90000, isPast: false },
+        ];
+        const max = Math.max(...MONTHLY.map(d => Math.max(d.exec, d.plan)));
+        const chart = document.getElementById('trend-chart');
+        chart.innerHTML = MONTHLY.map(d => {
+            const value = d.isPast ? d.exec : d.plan;
+            const h = Math.max(4, Math.round((value / max) * 100));
+            const cls = d.isPast ? '' : 'future';
+            const label = d.isPast
+                ? `${d.m}월 집행 ${value.toLocaleString()}천원`
+                : `${d.m}월 계획 ${value.toLocaleString()}천원`;
+            return `
+                <div class="bgt-trend-col">
+                    <div class="bar-exec ${cls}" style="height:${h}%;">
+                        <span class="tooltip">${label}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        /* ─── 매트릭스 모달 ─── */
+        window.openMatrixModal = function () {
+            document.getElementById('matrix-modal').classList.add('is-open');
+        };
+        window.closeMatrixModal = function () {
+            document.getElementById('matrix-modal').classList.remove('is-open');
+        };
+        document.querySelectorAll('.bgt-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

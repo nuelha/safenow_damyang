@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업무문서 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── DOC01-L / DOC02-L 전용 ─── */
+
+        /* 서브 탭 */
+        .doc-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .doc-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+        }
+        .doc-tab:hover { color: var(--main-dark); }
+        .doc-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+        .doc-pane { display: none; }
+        .doc-pane.is-active { display: block; }
+
+        /* KPI 4분할 */
+        .doc-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .doc-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .doc-kpi-cell:last-child { border-right: none; }
+        .doc-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .doc-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .doc-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .doc-kpi-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .doc-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .doc-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .doc-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .doc-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .doc-kpi-value.info { color: var(--status-info-fg); }
+        .doc-kpi-value.warning { color: var(--status-warning-fg); }
+        .doc-kpi-value.success { color: var(--status-success-fg); }
+        .doc-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 카테고리 chip */
+        .doc-cat {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .doc-cat.EDU  { background: #e0eefb; color: #3e7bc7; border-color: #b0d3f0; }
+        .doc-cat.RSK  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .doc-cat.INS  { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .doc-cat.CON  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .doc-cat.ORG  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .doc-cat.PLN  { background: #ddf0ed; color: var(--main); border-color: #99d5cc; }
+        .doc-cat.HLT  { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .doc-cat.ETC  { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+        .doc-cat.CDPA { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+        .doc-cat.LOCAL{ background: #f0e7fb; color: #6b4ab8; border-color: #c8b4e8; }
+
+        /* 상태 chip */
+        .doc-status {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .doc-status.active {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .doc-status.revising {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .doc-status.draft {
+            background: var(--status-info-bg);
+            color: var(--status-info-fg);
+            border-color: var(--status-info-border);
+        }
+        .doc-status.deprecated {
+            background: var(--status-neutral-bg);
+            color: var(--status-neutral-fg);
+            border-color: var(--status-neutral-border);
+        }
+
+        /* 버전 chip */
+        .doc-version {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 4px;
+            background: var(--main);
+            color: white;
+            margin-right: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+        .doc-version.draft { background: var(--status-info-fg); }
+        .doc-version.deprecated { background: var(--text-lightgray); }
+
+        /* 문서 코드 */
+        .doc-code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        /* 연결 수 표시 */
+        .doc-link-count {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 12px;
+            color: var(--main);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .doc-link-count:hover { color: var(--main-dark); text-decoration: underline; }
+        .doc-link-count.zero { color: var(--text-lightgray); cursor: default; font-weight: 500; }
+        .doc-link-count.zero:hover { color: var(--text-lightgray); text-decoration: none; }
+
+        /* 결과 카운트 */
+        .doc-meta-row { display: flex; align-items: center; gap: 12px; }
+        .doc-meta-count { font-size: 14px; color: var(--text-gray); }
+        .doc-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 매뉴얼 상세 모달 */
+        .doc-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .doc-modal-backdrop.is-open { display: flex; }
+        .doc-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 720px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .doc-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .doc-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .doc-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .doc-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .doc-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .doc-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+
+        .doc-info-section + .doc-info-section { margin-top: 18px; }
+        .doc-info-section h4 {
+            font-size: 13px; font-weight: 700;
+            color: var(--main-dark);
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .doc-info-section h4::before {
+            content: ""; display: block;
+            width: 3px; height: 14px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .doc-info-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 8px; column-gap: 12px;
+            font-size: 13px;
+        }
+        .doc-info-grid .k { color: var(--text-gray); font-weight: 500; line-height: 22px; }
+        .doc-info-grid .v { color: var(--text-black); font-weight: 600; line-height: 22px; }
+
+        /* 개정 이력 */
+        .doc-history-list {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .doc-history-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 130px 100px;
+            align-items: center;
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-line);
+            background: white;
+        }
+        .doc-history-row:last-child { border-bottom: none; }
+        .doc-history-row.current { background: var(--brand-100); font-weight: 700; }
+        .doc-history-row .ver-cell { display: flex; align-items: center; gap: 4px; }
+        .doc-history-row .date-cell { color: var(--text-gray); font-size: 12px; }
+        .doc-history-row .by-cell { color: var(--text-gray); font-size: 12px; }
+
+        /* 연결 점검표 리스트 (모달 내) */
+        .doc-linked-list {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .doc-linked-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .doc-linked-row:hover { border-color: var(--main); }
+        .doc-linked-row .name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .doc-linked-row .items-count {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            font-weight: 700;
+        }
+
+        @media (max-width: 1023px) {
+            .doc-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body data-dy-page="doc-manual" data-page-title="업무문서" data-page-subtitle="안전 매뉴얼·점검표 마스터 관리">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="doc-tabs" role="tablist">
+            <button class="doc-tab is-active" type="button" data-tab="manual" data-subtitle="안전 매뉴얼 등록·개정 및 점검표 연결 관리">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                매뉴얼 목록
+            </button>
+            <button class="doc-tab" type="button" data-tab="checklist" data-subtitle="매뉴얼별 점검표 마스터 및 점검 항목 관리">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                점검표 마스터
+            </button>
+        </div>
+
+        <!-- ============================================================
+             ▼ Pane 1: 매뉴얼 (DOC01-L)
+        ============================================================ -->
+        <div class="doc-pane is-active" data-pane="manual">
+
+            <!-- KPI 4분할 -->
+            <section class="doc-kpi-grid">
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">전체 매뉴얼</span>
+                        <span class="doc-kpi-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value">13<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">10개 카테고리 · 시행중 <strong style="color:var(--text-black);">11</strong>건</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">최신 버전</span>
+                        <span class="doc-kpi-icon success">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value success">11<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">결재 완료 · 시행중</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">개정 진행</span>
+                        <span class="doc-kpi-icon warn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value warning">2<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">결재 진행 중 · 시행 대기</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">연결 점검표</span>
+                        <span class="doc-kpi-icon info">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value info">14<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">매뉴얼 ↔ 점검표 1:N 연결</div>
+                </div>
+            </section>
+
+            <!-- 필터 -->
+            <div class="rsk-filter-row">
+                <div class="form-group">
+                    <span class="form-label-inline">카테고리</span>
+                    <select class="select">
+                        <option>전체 (10개)</option>
+                        <option>EDU · 교육</option>
+                        <option>RSK · 위험성평가</option>
+                        <option>INS · 점검</option>
+                        <option>CON · 도급</option>
+                        <option>ORG · 조직</option>
+                        <option>PLN · 계획</option>
+                        <option>HLT · 보건</option>
+                        <option>ETC · 기타</option>
+                        <option>CDPA · 중대재해법</option>
+                        <option>LOCAL · 지자체 조례</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <span class="form-label-inline">상태</span>
+                    <select class="select">
+                        <option>전체</option>
+                        <option>시행중</option>
+                        <option>개정 진행</option>
+                        <option>초안</option>
+                        <option>폐지</option>
+                    </select>
+                </div>
+                <div class="search-bar">
+                    <input class="search-input" type="text" placeholder="매뉴얼명 · 코드 검색">
+                    <button class="search-submit" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        검색
+                    </button>
+                </div>
+                <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+            </div>
+
+            <div class="doc-meta-row">
+                <span class="doc-meta-count">전체 <strong>13</strong>건 표시 중</span>
+            </div>
+
+            <!-- 매뉴얼 테이블 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">매뉴얼 목록</h2>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '매뉴얼 등록 (DOC01-F)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        매뉴얼 등록
+                    </button>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col style="width:120px;"><col><col style="width:100px;"><col style="width:80px;"><col style="width:120px;"><col style="width:100px;"><col style="width:100px;"><col style="width:80px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>코드</th>
+                            <th>매뉴얼명</th>
+                            <th style="text-align:center;">카테고리</th>
+                            <th style="text-align:center;">버전</th>
+                            <th>개정일</th>
+                            <th style="text-align:center;">연결 점검표</th>
+                            <th style="text-align:center;">상태</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.openManualModal('INS-M-001')">
+                            <td><span class="doc-code">INS-M-001</span></td>
+                            <td><strong>일반 시설 안전점검 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">전 부서 공통 · 박안전</div></td>
+                            <td style="text-align:center;"><span class="doc-cat INS">INS</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v3.1</span></td>
+                            <td>2026-02-15</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표 보기')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>2건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('INS-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('INS-M-002')">
+                            <td><span class="doc-code">INS-M-002</span></td>
+                            <td><strong>보건소 청사 정기 점검 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">보건소 · 강보건</div></td>
+                            <td style="text-align:center;"><span class="doc-cat INS">INS</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v2.0</span></td>
+                            <td>2026-01-10</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('INS-M-002')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('INS-M-005')">
+                            <td><span class="doc-code">INS-M-005</span></td>
+                            <td><strong>소방설비 분기 점검 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">시설관리과 · 한시설</div></td>
+                            <td style="text-align:center;"><span class="doc-cat INS">INS</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.4</span></td>
+                            <td>2025-11-22</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('INS-M-005')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('INS-M-008')">
+                            <td><span class="doc-code">INS-M-008</span></td>
+                            <td><strong>화학물질 취급 점검 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">환경과 · 오환경</div></td>
+                            <td style="text-align:center;"><span class="doc-cat INS">INS</span></td>
+                            <td style="text-align:center;"><span class="doc-version revising">v2.3-draft</span></td>
+                            <td>2026-05-08</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('INS-M-008')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('INS-M-011')">
+                            <td><span class="doc-code">INS-M-011</span></td>
+                            <td><strong>정수장 안전점검 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">상수도사업소 · 신상수</div></td>
+                            <td style="text-align:center;"><span class="doc-cat INS">INS</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.0</span></td>
+                            <td>2026-03-01</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('INS-M-011')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('RSK-M-001')">
+                            <td><span class="doc-code">RSK-M-001</span></td>
+                            <td><strong>위험성평가 시행 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">전 부서 공통 · 박안전</div></td>
+                            <td style="text-align:center;"><span class="doc-cat RSK">RSK</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v4.0</span></td>
+                            <td>2026-01-20</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('RSK-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('EDU-M-001')">
+                            <td><span class="doc-code">EDU-M-001</span></td>
+                            <td><strong>안전보건 정기교육 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">전 부서 · 안전건설과 주관</div></td>
+                            <td style="text-align:center;"><span class="doc-cat EDU">EDU</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v2.5</span></td>
+                            <td>2026-02-28</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('EDU-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('CON-M-001')">
+                            <td><span class="doc-code">CON-M-001</span></td>
+                            <td><strong>도급공사 TBM 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">건설지원팀 · 이건설</div></td>
+                            <td style="text-align:center;"><span class="doc-cat CON">CON</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.0</span></td>
+                            <td>2026-04-12</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('CON-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('ORG-M-001')">
+                            <td><span class="doc-code">ORG-M-001</span></td>
+                            <td><strong>전담조직 운영 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">안전건설과 · 박○○</div></td>
+                            <td style="text-align:center;"><span class="doc-cat ORG">ORG</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.2</span></td>
+                            <td>2026-03-18</td>
+                            <td style="text-align:center;"><span class="doc-link-count zero">0건</span></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('ORG-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('PLN-M-001')">
+                            <td><span class="doc-code">PLN-M-001</span></td>
+                            <td><strong>안전보건 계획 수립 가이드</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">전 부서 공통 · 안전건설과</div></td>
+                            <td style="text-align:center;"><span class="doc-cat PLN">PLN</span></td>
+                            <td style="text-align:center;"><span class="doc-version revising">v2.0-draft</span></td>
+                            <td>2026-05-05</td>
+                            <td style="text-align:center;"><span class="doc-link-count zero">0건</span></td>
+                            <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('PLN-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('HLT-M-001')">
+                            <td><span class="doc-code">HLT-M-001</span></td>
+                            <td><strong>직원 보건관리 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">보건소 주관 · 강보건</div></td>
+                            <td style="text-align:center;"><span class="doc-cat HLT">HLT</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.0</span></td>
+                            <td>2026-02-05</td>
+                            <td style="text-align:center;"><span class="doc-link-count zero">0건</span></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('HLT-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('CDPA-M-001')">
+                            <td><span class="doc-code">CDPA-M-001</span></td>
+                            <td><strong>중대재해처벌법 의무이행 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">전 부서 필수 · 박안전</div></td>
+                            <td style="text-align:center;"><span class="doc-cat CDPA">CDPA</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v3.0</span></td>
+                            <td>2026-01-15</td>
+                            <td style="text-align:center;"><a class="doc-link-count" onclick="event.stopPropagation(); window.DYLayout._soon(event, '연결 점검표')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>1건</a></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('CDPA-M-001')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.openManualModal('LOCAL-M-001')">
+                            <td><span class="doc-code">LOCAL-M-001</span></td>
+                            <td><strong>담양군 안전조례 시행 매뉴얼</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">자치행정과 · 홍길동</div></td>
+                            <td style="text-align:center;"><span class="doc-cat LOCAL">LOCAL</span></td>
+                            <td style="text-align:center;"><span class="doc-version">v1.5</span></td>
+                            <td>2025-12-30</td>
+                            <td style="text-align:center;"><span class="doc-link-count zero">0건</span></td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openManualModal('LOCAL-M-001')">상세</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div data-pagination data-current="1" data-total="3"></div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ Pane 2: 점검표 (DOC02-L)
+        ============================================================ -->
+        <div class="doc-pane" data-pane="checklist">
+
+            <!-- KPI -->
+            <section class="doc-kpi-grid">
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">전체 점검표</span>
+                        <span class="doc-kpi-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value">14<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">10개 매뉴얼 ↔ 14개 점검표</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">총 점검 항목</span>
+                        <span class="doc-kpi-icon info">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value info">218<span class="small">개</span></div>
+                    <div class="doc-kpi-sub">점검표 평균 <strong style="color:var(--text-black);">15.6</strong>개 항목</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">활용 점검</span>
+                        <span class="doc-kpi-icon success">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value success">39<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">2026년 점검표 적용 건수</div>
+                </div>
+                <div class="doc-kpi-cell">
+                    <div class="doc-kpi-head">
+                        <span class="doc-kpi-title">미연결 매뉴얼</span>
+                        <span class="doc-kpi-icon warn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </span>
+                    </div>
+                    <div class="doc-kpi-value warning">3<span class="small">건</span></div>
+                    <div class="doc-kpi-sub">ORG·PLN·HLT·LOCAL 매뉴얼</div>
+                </div>
+            </section>
+
+            <!-- 필터 -->
+            <div class="rsk-filter-row">
+                <div class="form-group">
+                    <span class="form-label-inline">카테고리</span>
+                    <select class="select">
+                        <option>전체</option>
+                        <option>EDU · 교육</option>
+                        <option>RSK · 위험성평가</option>
+                        <option>INS · 점검</option>
+                        <option>CON · 도급</option>
+                        <option>CDPA · 중대재해법</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <span class="form-label-inline">연결 매뉴얼</span>
+                    <select class="select">
+                        <option>전체</option>
+                        <option>INS-M-001 일반 시설 점검</option>
+                        <option>RSK-M-001 위험성평가</option>
+                        <option>EDU-M-001 정기교육</option>
+                    </select>
+                </div>
+                <div class="search-bar">
+                    <input class="search-input" type="text" placeholder="점검표명 검색">
+                    <button class="search-submit" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        검색
+                    </button>
+                </div>
+                <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+            </div>
+
+            <div class="doc-meta-row">
+                <span class="doc-meta-count">전체 <strong>14</strong>건 표시 중</span>
+            </div>
+
+            <!-- 점검표 테이블 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">점검표 마스터</h2>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '점검표 등록 (DOC02-F)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        점검표 등록
+                    </button>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col style="width:120px;"><col><col style="width:200px;"><col style="width:90px;"><col style="width:100px;"><col style="width:100px;"><col style="width:80px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>코드</th>
+                            <th>점검표명</th>
+                            <th>연결 매뉴얼</th>
+                            <th style="text-align:center;">항목 수</th>
+                            <th style="text-align:center;">활용</th>
+                            <th style="text-align:center;">상태</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-001')">
+                            <td><span class="doc-code">INS-CL-001</span></td>
+                            <td><strong>일반 시설 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-001 v3.1</td>
+                            <td style="text-align:center; font-weight:700;">25</td>
+                            <td style="text-align:center; color:var(--text-gray);">5회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-002')">
+                            <td><span class="doc-code">INS-CL-002</span></td>
+                            <td><strong>청사 정기 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-002 v2.0</td>
+                            <td style="text-align:center; font-weight:700;">18</td>
+                            <td style="text-align:center; color:var(--text-gray);">2회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-005')">
+                            <td><span class="doc-code">INS-CL-005</span></td>
+                            <td><strong>소방설비 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-005 v1.4</td>
+                            <td style="text-align:center; font-weight:700;">22</td>
+                            <td style="text-align:center; color:var(--text-gray);">4회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-008')">
+                            <td><span class="doc-code">INS-CL-008</span></td>
+                            <td><strong>화학물질 취급 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-008 v2.3-draft</td>
+                            <td style="text-align:center; font-weight:700;">30</td>
+                            <td style="text-align:center; color:var(--text-gray);">3회</td>
+                            <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-008-2')">
+                            <td><span class="doc-code">INS-CL-008-2</span></td>
+                            <td><strong>화학물질 보관 일일 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-008 v2.3-draft</td>
+                            <td style="text-align:center; font-weight:700;">12</td>
+                            <td style="text-align:center; color:var(--text-gray);">15회</td>
+                            <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-011')">
+                            <td><span class="doc-code">INS-CL-011</span></td>
+                            <td><strong>정수장 안전점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-011 v1.0</td>
+                            <td style="text-align:center; font-weight:700;">28</td>
+                            <td style="text-align:center; color:var(--text-gray);">2회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-013')">
+                            <td><span class="doc-code">INS-CL-013</span></td>
+                            <td><strong>집중호우 대비 시설 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-013 v1.1</td>
+                            <td style="text-align:center; font-weight:700;">15</td>
+                            <td style="text-align:center; color:var(--text-gray);">1회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - RSK-CL-001')">
+                            <td><span class="doc-code">RSK-CL-001</span></td>
+                            <td><strong>위험성평가 표준 점검표</strong></td>
+                            <td><span class="doc-cat RSK">RSK</span> RSK-M-001 v4.0</td>
+                            <td style="text-align:center; font-weight:700;">12</td>
+                            <td style="text-align:center; color:var(--text-gray);">8회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - EDU-CL-001')">
+                            <td><span class="doc-code">EDU-CL-001</span></td>
+                            <td><strong>교육 이수 확인 점검표</strong></td>
+                            <td><span class="doc-cat EDU">EDU</span> EDU-M-001 v2.5</td>
+                            <td style="text-align:center; font-weight:700;">6</td>
+                            <td style="text-align:center; color:var(--text-gray);">320회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - CON-CL-001')">
+                            <td><span class="doc-code">CON-CL-001</span></td>
+                            <td><strong>TBM 일일 점검표</strong></td>
+                            <td><span class="doc-cat CON">CON</span> CON-M-001 v1.0</td>
+                            <td style="text-align:center; font-weight:700;">8</td>
+                            <td style="text-align:center; color:var(--text-gray);">42회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - CDPA-CL-001')">
+                            <td><span class="doc-code">CDPA-CL-001</span></td>
+                            <td><strong>중대재해법 의무이행 체크리스트</strong></td>
+                            <td><span class="doc-cat CDPA">CDPA</span> CDPA-M-001 v3.0</td>
+                            <td style="text-align:center; font-weight:700;">35</td>
+                            <td style="text-align:center; color:var(--text-gray);">9회</td>
+                            <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '점검표 상세 (DOC02-D) - INS-CL-001-2')">
+                            <td><span class="doc-code">INS-CL-001-2</span></td>
+                            <td><strong>일반 시설 보강 점검표</strong></td>
+                            <td><span class="doc-cat INS">INS</span> INS-M-001 v3.1</td>
+                            <td style="text-align:center; font-weight:700;">7</td>
+                            <td style="text-align:center; color:var(--text-gray);">0회</td>
+                            <td style="text-align:center;"><span class="doc-status draft">초안</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검표 상세')">상세</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div data-pagination data-current="1" data-total="2"></div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+         매뉴얼 상세 모달
+    ============================================================ -->
+    <div class="doc-modal-backdrop" id="manual-modal">
+        <div class="doc-modal" role="dialog" aria-modal="true">
+            <div class="doc-modal-header">
+                <div class="doc-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span id="manual-modal-name">매뉴얼 상세</span>
+                </div>
+                <button type="button" class="doc-modal-close" onclick="window.closeManualModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="doc-modal-body" id="manual-modal-body">
+                <!-- JS 렌더 -->
+            </div>
+            <div class="doc-modal-footer">
+                <div style="font-size:12px; color:var(--text-gray);" id="manual-modal-meta"></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 다운로드')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PDF
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '매뉴얼 개정 (DOC01-F)')">개정 시작</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* 탭 전환 — 현재 탭에 맞춰 페이지 부제도 갱신 */
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+        document.querySelectorAll('.doc-tab[data-tab]').forEach(b => {
+            b.addEventListener('click', () => {
+                const target = b.dataset.tab;
+                document.querySelectorAll('.doc-tab[data-tab]').forEach(x => {
+                    x.classList.toggle('is-active', x.dataset.tab === target);
+                });
+                document.querySelectorAll('.doc-pane').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.pane === target);
+                });
+                if (subtitleEl && b.dataset.subtitle) {
+                    subtitleEl.textContent = b.dataset.subtitle;
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        /* ─── 매뉴얼 상세 ─── */
+        const MANUALS = {
+            'INS-M-001': {
+                name: '일반 시설 안전점검 매뉴얼', cat: 'INS', ver: 'v3.1', est: '2024-03-10', updated: '2026-02-15',
+                owner: '박안전 (안전건설과)', dept: '전 부서 공통', scope: '관리대상 32건 전체',
+                summary: '담양군청 산하 모든 시설의 일반 안전점검 절차·체크리스트·결과 처리 방법을 정의합니다.',
+                history: [
+                    { ver: 'v3.1', date: '2026-02-15', by: '박안전', note: '소방설비 점검 항목 추가 (3개)' },
+                    { ver: 'v3.0', date: '2025-09-20', by: '박안전', note: '전 부서 적용 확대' },
+                    { ver: 'v2.2', date: '2025-03-12', by: '박과장', note: '집중호우 대비 보강' },
+                    { ver: 'v1.0', date: '2024-03-10', by: '박과장', note: '최초 제정' },
+                ],
+                linked: [{ code: 'INS-CL-001', name: '일반 시설 점검표', items: 25 }, { code: 'INS-CL-001-2', name: '일반 시설 보강 점검표 (초안)', items: 7 }]
+            },
+            'INS-M-008': {
+                name: '화학물질 취급 점검 매뉴얼', cat: 'INS', ver: 'v2.3-draft', est: '2024-08-22', updated: '2026-05-08',
+                owner: '오환경 (환경과)', dept: '환경과', scope: '환경자원시설 외 2건',
+                summary: '환경자원시설 등 화학물질 취급장의 안전점검 절차 및 화학물질안전관리법 의무 이행 항목.',
+                history: [
+                    { ver: 'v2.3-draft', date: '2026-05-08', by: '오환경', note: '신규 약품 추가에 따른 보관 기준 개정 (진행 중)' },
+                    { ver: 'v2.2', date: '2025-12-15', by: '오환경', note: 'MSDS 갱신 항목 추가' },
+                    { ver: 'v2.0', date: '2025-04-01', by: '한과장', note: '화학물질안전관리법 개정 반영' },
+                    { ver: 'v1.0', date: '2024-08-22', by: '한과장', note: '최초 제정' },
+                ],
+                linked: [{ code: 'INS-CL-008', name: '화학물질 취급 점검표', items: 30 }, { code: 'INS-CL-008-2', name: '화학물질 보관 일일 점검표', items: 12 }]
+            },
+            'CDPA-M-001': {
+                name: '중대재해처벌법 의무이행 매뉴얼', cat: 'CDPA', ver: 'v3.0', est: '2023-02-01', updated: '2026-01-15',
+                owner: '박안전 (안전건설과)', dept: '전 부서 필수', scope: '관리대상 전체 + 도급계약 전체',
+                summary: '중대재해처벌법 시행령 제4조 의무이행 9대 항목별 절차·증빙 관리 방법을 정의합니다.',
+                history: [
+                    { ver: 'v3.0', date: '2026-01-15', by: '박안전', note: '경영방침 v2.5 연동 + 결재 흐름 갱신' },
+                    { ver: 'v2.0', date: '2025-01-20', by: '박과장', note: '시행령 개정 반영 (제4조 보강)' },
+                    { ver: 'v1.0', date: '2023-02-01', by: '박과장', note: '법 시행 초기 제정' },
+                ],
+                linked: [{ code: 'CDPA-CL-001', name: '의무이행 체크리스트', items: 35 }]
+            },
+        };
+
+        const DEFAULT_DATA = {
+            name: '매뉴얼', cat: 'INS', ver: '-', est: '-', updated: '-', owner: '-', dept: '-', scope: '-',
+            summary: '매뉴얼 상세 데이터가 준비 중입니다.',
+            history: [{ ver: '-', date: '-', by: '-', note: '데이터 없음' }],
+            linked: []
+        };
+
+        const CAT_LABEL = {
+            EDU: '교육', RSK: '위험성평가', INS: '점검', CON: '도급',
+            ORG: '조직', PLN: '계획', HLT: '보건', ETC: '기타',
+            CDPA: '중대재해법', LOCAL: '지자체 조례'
+        };
+
+        window.openManualModal = function (code) {
+            const m = MANUALS[code] || { ...DEFAULT_DATA, name: code };
+            document.getElementById('manual-modal-name').innerHTML =
+                `<span class="doc-code" style="margin-right:8px;">${code}</span> ${m.name}`;
+            document.getElementById('manual-modal-meta').innerHTML =
+                `제정 <strong style="color:var(--text-black);">${m.est}</strong> · 최근 개정 <strong style="color:var(--text-black);">${m.updated}</strong>`;
+
+            const linkedHtml = m.linked.length
+                ? m.linked.map(l => `
+                    <div class="doc-linked-row">
+                        <span class="doc-code">${l.code}</span>
+                        <span class="name">${l.name}</span>
+                        <span class="items-count">${l.items}개 항목</span>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">연결된 점검표가 없습니다.</p>';
+
+            const histHtml = m.history.map((h, i) => `
+                <div class="doc-history-row ${i === 0 ? 'current' : ''}">
+                    <div class="ver-cell">
+                        <span class="doc-version ${i === 0 && h.ver.endsWith('-draft') ? 'draft' : ''}">${h.ver}</span>
+                    </div>
+                    <div>${h.note}</div>
+                    <div class="date-cell">${h.date}</div>
+                    <div class="by-cell">${h.by}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('manual-modal-body').innerHTML = `
+                <div class="doc-info-section">
+                    <h4>기본 정보</h4>
+                    <div class="doc-info-grid">
+                        <span class="k">카테고리</span>
+                        <span class="v"><span class="doc-cat ${m.cat}">${m.cat}</span> ${CAT_LABEL[m.cat] || m.cat}</span>
+                        <span class="k">현재 버전</span>
+                        <span class="v"><span class="doc-version">${m.ver}</span></span>
+                        <span class="k">담당</span>
+                        <span class="v">${m.owner}</span>
+                        <span class="k">적용 부서</span>
+                        <span class="v">${m.dept}</span>
+                        <span class="k">적용 범위</span>
+                        <span class="v">${m.scope}</span>
+                    </div>
+                </div>
+
+                <div class="doc-info-section">
+                    <h4>매뉴얼 요약</h4>
+                    <p style="font-size:13px; color:var(--text-black); line-height:1.6;">${m.summary}</p>
+                </div>
+
+                <div class="doc-info-section">
+                    <h4>연결 점검표 (${m.linked.length}건)</h4>
+                    <div class="doc-linked-list">${linkedHtml}</div>
+                </div>
+
+                <div class="doc-info-section">
+                    <h4>개정 이력</h4>
+                    <div class="doc-history-list">${histHtml}</div>
+                </div>
+            `;
+
+            document.getElementById('manual-modal').classList.add('is-open');
+        };
+        window.closeManualModal = function () {
+            document.getElementById('manual-modal').classList.remove('is-open');
+        };
+        document.querySelectorAll('.doc-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

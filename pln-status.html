@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전계획 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── PLN01-V 전용 ─── */
+
+        /* 서브 탭 (공통 패턴) */
+        .pln-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pln-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+        }
+        .pln-tab:hover { color: var(--main-dark); }
+        .pln-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
+        /* 필터 바 (BGT와 유사) */
+        .pln-filter {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .pln-filter-year {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .pln-filter-year .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .pln-filter-year select {
+            padding: 6px 24px 6px 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            border: none;
+            background-color: transparent;
+        }
+        .pln-filter .form-group {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .pln-filter .form-group label {
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+        }
+        .pln-filter-meta {
+            margin-left: auto;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .pln-filter-meta strong { color: var(--text-black); font-weight: 700; }
+
+        /* 요약 KPI 4분할 */
+        .pln-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .pln-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 124px; justify-content: center;
+            cursor: pointer;
+            transition: background .12s ease;
+        }
+        .pln-kpi-cell:hover { background: var(--brand-50); }
+        .pln-kpi-cell:last-child { border-right: none; }
+        .pln-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .pln-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .pln-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .pln-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .pln-kpi-icon.info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+        .pln-kpi-icon.warn    { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .pln-kpi-value {
+            font-size: 30px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .pln-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .pln-kpi-value.success { color: var(--status-success-fg); }
+        .pln-kpi-value.info    { color: var(--status-info-fg); }
+        .pln-kpi-value.warning { color: var(--status-warning-fg); }
+        .pln-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 미수립 경고 배너 */
+        .pln-alert-banner {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+        }
+        .pln-alert-banner .icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: white;
+            color: var(--status-warning-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .pln-alert-banner .msg { flex: 1; font-size: 14px; color: var(--status-warning-fg); }
+        .pln-alert-banner .msg strong { font-weight: 700; }
+        .pln-alert-banner .msg .sub { display: block; font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 이행 진행률 카드 */
+        .pln-progress-card {
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+            border-radius: var(--radius-card);
+            padding: 22px 28px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .pln-progress-card::before {
+            content: ""; position: absolute;
+            top: -40px; right: -40px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+        .pln-progress-card::after {
+            content: ""; position: absolute;
+            bottom: -60px; right: 100px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .pln-progress-inner {
+            position: relative;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .pln-progress-main { flex: 1; }
+        .pln-progress-title {
+            font-size: 13px; font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 4px;
+        }
+        .pln-progress-value {
+            display: flex; align-items: baseline; gap: 6px;
+            font-size: 40px; font-weight: 800;
+            line-height: 1; letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+        .pln-progress-value .unit {
+            font-size: 16px; font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+        .pln-progress-track {
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .pln-progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 999px;
+        }
+        .pln-progress-meta {
+            display: flex; gap: 22px;
+            margin-top: 12px;
+            font-size: 12px; color: rgba(255,255,255,0.85);
+        }
+        .pln-progress-meta .item .label {
+            display: block; font-size: 11px; color: rgba(255,255,255,0.6);
+        }
+        .pln-progress-meta .item strong {
+            display: block;
+            font-size: 16px; font-weight: 700;
+            color: white;
+            margin-top: 2px;
+        }
+        .pln-progress-icon {
+            width: 80px; height: 80px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.12);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* 2분할: 시기도래 + 부서별 그래프 */
+        .pln-two-col {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+        }
+
+        /* 시기도래 위젯 */
+        .pln-due-list {
+            display: flex; flex-direction: column;
+            padding: 8px 0;
+        }
+        .pln-due-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 22px;
+            cursor: pointer;
+            transition: background .12s ease;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pln-due-item:last-child { border-bottom: none; }
+        .pln-due-item:hover { background: var(--brand-50); }
+        .pln-due-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            flex-shrink: 0;
+        }
+        .pln-due-icon.education { background: #e0eefb; color: #3e7bc7; }
+        .pln-due-icon.inspection { background: #fdedda; color: #e58a3c; }
+        .pln-due-icon.risk      { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .pln-due-icon.equipment { background: var(--brand-100); color: var(--main-dark); }
+        .pln-due-icon.self      { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .pln-due-body { flex: 1; min-width: 0; }
+        .pln-due-title {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 600; color: var(--text-black);
+        }
+        .pln-due-cat {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .pln-due-cat.education { background: #e0eefb; color: #3e7bc7; }
+        .pln-due-cat.inspection { background: #fdedda; color: #e58a3c; }
+        .pln-due-cat.risk      { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .pln-due-cat.equipment { background: var(--brand-100); color: var(--main-dark); }
+        .pln-due-cat.self      { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .pln-due-meta {
+            font-size: 11px; color: var(--text-gray);
+            margin-top: 2px;
+        }
+        .pln-due-dday {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .pln-due-dday.urgent {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+        }
+        .pln-due-dday.critical {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+        }
+
+        /* 부서별 진행률 chart */
+        .pln-chart-body {
+            padding: 20px 22px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .pln-chart-row {
+            display: grid;
+            grid-template-columns: 110px 1fr 90px;
+            align-items: center;
+            gap: 10px;
+        }
+        .pln-chart-name {
+            font-size: 13px; font-weight: 600; color: var(--text-black);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .pln-chart-track {
+            position: relative;
+            height: 20px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .pln-chart-fill {
+            position: absolute;
+            top: 0; bottom: 0; left: 0;
+            background: var(--main);
+            border-radius: 999px;
+            display: flex; align-items: center;
+            padding-left: 10px;
+            font-size: 11px; font-weight: 700;
+            color: white;
+        }
+        .pln-chart-fill.full { background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%); }
+        .pln-chart-fill.partial { background: linear-gradient(90deg, var(--status-warning-fg) 0%, #f9c58f 100%); }
+        .pln-chart-fill.empty {
+            padding-left: 0;
+            color: var(--status-danger-fg);
+            background: var(--status-danger-bg);
+            justify-content: center;
+        }
+        .pln-chart-count {
+            font-size: 13px; font-weight: 700;
+            color: var(--text-black);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .pln-chart-count .total { color: var(--text-gray); font-weight: 500; font-size: 12px; }
+        .pln-chart-count.miss { color: var(--status-danger-fg); }
+        .pln-chart-count .miss-ind { color: var(--status-danger-fg); font-size: 11px; }
+
+        @media (max-width: 1023px) {
+            .pln-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .pln-two-col { grid-template-columns: 1fr; }
+            .pln-progress-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+        }
+    </style>
+</head>
+<body data-dy-page="pln-list" data-page-title="안전계획" data-page-subtitle="연간 안전보건 계획 수립·이행 현황">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="pln-tabs" role="tablist">
+            <button class="pln-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </button>
+            <button class="pln-tab" type="button" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                계획 목록
+            </button>
+            <button class="pln-tab" type="button" onclick="window.DYLayout._soon(event, '월별 캘린더 (PLN03-V)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                캘린더
+            </button>
+            <button class="pln-tab" type="button" onclick="window.DYLayout._soon(event, '계획 항목 마스터 (PLN04-S)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="pln-filter">
+            <div class="pln-filter-year">
+                <span class="icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </span>
+                <select>
+                    <option>2026년</option>
+                    <option>2025년</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>부서</label>
+                <select class="select">
+                    <option>전체</option>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>보건소</option>
+                    <option>담양읍사무소</option>
+                    <option>상수도사업소</option>
+                    <option>문화관광과</option>
+                </select>
+            </div>
+            <span class="pln-filter-meta">
+                계획 기간 <strong>2026-01-01 ~ 2026-12-31</strong> · 활성 관리대상 <strong>32건</strong>
+            </span>
+        </div>
+
+        <!-- ─── 요약 KPI 4분할 ─── -->
+        <section class="pln-kpi-grid">
+            <div class="pln-kpi-cell" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L) - 전체')">
+                <div class="pln-kpi-head">
+                    <span class="pln-kpi-title">전체 계획</span>
+                    <span class="pln-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </span>
+                </div>
+                <div class="pln-kpi-value">28<span class="small">건</span></div>
+                <div class="pln-kpi-sub">2026년 등록 계획 (관리대상 28건)</div>
+            </div>
+            <div class="pln-kpi-cell" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L) - 수립 완료')">
+                <div class="pln-kpi-head">
+                    <span class="pln-kpi-title">수립 완료</span>
+                    <span class="pln-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="pln-kpi-value success">22<span class="small">건</span></div>
+                <div class="pln-kpi-sub">결재 완료 · 이행 시작 단계</div>
+            </div>
+            <div class="pln-kpi-cell" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L) - 진행 중')">
+                <div class="pln-kpi-head">
+                    <span class="pln-kpi-title">진행 중</span>
+                    <span class="pln-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="pln-kpi-value info">6<span class="small">건</span></div>
+                <div class="pln-kpi-sub">이행 진행 중 (실행 단계)</div>
+            </div>
+            <div class="pln-kpi-cell" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L) - 미수립 (?filter=no_plan)')">
+                <div class="pln-kpi-head">
+                    <span class="pln-kpi-title">미수립</span>
+                    <span class="pln-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                </div>
+                <div class="pln-kpi-value warning">4<span class="small">건</span></div>
+                <div class="pln-kpi-sub">활성 관리대상 미수립 계획</div>
+            </div>
+        </section>
+
+        <!-- ─── 미수립 안내 배너 ─── -->
+        <div class="pln-alert-banner">
+            <span class="icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <span class="msg">
+                <strong>연간 계획 미수립 관리대상 4건</strong>이 있습니다.
+                <span class="sub">보건소 청사·담양읍 행정복지센터·환경자원시설·문화관광과 산하 시설 — 빠른 계획 수립 필요</span>
+            </span>
+            <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '계획 목록 (PLN01-L) ?filter=no_plan')">
+                미수립 목록 →
+            </button>
+        </div>
+
+        <!-- ─── 이행 진행률 카드 (전체 평균) ─── -->
+        <section class="pln-progress-card">
+            <div class="pln-progress-inner">
+                <div class="pln-progress-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="pln-progress-main">
+                    <div class="pln-progress-title">전체 계획 이행 진행률 (평균)</div>
+                    <div class="pln-progress-value">78<span class="unit">%</span></div>
+                    <div class="pln-progress-track">
+                        <div class="pln-progress-fill" style="width:78%;"></div>
+                    </div>
+                    <div class="pln-progress-meta">
+                        <div class="item">
+                            <span class="label">완료 항목</span>
+                            <strong>245건</strong>
+                        </div>
+                        <div class="item">
+                            <span class="label">진행 중</span>
+                            <strong>48건</strong>
+                        </div>
+                        <div class="item">
+                            <span class="label">대기</span>
+                            <strong>22건</strong>
+                        </div>
+                        <div class="item">
+                            <span class="label">전체 항목</span>
+                            <strong>315건</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 시기도래 + 부서별 차트 2분할 ─── -->
+        <div class="pln-two-col">
+
+            <!-- 시기도래 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">시기도래 (D-30 이내 마감)</h2>
+                    <a class="text-muted" href="#" style="font-size:13px;" onclick="event.preventDefault(); window.DYLayout._soon(event, '월별 캘린더 (PLN03-V)')">캘린더 보기 →</a>
+                </div>
+                <div class="pln-due-list">
+                    <div class="pln-due-item" onclick="window.DYLayout._soon(event, '계획 상세 (PLN02-D) - 청사 정기 점검')">
+                        <span class="pln-due-icon inspection">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        </span>
+                        <div class="pln-due-body">
+                            <div class="pln-due-title">
+                                군청 청사 정기 안전점검
+                                <span class="pln-due-cat inspection">점검</span>
+                            </div>
+                            <div class="pln-due-meta">시설관리과 · 한시설 · 2026-05-18 마감</div>
+                        </div>
+                        <span class="pln-due-dday urgent">D-5</span>
+                    </div>
+                    <div class="pln-due-item" onclick="window.DYLayout._soon(event, '계획 상세 (PLN02-D) - 정수장 안전교육')">
+                        <span class="pln-due-icon education">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        </span>
+                        <div class="pln-due-body">
+                            <div class="pln-due-title">
+                                정수장 종사자 안전보건교육
+                                <span class="pln-due-cat education">교육</span>
+                            </div>
+                            <div class="pln-due-meta">상수도사업소 · 신상수 · 2026-05-25 마감</div>
+                        </div>
+                        <span class="pln-due-dday urgent">D-12</span>
+                    </div>
+                    <div class="pln-due-item" onclick="window.DYLayout._soon(event, '계획 상세 (PLN02-D) - 농기계 안전점검')">
+                        <span class="pln-due-icon risk">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </span>
+                        <div class="pln-due-body">
+                            <div class="pln-due-title">
+                                농기계 임대사업소 위험성평가
+                                <span class="pln-due-cat risk">평가</span>
+                            </div>
+                            <div class="pln-due-meta">농업기술센터 · 정농업 · 2026-05-31 마감</div>
+                        </div>
+                        <span class="pln-due-dday">D-18</span>
+                    </div>
+                    <div class="pln-due-item" onclick="window.DYLayout._soon(event, '계획 상세 (PLN02-D) - 보호장비 보충')">
+                        <span class="pln-due-icon equipment">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </span>
+                        <div class="pln-due-body">
+                            <div class="pln-due-title">
+                                군민체육관 보호장비 보충 구매
+                                <span class="pln-due-cat equipment">예산집행</span>
+                            </div>
+                            <div class="pln-due-meta">문화관광과 · 정하나 · 2026-06-05 마감</div>
+                        </div>
+                        <span class="pln-due-dday">D-23</span>
+                    </div>
+                    <div class="pln-due-item" onclick="window.DYLayout._soon(event, '계획 상세 (PLN02-D) - 보건소 자율점검')">
+                        <span class="pln-due-icon self">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                        </span>
+                        <div class="pln-due-body">
+                            <div class="pln-due-title">
+                                보건소 자율 안전점검 (2026 2회차)
+                                <span class="pln-due-cat self">자율점검</span>
+                            </div>
+                            <div class="pln-due-meta">보건소 · 강보건 · 2026-06-10 마감</div>
+                        </div>
+                        <span class="pln-due-dday">D-28</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 관리대상별 계획 수립 현황 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">부서별 계획 수립 현황</h2>
+                    <span class="text-muted" style="font-size:13px;">활성 관리대상 32건 기준</span>
+                </div>
+                <div class="pln-chart-body">
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">안전건설과</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill full" style="width:100%;">100%</div></div>
+                        <span class="pln-chart-count">6 / <span class="total">6</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">시설관리과</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill full" style="width:100%;">100%</div></div>
+                        <span class="pln-chart-count">4 / <span class="total">4</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">자치행정과</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill full" style="width:100%;">100%</div></div>
+                        <span class="pln-chart-count">3 / <span class="total">3</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">농업기술센터</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill full" style="width:100%;">100%</div></div>
+                        <span class="pln-chart-count">3 / <span class="total">3</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">상수도사업소</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill full" style="width:100%;">100%</div></div>
+                        <span class="pln-chart-count">3 / <span class="total">3</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">환경과</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill partial" style="width:67%;">67%</div></div>
+                        <span class="pln-chart-count miss">2 / <span class="total">3</span> <span class="miss-ind">⚠ 1</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">문화관광과</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill partial" style="width:75%;">75%</div></div>
+                        <span class="pln-chart-count miss">3 / <span class="total">4</span> <span class="miss-ind">⚠ 1</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">담양읍사무소</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill partial" style="width:50%;">50%</div></div>
+                        <span class="pln-chart-count miss">1 / <span class="total">2</span> <span class="miss-ind">⚠ 1</span></span>
+                    </div>
+                    <div class="pln-chart-row">
+                        <span class="pln-chart-name">보건소</span>
+                        <div class="pln-chart-track"><div class="pln-chart-fill partial" style="width:50%;">50%</div></div>
+                        <span class="pln-chart-count miss">1 / <span class="total">2</span> <span class="miss-ind">⚠ 1</span></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수급업체 목록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── CON02-L 전용 ─── */
+
+        /* KPI 4분할 */
+        .sub-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .sub-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .sub-kpi-cell:last-child { border-right: none; }
+        .sub-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .sub-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .sub-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .sub-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .sub-kpi-icon.danger  { background: var(--status-danger-bg);  color: var(--status-danger-fg); }
+        .sub-kpi-icon.warn    { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .sub-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .sub-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .sub-kpi-value.success { color: var(--status-success-fg); }
+        .sub-kpi-value.danger  { color: var(--status-danger-fg); }
+        .sub-kpi-value.warning { color: var(--status-warning-fg); }
+        .sub-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .sub-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 업종 chip */
+        .industry-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .industry-chip.construction { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .industry-chip.facility     { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .industry-chip.electric     { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+        .industry-chip.transport    { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .industry-chip.cleaning     { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .industry-chip.etc          { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+
+        /* 평가 결과 chip */
+        .qual-chip {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .qual-chip.qualified {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .qual-chip.unqualified {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+        .qual-chip.unrated {
+            background: var(--status-neutral-bg);
+            color: var(--status-neutral-fg);
+            border-color: var(--status-neutral-border);
+        }
+
+        /* 점수 */
+        .sub-score {
+            font-size: 14px; font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-black);
+        }
+        .sub-score.high { color: var(--status-success-fg); }
+        .sub-score.mid  { color: var(--status-warning-fg); }
+        .sub-score.low  { color: var(--status-danger-fg); }
+        .sub-score-empty { color: var(--text-lightgray); font-weight: 500; font-size: 12px; }
+
+        /* 사업자번호 */
+        .sub-biznum {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        /* 회사명 셀 (아바타 포함) */
+        .sub-name-cell {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-weight: 700;
+            color: var(--text-black);
+        }
+        .sub-name-avatar {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+        .sub-name-avatar.A { background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%); }
+        .sub-name-avatar.B { background: linear-gradient(135deg, #76c8f0 0%, var(--status-info-fg) 100%); }
+        .sub-name-avatar.C { background: linear-gradient(135deg, #e58a3c 0%, #c47a07 100%); }
+        .sub-name-avatar.D { background: linear-gradient(135deg, var(--status-purple-fg) 0%, #5b2ba8 100%); }
+        .sub-name-avatar.E { background: linear-gradient(135deg, var(--status-danger-fg) 0%, #b94646 100%); }
+        .sub-name-cell .deactivated {
+            text-decoration: line-through;
+            color: var(--text-lightgray);
+        }
+
+        /* 참여 계약 수 */
+        .sub-contracts {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--text-black);
+        }
+        .sub-contracts a {
+            color: var(--main);
+            text-decoration: none;
+        }
+        .sub-contracts a:hover { text-decoration: underline; }
+        .sub-contracts.zero { color: var(--text-lightgray); font-weight: 500; }
+
+        /* 결과 카운트 */
+        .sub-meta-row { display: flex; align-items: center; gap: 12px; }
+        .sub-meta-count { font-size: 14px; color: var(--text-gray); }
+        .sub-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 모달 */
+        .sub-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .sub-modal-backdrop.is-open { display: flex; }
+        .sub-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 560px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .sub-modal.lg { max-width: 760px; }
+        .sub-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .sub-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .sub-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .sub-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .sub-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .sub-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+
+        /* 등록 폼 */
+        .sub-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 16px;
+        }
+        .sub-form-grid .full { grid-column: 1 / -1; }
+        .sub-form-row .label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin-bottom: 6px;
+        }
+        .sub-form-row .label .req { color: var(--status-danger-fg); margin-left: 2px; }
+        .sub-form-row input,
+        .sub-form-row select,
+        .sub-form-row textarea {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+        }
+        .sub-form-row textarea { min-height: 64px; resize: vertical; }
+        .sub-form-row input:focus,
+        .sub-form-row select:focus,
+        .sub-form-row textarea:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .sub-form-hint {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        /* 상세 모달 헤더 */
+        .sub-detail-header {
+            padding: 22px 28px;
+            background: linear-gradient(135deg, var(--main-dark) 0%, var(--main-dark2) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .sub-detail-header::before {
+            content: ""; position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .sub-detail-header-inner {
+            position: relative;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .sub-detail-avatar {
+            width: 54px; height: 54px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.18);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+        .sub-detail-name { flex: 1; min-width: 0; }
+        .sub-detail-name h3 {
+            font-size: 20px; font-weight: 800; line-height: 1.2;
+            letter-spacing: -0.4px;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .sub-detail-name .meta {
+            font-size: 12px; color: rgba(255,255,255,0.85);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sub-detail-name .meta .dot {
+            display: inline-block;
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+        }
+        .sub-detail-close {
+            width: 36px; height: 36px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border: none; cursor: pointer;
+            color: white;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+        .sub-detail-close:hover { background: rgba(255,255,255,0.25); }
+
+        /* 상세 모달 본문 */
+        .sub-detail-section + .sub-detail-section { margin-top: 22px; }
+        .sub-detail-section h4 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sub-detail-section h4::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .sub-info-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 8px; column-gap: 12px;
+            font-size: 13px;
+        }
+        .sub-info-grid .k { color: var(--text-gray); font-weight: 500; line-height: 22px; }
+        .sub-info-grid .v {
+            color: var(--text-black);
+            font-weight: 600;
+            line-height: 22px;
+            display: flex; align-items: center; gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        /* 평가 점수 추이 차트 */
+        .sub-score-chart {
+            display: grid;
+            grid-template-columns: 1fr;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 16px 20px;
+            background: #fafbfb;
+        }
+        .sub-score-trend {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            height: 130px;
+            position: relative;
+            padding-top: 8px;
+            border-bottom: 1px dashed var(--card-line);
+        }
+        .sub-score-col {
+            display: flex; flex-direction: column; justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+        .sub-score-col .bar {
+            width: 100%; max-width: 36px;
+            border-radius: 4px 4px 0 0;
+            min-height: 8px;
+            position: relative;
+        }
+        .sub-score-col .bar.high { background: linear-gradient(180deg, var(--status-success-fg) 0%, #74bcad 100%); }
+        .sub-score-col .bar.mid  { background: linear-gradient(180deg, var(--status-warning-fg) 0%, #f9c2ab 100%); }
+        .sub-score-col .bar.low  { background: linear-gradient(180deg, var(--status-danger-fg) 0%, #e3aeae 100%); }
+        .sub-score-col .bar .score-label {
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%; transform: translateX(-50%);
+            font-size: 11px; font-weight: 700;
+            color: var(--text-black);
+            white-space: nowrap;
+        }
+        .sub-score-labels {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            padding-top: 6px;
+        }
+        .sub-score-labels span {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+
+        /* 계약 이력 행 */
+        .sub-contract-list {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .sub-contract-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 90px 110px;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+            cursor: pointer;
+            background: white;
+            align-items: center;
+        }
+        .sub-contract-row:last-child { border-bottom: none; }
+        .sub-contract-row:hover { background: var(--brand-50); }
+        .sub-contract-row .name {
+            color: var(--text-black);
+            font-weight: 600;
+            display: flex; flex-direction: column;
+        }
+        .sub-contract-row .name .period { font-size: 11px; color: var(--text-gray); font-weight: 500; margin-top: 2px; }
+        .sub-contract-row .budget {
+            color: var(--text-black);
+            font-weight: 600;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (max-width: 1023px) {
+            .sub-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .sub-form-grid { grid-template-columns: 1fr; }
+            .sub-contract-row { grid-template-columns: 1fr; gap: 4px; }
+            .sub-contract-row .budget { text-align: left; }
+        }
+    </style>
+</head>
+<body data-dy-page="con-sub" data-page-title="수급업체" data-page-subtitle="도급업체 마스터 및 적격성 평가 이력 관리">
+    <main>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="sub-kpi-grid">
+            <div class="sub-kpi-cell">
+                <div class="sub-kpi-head">
+                    <span class="sub-kpi-title">등록 업체</span>
+                    <span class="sub-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </span>
+                </div>
+                <div class="sub-kpi-value">24<span class="small">개사</span></div>
+                <div class="sub-kpi-sub">활성 <strong>22</strong> · 비활성 <strong>2</strong></div>
+            </div>
+            <div class="sub-kpi-cell">
+                <div class="sub-kpi-head">
+                    <span class="sub-kpi-title">적격 업체</span>
+                    <span class="sub-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="sub-kpi-value success">17<span class="small">개사</span></div>
+                <div class="sub-kpi-sub">최근 평가 70점 이상</div>
+            </div>
+            <div class="sub-kpi-cell">
+                <div class="sub-kpi-head">
+                    <span class="sub-kpi-title">부적격</span>
+                    <span class="sub-kpi-icon danger">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </span>
+                </div>
+                <div class="sub-kpi-value danger">3<span class="small">개사</span></div>
+                <div class="sub-kpi-sub">신규 계약 제한 대상</div>
+            </div>
+            <div class="sub-kpi-cell">
+                <div class="sub-kpi-head">
+                    <span class="sub-kpi-title">미평가</span>
+                    <span class="sub-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </span>
+                </div>
+                <div class="sub-kpi-value warning">4<span class="small">개사</span></div>
+                <div class="sub-kpi-sub">신규 등록 · 평가 이력 없음</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 검색 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">업종</span>
+                <select class="select" id="filter-industry">
+                    <option>전체</option>
+                    <option>건설</option>
+                    <option>설비</option>
+                    <option>전기</option>
+                    <option>운송</option>
+                    <option>청소·시설관리</option>
+                    <option>기타</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">적격 여부</span>
+                <select class="select" id="filter-qual">
+                    <option>전체</option>
+                    <option>적격</option>
+                    <option>부적격</option>
+                    <option>미평가</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="업체명·사업자번호·대표자 검색" id="filter-search">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
+        </div>
+
+        <div class="sub-meta-row">
+            <span class="sub-meta-count">전체 <strong id="result-count">24</strong>개사 · 현재 페이지 1–12</span>
+        </div>
+
+        <!-- ─── 수급업체 목록 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">수급업체 마스터</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.openCreateModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    수급업체 등록
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col><col style="width:130px;"><col style="width:90px;"><col style="width:90px;"><col style="width:90px;"><col style="width:80px;"><col style="width:100px;"><col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>업체명</th>
+                        <th>사업자번호</th>
+                        <th>대표자</th>
+                        <th style="text-align:center;">업종</th>
+                        <th style="text-align:center;">최근 평가</th>
+                        <th style="text-align:center;">결과</th>
+                        <th style="text-align:center;">참여 계약</th>
+                        <th style="text-align:center;">상세</th>
+                    </tr>
+                </thead>
+                <tbody id="sub-tbody">
+                    <tr class="row-link" onclick="window.openDetail('damyang-c')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar A">담</span> (주)담양건설</span></td>
+                        <td><span class="sub-biznum">123-45-67890</span></td>
+                        <td>홍길수</td>
+                        <td style="text-align:center;"><span class="industry-chip construction">건설</span></td>
+                        <td style="text-align:center;"><span class="sub-score high">88</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록 (CON01-L) - (주)담양건설 참여')">5건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('damyang-c')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('honam-safe')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar B">호</span> (주)호남안전관리</span></td>
+                        <td><span class="sub-biznum">234-56-78901</span></td>
+                        <td>박위탁</td>
+                        <td style="text-align:center;"><span class="industry-chip cleaning">청소·시설관리</span></td>
+                        <td style="text-align:center;"><span class="sub-score high">92</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">3건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('honam-safe')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('jeonnam-fac')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar C">전</span> (주)전남시설</span></td>
+                        <td><span class="sub-biznum">345-67-89012</span></td>
+                        <td>최시설</td>
+                        <td style="text-align:center;"><span class="industry-chip facility">설비</span></td>
+                        <td style="text-align:center;"><span class="sub-score high">82</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">4건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('jeonnam-fac')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('gwangju-eng')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar D">광</span> (주)광주엔지니어링</span></td>
+                        <td><span class="sub-biznum">456-78-90123</span></td>
+                        <td>김전기</td>
+                        <td style="text-align:center;"><span class="industry-chip electric">전기</span></td>
+                        <td style="text-align:center;"><span class="sub-score high">85</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">2건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('gwangju-eng')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('mokpo-trans')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar E">목</span> 목포운수(주)</span></td>
+                        <td><span class="sub-biznum">567-89-01234</span></td>
+                        <td>이운송</td>
+                        <td style="text-align:center;"><span class="industry-chip transport">운송</span></td>
+                        <td style="text-align:center;"><span class="sub-score mid">73</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">2건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('mokpo-trans')">상세</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.openDetail('namdo-c')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar A">남</span> (주)남도건설</span></td>
+                        <td><span class="sub-biznum">678-90-12345</span></td>
+                        <td>김토목</td>
+                        <td style="text-align:center;"><span class="industry-chip construction">건설</span></td>
+                        <td style="text-align:center;"><span class="sub-score low">58</span></td>
+                        <td style="text-align:center;"><span class="qual-chip unqualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 부적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts zero">0건</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('namdo-c')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('green-clean')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar D">그</span> 그린클린</span></td>
+                        <td><span class="sub-biznum">789-01-23456</span></td>
+                        <td>윤청소</td>
+                        <td style="text-align:center;"><span class="industry-chip cleaning">청소·시설관리</span></td>
+                        <td style="text-align:center;"><span class="sub-score mid">76</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">3건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('green-clean')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('saemyung-elec')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar C">새</span> 새명전기공사</span></td>
+                        <td><span class="sub-biznum">890-12-34567</span></td>
+                        <td>박전공</td>
+                        <td style="text-align:center;"><span class="industry-chip electric">전기</span></td>
+                        <td style="text-align:center;"><span class="sub-score mid">78</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">1건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('saemyung-elec')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('hanwoori-fac')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar B">한</span> 한우리설비(주)</span></td>
+                        <td><span class="sub-biznum">901-23-45678</span></td>
+                        <td>한설비</td>
+                        <td style="text-align:center;"><span class="industry-chip facility">설비</span></td>
+                        <td style="text-align:center;"><span class="sub-score-empty">—</span></td>
+                        <td style="text-align:center;"><span class="qual-chip unrated">미평가</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts zero">0건</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('hanwoori-fac')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('haein-c')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar A">해</span> (주)해인건설</span></td>
+                        <td><span class="sub-biznum">012-34-56789</span></td>
+                        <td>정건설</td>
+                        <td style="text-align:center;"><span class="industry-chip construction">건설</span></td>
+                        <td style="text-align:center;"><span class="sub-score high">81</span></td>
+                        <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록')">2건</a></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('haein-c')">상세</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.openDetail('hannam-trans')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar E">한</span> 한남운수</span></td>
+                        <td><span class="sub-biznum">112-34-56789</span></td>
+                        <td>이수송</td>
+                        <td style="text-align:center;"><span class="industry-chip transport">운송</span></td>
+                        <td style="text-align:center;"><span class="sub-score low">62</span></td>
+                        <td style="text-align:center;"><span class="qual-chip unqualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 부적격</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts zero">0건</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('hannam-trans')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('sky-trade')">
+                        <td><span class="sub-name-cell"><span class="sub-name-avatar D">스</span> 스카이무역</span></td>
+                        <td><span class="sub-biznum">213-45-67891</span></td>
+                        <td>김무역</td>
+                        <td style="text-align:center;"><span class="industry-chip etc">기타</span></td>
+                        <td style="text-align:center;"><span class="sub-score-empty">—</span></td>
+                        <td style="text-align:center;"><span class="qual-chip unrated">미평가</span></td>
+                        <td style="text-align:center;"><span class="sub-contracts zero">0건</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('sky-trade')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="2"></div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         CON02-D 수급업체 상세 모달
+    ============================================================ -->
+    <div class="sub-modal-backdrop" id="detail-modal">
+        <div class="sub-modal lg" role="dialog" aria-modal="true">
+            <!-- 헤더 (배너) -->
+            <div class="sub-detail-header">
+                <div class="sub-detail-header-inner">
+                    <div class="sub-detail-avatar" id="detail-avatar">담</div>
+                    <div class="sub-detail-name">
+                        <h3 id="detail-name">업체명</h3>
+                        <div class="meta">
+                            <span id="detail-biznum">사업자번호</span>
+                            <span class="dot"></span>
+                            <span id="detail-industry">업종</span>
+                            <span class="dot"></span>
+                            <span id="detail-status">활성</span>
+                        </div>
+                    </div>
+                    <button type="button" class="sub-detail-close" onclick="window.closeDetail()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 본문 -->
+            <div class="sub-modal-body" id="detail-body">
+                <!-- JS 렌더 -->
+            </div>
+
+            <!-- 푸터 -->
+            <div class="sub-modal-footer">
+                <div>
+                    <button class="btn" style="background:var(--status-danger-fg);color:white; border-color:var(--status-danger-fg);" type="button" id="deact-btn" onclick="window.DYLayout._soon(event, '비활성화 처리')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                        비활성화
+                    </button>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.closeDetail()">닫기</button>
+                    <button class="btn btn-primary" type="button" onclick="window.editFromDetail()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        정보 수정
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CON02-M 수급업체 등록·수정 모달
+    ============================================================ -->
+    <div class="sub-modal-backdrop" id="create-modal">
+        <div class="sub-modal" role="dialog" aria-modal="true">
+            <div class="sub-modal-header">
+                <div class="sub-modal-title" id="create-title">수급업체 등록</div>
+                <button type="button" class="sub-modal-close" onclick="window.closeCreateModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="sub-modal-body">
+                <div class="sub-form-grid">
+                    <div class="sub-form-row full">
+                        <label class="label">회사명<span class="req">*</span></label>
+                        <input type="text" placeholder="예: (주)담양건설" id="form-name">
+                    </div>
+                    <div class="sub-form-row">
+                        <label class="label">사업자번호</label>
+                        <input type="text" placeholder="000-00-00000" id="form-biznum">
+                        <div class="sub-form-hint">NNN-NN-NNNNN 형식 · 시스템 내 중복 불가</div>
+                    </div>
+                    <div class="sub-form-row">
+                        <label class="label">대표자</label>
+                        <input type="text" placeholder="대표자 성명" id="form-ceo">
+                    </div>
+                    <div class="sub-form-row">
+                        <label class="label">업종<span class="req">*</span></label>
+                        <select id="form-industry">
+                            <option>건설</option>
+                            <option>설비</option>
+                            <option>전기</option>
+                            <option>운송</option>
+                            <option>청소·시설관리</option>
+                            <option>기타</option>
+                        </select>
+                    </div>
+                    <div class="sub-form-row">
+                        <label class="label">연락처</label>
+                        <input type="tel" placeholder="000-0000-0000" id="form-phone">
+                    </div>
+                    <div class="sub-form-row full">
+                        <label class="label">주소</label>
+                        <input type="text" placeholder="기본 주소" id="form-address">
+                    </div>
+                    <div class="sub-form-row full">
+                        <label class="label">비고</label>
+                        <textarea placeholder="500자 이내" id="form-note"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="sub-modal-footer">
+                <div></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.closeCreateModal()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.saveSub()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 필터 ─── */
+        const tbody = document.getElementById('sub-tbody');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const resultCount = document.getElementById('result-count');
+
+        function applyFilters() {
+            const ind = document.getElementById('filter-industry').value;
+            const qual = document.getElementById('filter-qual').value;
+            const q = document.getElementById('filter-search').value.trim().toLowerCase();
+            let visible = 0;
+            allRows.forEach(tr => {
+                const tds = tr.children;
+                const name = tds[0].textContent.trim().toLowerCase();
+                const biz  = tds[1].textContent.trim().toLowerCase();
+                const ceo  = tds[2].textContent.trim().toLowerCase();
+                const industry = tds[3].textContent.trim();
+                const qualText = tds[5].textContent.trim();
+
+                let show = true;
+                if (ind !== '전체' && industry !== ind) show = false;
+                if (qual !== '전체' && !qualText.includes(qual)) show = false;
+                if (q && !(name.includes(q) || biz.includes(q) || ceo.includes(q))) show = false;
+                tr.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            resultCount.textContent = visible;
+        }
+        ['filter-industry', 'filter-qual'].forEach(id => {
+            document.getElementById(id).addEventListener('change', applyFilters);
+        });
+        let searchTimer = null;
+        document.getElementById('filter-search').addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyFilters, 300);
+        });
+        document.querySelector('.search-bar .search-submit').addEventListener('click', applyFilters);
+        window.clearFilters = function () {
+            document.getElementById('filter-industry').value = '전체';
+            document.getElementById('filter-qual').value = '전체';
+            document.getElementById('filter-search').value = '';
+            applyFilters();
+        };
+
+        /* ─── 수급업체 데이터 ─── */
+        const SUBS = {
+            'damyang-c': {
+                name: '(주)담양건설', biznum: '123-45-67890', ceo: '홍길수',
+                industry: '건설', industryClass: 'construction',
+                phone: '061-381-1234', address: '전남 담양군 담양읍 중앙로 123',
+                est: '2010-03-15', status: '활성', avatarClass: 'A', avatarLetter: '담',
+                note: '담양 지역 종합건설 1군 업체. 청사 시설 보수 등 다수 참여.',
+                scores: [{ q: '2024-H1', s: 78 }, { q: '2024-H2', s: 82 }, { q: '2025-H1', s: 85 }, { q: '2025-H2', s: 86 }, { q: '2026-H1', s: 88 }],
+                contracts: [
+                    { name: '청사 시설 보수공사', period: '2026-04-15 ~ 2026-06-30', budget: '5억', result: '진행중' },
+                    { name: '청사 옥상 방수 보수', period: '2026-03-01 ~ 2026-04-30', budget: '2억', result: '완료' },
+                    { name: '농촌도로 포장공사 2025', period: '2025-04-10 ~ 2025-08-31', budget: '30억', result: '완료' },
+                ]
+            },
+            'honam-safe': {
+                name: '(주)호남안전관리', biznum: '234-56-78901', ceo: '박위탁',
+                industry: '청소·시설관리', industryClass: 'cleaning',
+                phone: '062-225-0000', address: '광주 서구 상무대로 88',
+                est: '2008-07-20', status: '활성', avatarClass: 'B', avatarLetter: '호',
+                note: '안전보건관리 위탁 전문 업체. 평균 92점.',
+                scores: [{ q: '2024-H1', s: 86 }, { q: '2024-H2', s: 90 }, { q: '2025-H1', s: 91 }, { q: '2025-H2', s: 92 }, { q: '2026-H1', s: 92 }],
+                contracts: [
+                    { name: '청사 청소·시설관리 위탁', period: '2026-01-01 ~ 2026-12-31', budget: '15억', result: '진행중' },
+                    { name: '체육관 안전관리 위탁', period: '2025-01-01 ~ 2025-12-31', budget: '8억', result: '완료' },
+                ]
+            },
+            'jeonnam-fac': {
+                name: '(주)전남시설', biznum: '345-67-89012', ceo: '최시설',
+                industry: '설비', industryClass: 'facility',
+                phone: '061-225-3210', address: '전남 순천시 해룡면 산업로 56',
+                est: '2012-11-05', status: '활성', avatarClass: 'C', avatarLetter: '전',
+                note: '소방설비·기계설비 전문. 정수장 증축 참여 중.',
+                scores: [{ q: '2024-H1', s: 75 }, { q: '2024-H2', s: 78 }, { q: '2025-H1', s: 80 }, { q: '2025-H2', s: 81 }, { q: '2026-H1', s: 82 }],
+                contracts: [
+                    { name: '정수장 증축', period: '2026-06-01 ~ 2027-05-31', budget: '120억', result: '결재 차단' },
+                    { name: '청사 소방설비 교체', period: '2025-08-01 ~ 2025-11-30', budget: '8억', result: '완료' },
+                ]
+            },
+            'gwangju-eng': {
+                name: '(주)광주엔지니어링', biznum: '456-78-90123', ceo: '김전기',
+                industry: '전기', industryClass: 'electric',
+                phone: '062-651-7890', address: '광주 북구 첨단과기로 200',
+                est: '2009-05-18', status: '활성', avatarClass: 'D', avatarLetter: '광',
+                note: '전기공사·태양광 설비 전문.',
+                scores: [{ q: '2024-H1', s: 80 }, { q: '2024-H2', s: 82 }, { q: '2025-H1', s: 83 }, { q: '2025-H2', s: 84 }, { q: '2026-H1', s: 85 }],
+                contracts: [
+                    { name: '담양읍사무소 전기설비 교체', period: '2026-02-01 ~ 2026-04-30', budget: '4억', result: '완료' },
+                    { name: '관광시설 LED 교체', period: '2025-05-15 ~ 2025-09-30', budget: '6억', result: '완료' },
+                ]
+            },
+            'mokpo-trans': {
+                name: '목포운수(주)', biznum: '567-89-01234', ceo: '이운송',
+                industry: '운송', industryClass: 'transport',
+                phone: '061-242-1100', address: '전남 목포시 산정로 32',
+                est: '2015-09-10', status: '활성', avatarClass: 'E', avatarLetter: '목',
+                note: '여객·자재 운송. 차량 노후화로 점수 하락 추세.',
+                scores: [{ q: '2024-H1', s: 80 }, { q: '2024-H2', s: 78 }, { q: '2025-H1', s: 76 }, { q: '2025-H2', s: 74 }, { q: '2026-H1', s: 73 }],
+                contracts: [
+                    { name: '관용 차량 운영 위탁', period: '2026-01-01 ~ 2026-12-31', budget: '3억', result: '진행중' },
+                    { name: '농기계 운송', period: '2025-03-15 ~ 2025-08-31', budget: '1억', result: '완료' },
+                ]
+            },
+            'namdo-c': {
+                name: '(주)남도건설', biznum: '678-90-12345', ceo: '김토목',
+                industry: '건설', industryClass: 'construction',
+                phone: '061-380-7777', address: '전남 화순군 화순읍 자치로 11',
+                est: '2017-04-22', status: '활성', avatarClass: 'A', avatarLetter: '남',
+                note: '⚠ 2025년 안전사고 2건 발생으로 평가 점수 하락. 신규 계약 제한 대상.',
+                scores: [{ q: '2024-H1', s: 72 }, { q: '2024-H2', s: 70 }, { q: '2025-H1', s: 68 }, { q: '2025-H2', s: 62 }, { q: '2026-H1', s: 58 }],
+                contracts: []
+            },
+            'green-clean': {
+                name: '그린클린', biznum: '789-01-23456', ceo: '윤청소',
+                industry: '청소·시설관리', industryClass: 'cleaning',
+                phone: '061-382-3333', address: '전남 담양군 담양읍 객사길 5',
+                est: '2018-06-12', status: '활성', avatarClass: 'D', avatarLetter: '그',
+                note: '지역 청소대행 업체.',
+                scores: [{ q: '2024-H1', s: 72 }, { q: '2024-H2', s: 74 }, { q: '2025-H1', s: 75 }, { q: '2025-H2', s: 76 }, { q: '2026-H1', s: 76 }],
+                contracts: [
+                    { name: '읍·면사무소 청사 청소', period: '2026-01-01 ~ 2026-12-31', budget: '2억', result: '진행중' },
+                ]
+            },
+            'saemyung-elec': {
+                name: '새명전기공사', biznum: '890-12-34567', ceo: '박전공',
+                industry: '전기', industryClass: 'electric',
+                phone: '061-382-5555', address: '전남 담양군 봉산면 산업로 99',
+                est: '2020-02-14', status: '활성', avatarClass: 'C', avatarLetter: '새',
+                note: '신규 등록 후 첫 평가 78점.',
+                scores: [{ q: '2025-H2', s: 76 }, { q: '2026-H1', s: 78 }],
+                contracts: [
+                    { name: '농기계 보관소 전기공사', period: '2026-04-10 ~ 2026-07-15', budget: '0.5억', result: '진행중' },
+                ]
+            },
+            'hanwoori-fac': {
+                name: '한우리설비(주)', biznum: '901-23-45678', ceo: '한설비',
+                industry: '설비', industryClass: 'facility',
+                phone: '061-300-1111', address: '전남 나주시 빛가람동 100',
+                est: '2025-12-01', status: '활성 · 미평가', avatarClass: 'B', avatarLetter: '한',
+                note: '신규 등록 업체. 평가 이력 없음 — 첫 계약 시 적격성 평가 필수.',
+                scores: [],
+                contracts: []
+            },
+            'haein-c': {
+                name: '(주)해인건설', biznum: '012-34-56789', ceo: '정건설',
+                industry: '건설', industryClass: 'construction',
+                phone: '061-381-9999', address: '전남 담양군 봉산면 송강로 222',
+                est: '2014-08-05', status: '활성', avatarClass: 'A', avatarLetter: '해',
+                note: '지역 중견 건설 업체.',
+                scores: [{ q: '2024-H1', s: 75 }, { q: '2024-H2', s: 78 }, { q: '2025-H1', s: 80 }, { q: '2025-H2', s: 81 }, { q: '2026-H1', s: 81 }],
+                contracts: [
+                    { name: '도로 확장공사 1단계', period: '2026-05-01 ~ 2026-11-30', budget: '50억', result: '진행중' },
+                    { name: '담양읍 행정복지센터 리모델링', period: '2024-06-01 ~ 2024-12-31', budget: '12억', result: '완료' },
+                ]
+            },
+            'hannam-trans': {
+                name: '한남운수', biznum: '112-34-56789', ceo: '이수송',
+                industry: '운송', industryClass: 'transport',
+                phone: '061-382-7777', address: '전남 담양군 금성면 운수길 8',
+                est: '2019-10-22', status: '활성 · 신규 계약 제한', avatarClass: 'E', avatarLetter: '한',
+                note: '⚠ 2024년 안전사고 1건 발생. 차량 정비 미흡으로 평가 점수 지속 하락.',
+                scores: [{ q: '2024-H1', s: 70 }, { q: '2024-H2', s: 68 }, { q: '2025-H1', s: 65 }, { q: '2025-H2', s: 63 }, { q: '2026-H1', s: 62 }],
+                contracts: []
+            },
+            'sky-trade': {
+                name: '스카이무역', biznum: '213-45-67891', ceo: '김무역',
+                industry: '기타', industryClass: 'etc',
+                phone: '062-441-8888', address: '광주 서구 매월동 222',
+                est: '2025-11-15', status: '활성 · 미평가', avatarClass: 'D', avatarLetter: '스',
+                note: '신규 등록. 사무용품 납품 전문.',
+                scores: [],
+                contracts: []
+            },
+        };
+
+        /* ─── 상세 모달 ─── */
+        let currentId = null;
+        window.openDetail = function (id) {
+            const s = SUBS[id];
+            if (!s) return;
+            currentId = id;
+
+            // 헤더
+            const avatar = document.getElementById('detail-avatar');
+            avatar.className = 'sub-detail-avatar';
+            avatar.textContent = s.avatarLetter;
+            document.getElementById('detail-name').textContent = s.name;
+            document.getElementById('detail-biznum').textContent = `사업자번호 ${s.biznum}`;
+            document.getElementById('detail-industry').textContent = `업종 ${s.industry}`;
+            document.getElementById('detail-status').textContent = s.status;
+
+            // 본문
+            const scoreCols = s.scores.length
+                ? s.scores.map(sc => {
+                    const cls = sc.s >= 80 ? 'high' : (sc.s >= 70 ? 'mid' : 'low');
+                    const h = Math.max(8, sc.s);
+                    return `
+                        <div class="sub-score-col">
+                            <div class="bar ${cls}" style="height:${h}%;">
+                                <span class="score-label">${sc.s}</span>
+                            </div>
+                        </div>`;
+                }).join('') + '<div></div>'.repeat(Math.max(0, 6 - s.scores.length))
+                : '';
+            const scoreLabels = s.scores.length
+                ? s.scores.map(sc => `<span>${sc.q}</span>`).join('') + '<span></span>'.repeat(Math.max(0, 6 - s.scores.length))
+                : '';
+
+            const contractsHtml = s.contracts.length
+                ? s.contracts.map(c => `
+                    <div class="sub-contract-row" onclick="window.DYLayout._soon({preventDefault:()=>{}}, '도급계약 상세 (CON01-D) - ${c.name}')">
+                        <div class="name">
+                            ${c.name}
+                            <span class="period">${c.period}</span>
+                        </div>
+                        <div class="budget">${c.budget}</div>
+                        <div><span class="ins-status-chip ${c.result === '완료' ? 'done' : (c.result === '결재 차단' ? 'overdue' : 'progress')}" style="padding:2px 8px; font-size:11px; font-weight:700; border-radius:5px; ${c.result === '완료' ? 'background:var(--status-success-bg);color:var(--status-success-fg);border:1px solid var(--status-success-border);' : c.result === '결재 차단' ? 'background:var(--status-danger-bg);color:var(--status-danger-fg);border:1px solid var(--status-danger-border);' : 'background:var(--status-info-bg);color:var(--status-info-fg);border:1px solid var(--status-info-border);'}">${c.result}</span></div>
+                        <div style="text-align:right;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">참여한 계약이 없습니다.</p>';
+
+            document.getElementById('detail-body').innerHTML = `
+                <div class="sub-detail-section">
+                    <h4>회사 기본 정보</h4>
+                    <div class="sub-info-grid">
+                        <span class="k">대표자</span><span class="v">${s.ceo}</span>
+                        <span class="k">업종</span><span class="v"><span class="industry-chip ${s.industryClass}">${s.industry}</span></span>
+                        <span class="k">사업자번호</span><span class="v"><span class="sub-biznum">${s.biznum}</span></span>
+                        <span class="k">설립일</span><span class="v">${s.est}</span>
+                        <span class="k">연락처</span><span class="v">${s.phone}</span>
+                        <span class="k">주소</span><span class="v">${s.address}</span>
+                        <span class="k">비고</span><span class="v" style="font-weight:500;">${s.note}</span>
+                    </div>
+                </div>
+
+                ${s.scores.length ? `
+                <div class="sub-detail-section">
+                    <h4>평가 점수 추이 (반기별)</h4>
+                    <div class="sub-score-chart">
+                        <div class="sub-score-trend">${scoreCols}</div>
+                        <div class="sub-score-labels">${scoreLabels}</div>
+                    </div>
+                </div>
+                ` : `
+                <div class="sub-detail-section">
+                    <h4>평가 점수 추이</h4>
+                    <p style="padding:16px; background:var(--status-warning-bg); border:1px solid var(--status-warning-border); border-radius:8px; font-size:13px; color:var(--status-warning-fg);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        평가 이력이 없습니다. 첫 계약 시 적격성 평가가 필요합니다.
+                    </p>
+                </div>
+                `}
+
+                <div class="sub-detail-section">
+                    <h4>참여 계약 이력 (${s.contracts.length}건)</h4>
+                    <div class="sub-contract-list">${contractsHtml}</div>
+                </div>
+            `;
+
+            document.getElementById('detail-modal').classList.add('is-open');
+        };
+        window.closeDetail = function () {
+            document.getElementById('detail-modal').classList.remove('is-open');
+            currentId = null;
+        };
+        window.editFromDetail = function () {
+            const s = SUBS[currentId];
+            if (!s) return;
+            window.closeDetail();
+            // prefill 수정 모달
+            document.getElementById('create-title').textContent = '수급업체 정보 수정';
+            document.getElementById('form-name').value = s.name;
+            document.getElementById('form-biznum').value = s.biznum;
+            document.getElementById('form-ceo').value = s.ceo;
+            document.getElementById('form-industry').value = s.industry;
+            document.getElementById('form-phone').value = s.phone;
+            document.getElementById('form-address').value = s.address;
+            document.getElementById('form-note').value = s.note;
+            document.getElementById('create-modal').classList.add('is-open');
+        };
+
+        /* ─── 등록 모달 ─── */
+        window.openCreateModal = function () {
+            document.getElementById('create-title').textContent = '수급업체 등록';
+            ['form-name', 'form-biznum', 'form-ceo', 'form-phone', 'form-address', 'form-note'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('form-industry').value = '건설';
+            document.getElementById('create-modal').classList.add('is-open');
+        };
+        window.closeCreateModal = function () {
+            document.getElementById('create-modal').classList.remove('is-open');
+        };
+        window.saveSub = function () {
+            const name = document.getElementById('form-name').value.trim();
+            if (!name) { showToast('회사명을 입력해주세요.'); return; }
+            window.closeCreateModal();
+            showToast(`${name} 수급업체 정보가 저장되었습니다. (목업)`);
+        };
+
+        document.querySelectorAll('.sub-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

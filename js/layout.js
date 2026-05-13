@@ -74,11 +74,11 @@
             // 안전관리자 인력 (STF / SFR-010)
             { id: 'stf-status',    label: '안전관리자 인력',   icon: 'user',     href: 'stf-status.html',       screen: 'STF01-V' },
             // 예산 (BGT / SFR-008)
-            { id: 'bgt-status',    label: '예산',              icon: 'coins',    soon: '예산 현황 (BGT01-V)',    screen: 'BGT01-V' },
+            { id: 'bgt-status',    label: '예산',              icon: 'coins',    href: 'bgt-status.html',       screen: 'BGT01-V' },
             // 안전계획 (PLN / SFR-004)
-            { id: 'pln-list',      label: '안전계획',          icon: 'calendar', soon: '계획 목록 (PLN01-L)',    screen: 'PLN01-L' },
+            { id: 'pln-list',      label: '안전계획',          icon: 'calendar', href: 'pln-status.html',       screen: 'PLN01-V' },
             // 업무문서 (DOC / SFR-012)
-            { id: 'doc-manual',    label: '업무문서',          icon: 'file',     soon: '매뉴얼 (DOC01-L)',       screen: 'DOC01-L' },
+            { id: 'doc-manual',    label: '업무문서',          icon: 'file',     href: 'doc-manual.html',       screen: 'DOC01-L' },
         ]},
 
         // 4. 위험성평가 (RSK / SFR-007)
@@ -94,8 +94,8 @@
         { id: 'duty', label: '의무이행 관리', icon: 'check', items: [
             // 도급관리 (CON / SFR-013)
             { id: 'contractor',    label: '도급계약',           icon: 'building', href: 'contractor.html',  screen: 'CON01-L' },
-            { id: 'con-sub',       label: '수급업체',           icon: 'users',    soon: '수급업체 목록 (CON02-L)', screen: 'CON02-L' },
-            { id: 'con-council',   label: '협의체',             icon: 'list',     soon: '협의체 운영 (CON03-L)',   screen: 'CON03-L' },
+            { id: 'con-sub',       label: '수급업체',           icon: 'users',    href: 'con-sub.html',           screen: 'CON02-L' },
+            { id: 'con-council',   label: '협의체',             icon: 'list',     href: 'con-council.html',       screen: 'CON03-L' },
             { id: 'con-tbm',       label: 'TBM',                icon: 'check',    soon: 'TBM (CON09-L)',           screen: 'CON09-L' },
             { id: 'con-settings',  label: '도급관리 설정',      icon: 'cog',      soon: '도급 설정 (CON10-S)',     screen: 'CON10-S' },
             // 의견청취 (OPN / SFR-011·019)
@@ -362,6 +362,7 @@
         const backdrop = document.getElementById('dy-sidebar-backdrop');
         if (!btn || !sidebar || !backdrop) return;
 
+        const isMobile = () => window.matchMedia('(max-width: 1023px)').matches;
         const open = () => {
             sidebar.classList.add('is-open');
             backdrop.classList.add('is-open');
@@ -374,6 +375,42 @@
             sidebar.classList.contains('is-open') ? close() : open();
         });
         backdrop.addEventListener('click', close);
+
+        /* GNB 클릭(모바일): 다음 페이지로 이동하기 전에 "도착 후 드로어 열기" 플래그를 세팅.
+           새 페이지 mount() 시 플래그를 보고 드로어를 열어줘서 사용자가 LNB를 즉시 발견할 수 있게 한다.
+           일반 href 동작은 그대로 두어 데스크탑/단축키(Ctrl·Cmd 클릭) 동작을 깨지 않는다. */
+        document.querySelectorAll('.dy-gnb-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!isMobile()) return;
+                if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+                try { sessionStorage.setItem('dy-open-lnb-on-load', '1'); } catch (_) {}
+            });
+        });
+
+        /* 도착 후 플래그가 있으면 드로어 자동 오픈 */
+        try {
+            if (isMobile() && sessionStorage.getItem('dy-open-lnb-on-load') === '1') {
+                sessionStorage.removeItem('dy-open-lnb-on-load');
+                open();
+            }
+        } catch (_) {}
+
+        /* LNB 아이템 클릭 시 드로어를 즉시 닫아 페이지 전환을 시각적으로 명확하게.
+           soon 토스트(href='#')인 경우엔 닫지 않아 토스트가 보이도록. */
+        sidebar.querySelectorAll('.dy-sidebar-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!isMobile()) return;
+                const href = item.getAttribute('href');
+                if (href && href !== '#') {
+                    close();
+                }
+            });
+        });
+
+        /* viewport가 데스크탑 폭으로 늘어나면 드로어 상태를 정리 */
+        window.addEventListener('resize', () => {
+            if (!isMobile() && sidebar.classList.contains('is-open')) close();
+        });
     }
 
     /* 비활성 메뉴 클릭 시 토스트 (#toast 가 페이지에 있으면 사용) */

@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도급 안전보건협의체 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── CON03-L 전용 ─── */
+
+        /* 사양 안내 배너 */
+        .cnc-info {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 16px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            font-size: 13px; color: var(--main-dark2);
+            line-height: 1.5;
+        }
+        .cnc-info svg { color: var(--main-dark); flex-shrink: 0; margin-top: 1px; }
+        .cnc-info strong { font-weight: 700; }
+        .cnc-info .note { display: block; font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* KPI 4분할 */
+        .cnc-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .cnc-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 118px; justify-content: center;
+        }
+        .cnc-kpi-cell:last-child { border-right: none; }
+        .cnc-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .cnc-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .cnc-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .cnc-kpi-icon.info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+        .cnc-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .cnc-kpi-icon.warn    { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .cnc-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .cnc-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .cnc-kpi-value.success { color: var(--status-success-fg); }
+        .cnc-kpi-value.info    { color: var(--status-info-fg); }
+        .cnc-kpi-value.warning { color: var(--status-warning-fg); }
+        .cnc-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .cnc-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 계약 chip */
+        .contract-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--card-line);
+            background: var(--gray-100);
+            color: var(--text-black);
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+        .contract-chip.construction { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .contract-chip.service      { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .contract-chip.outsource    { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 참석자/의결 카운트 셀 */
+        .cnc-count-cell {
+            display: inline-flex; align-items: baseline; gap: 2px;
+            font-size: 13px; font-weight: 700;
+            color: var(--text-black);
+            font-variant-numeric: tabular-nums;
+        }
+        .cnc-count-cell .unit {
+            font-size: 11px; font-weight: 500; color: var(--text-gray);
+        }
+        .cnc-count-cell.warn { color: var(--status-warning-fg); }
+
+        /* 의사결정 chip (의결 N건) */
+        .cnc-decision-chip {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            font-variant-numeric: tabular-nums;
+        }
+        .cnc-decision-chip.zero {
+            background: var(--gray-100);
+            color: var(--text-lightgray);
+        }
+
+        /* 회의록 첨부 아이콘 */
+        .cnc-record-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            cursor: pointer;
+        }
+        .cnc-record-icon:hover { background: var(--brand-500); color: white; }
+        .cnc-record-icon.missing {
+            background: var(--gray-100);
+            color: var(--text-lightgray);
+            cursor: default;
+        }
+
+        /* 상태 chip (예정·완료) */
+        .cnc-status {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .cnc-status.scheduled {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .cnc-status.done {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+
+        /* 결과 카운트 */
+        .cnc-meta-row { display: flex; align-items: center; gap: 12px; }
+        .cnc-meta-count { font-size: 14px; color: var(--text-gray); }
+        .cnc-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 모달 공통 */
+        .cnc-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .cnc-modal-backdrop.is-open { display: flex; }
+        .cnc-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 720px;
+            max-height: 92vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .cnc-modal.md { max-width: 540px; }
+        .cnc-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .cnc-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .cnc-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .cnc-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .cnc-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .cnc-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+
+        /* 상세 모달 — 회의 헤더 */
+        .cnc-detail-banner {
+            padding: 16px 22px;
+            background: var(--brand-50);
+            border-bottom: 1px solid var(--card-line);
+        }
+        .cnc-detail-banner .meta {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--text-gray);
+            margin-bottom: 4px;
+        }
+        .cnc-detail-banner h3 {
+            font-size: 18px; font-weight: 800; color: var(--main-dark2);
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
+        }
+        .cnc-detail-banner .sub {
+            font-size: 13px; color: var(--text-black);
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cnc-detail-banner .sub .dot {
+            display: inline-block;
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: var(--text-lightgray);
+        }
+        .cnc-detail-banner .sub strong { font-weight: 700; }
+
+        /* 상세 섹션 */
+        .cnc-section + .cnc-section { margin-top: 20px; }
+        .cnc-section h4 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .cnc-section h4::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+
+        /* 참석자 그리드 */
+        .cnc-participant-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .cnc-participant {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .cnc-participant .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+        }
+        .cnc-participant.external .avatar {
+            background: linear-gradient(135deg, #e58a3c 0%, #c47a07 100%);
+        }
+        .cnc-participant .body { flex: 1; min-width: 0; }
+        .cnc-participant .name {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .cnc-participant .name .badge {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .cnc-participant.external .name .badge {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+        }
+        .cnc-participant .role {
+            font-size: 11px; color: var(--text-gray);
+        }
+
+        /* 안건 박스 */
+        .cnc-agenda {
+            padding: 14px 18px;
+            background: #fafbfb;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 13px; line-height: 1.7; color: var(--text-black);
+            white-space: pre-wrap;
+        }
+
+        /* 의결사항 리스트 */
+        .cnc-decision-list {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .cnc-decision-row {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-line);
+            background: white;
+        }
+        .cnc-decision-row:last-child { border-bottom: none; }
+        .cnc-decision-num {
+            width: 24px; height: 24px;
+            border-radius: 6px;
+            background: var(--main);
+            color: white;
+            font-size: 12px; font-weight: 800;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .cnc-decision-body { flex: 1; min-width: 0; }
+        .cnc-decision-text {
+            font-size: 13px; font-weight: 600; color: var(--text-black);
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+        .cnc-decision-meta {
+            font-size: 11px; color: var(--text-gray);
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cnc-decision-meta .action-link {
+            color: var(--main);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .cnc-decision-meta .action-link:hover { text-decoration: underline; }
+
+        /* 첨부 */
+        .cnc-attach-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .cnc-attach-row:hover { border-color: var(--main); background: var(--brand-50); }
+        .cnc-attach-row .icon {
+            width: 28px; height: 28px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .cnc-attach-row .name { flex: 1; color: var(--text-black); font-weight: 600; }
+        .cnc-attach-row .size { color: var(--text-gray); font-size: 11px; }
+
+        /* 등록 폼 */
+        .cnc-form-row { margin-bottom: 14px; }
+        .cnc-form-row .label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin-bottom: 6px;
+        }
+        .cnc-form-row .label .req { color: var(--status-danger-fg); margin-left: 2px; }
+        .cnc-form-row input,
+        .cnc-form-row select,
+        .cnc-form-row textarea {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+            font-family: inherit;
+        }
+        .cnc-form-row textarea { min-height: 88px; resize: vertical; }
+        .cnc-form-row input:focus,
+        .cnc-form-row select:focus,
+        .cnc-form-row textarea:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .cnc-form-hint {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 4px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .cnc-form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* 참석자 입력기 */
+        .cnc-pp-tabs {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: white;
+            margin-bottom: 10px;
+        }
+        .cnc-pp-tab {
+            padding: 7px 14px;
+            font-size: 12px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .cnc-pp-tab:last-child { border-right: none; }
+        .cnc-pp-tab.is-active {
+            background: var(--main);
+            color: white;
+        }
+        .cnc-pp-search {
+            display: flex; gap: 6px;
+            margin-bottom: 8px;
+        }
+        .cnc-pp-search input { flex: 1; }
+        .cnc-pp-search button {
+            padding: 8px 14px;
+            background: var(--main);
+            color: white;
+            border: none;
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            font-size: 12px; font-weight: 600;
+        }
+        .cnc-pp-list {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            min-height: 40px;
+            padding: 8px;
+            background: #fafbfb;
+            border: 1px dashed var(--card-line);
+            border-radius: var(--radius-button);
+        }
+        .cnc-pp-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--text-black);
+            font-weight: 600;
+        }
+        .cnc-pp-chip.external { border-color: var(--status-warning-border); background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .cnc-pp-chip .remove {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px;
+            background: none; border: none; cursor: pointer;
+            color: inherit;
+            margin-left: 2px;
+        }
+
+        @media (max-width: 1023px) {
+            .cnc-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .cnc-participant-grid { grid-template-columns: 1fr; }
+            .cnc-form-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-dy-page="con-council" data-page-title="도급 안전보건협의체" data-page-subtitle="산안법 제64조 도급 협의체 회의 등록 및 의결 관리">
+    <main>
+
+        <!-- ─── 안내 배너 ─── -->
+        <div class="cnc-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>
+                <strong>도급사업 안전보건 협의체</strong> · 발주자와 수급업체가 함께 운영하는 회의입니다. 산업안전보건법 §64에 따라 발주자가 주관·기록합니다.
+                <span class="note">※ 산업안전보건위원회(노사 협의)는 별도 메뉴 (의무이행 관리 &gt; 산업안전보건위원회)에서 운영됩니다.</span>
+            </span>
+        </div>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="cnc-kpi-grid">
+            <div class="cnc-kpi-cell">
+                <div class="cnc-kpi-head">
+                    <span class="cnc-kpi-title">올해 회의</span>
+                    <span class="cnc-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </span>
+                </div>
+                <div class="cnc-kpi-value">14<span class="small">건</span></div>
+                <div class="cnc-kpi-sub">2026년 누적 · 진행 중 계약 <strong>5</strong>건</div>
+            </div>
+            <div class="cnc-kpi-cell">
+                <div class="cnc-kpi-head">
+                    <span class="cnc-kpi-title">이번 분기</span>
+                    <span class="cnc-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="cnc-kpi-value info">5<span class="small">건</span></div>
+                <div class="cnc-kpi-sub">2026 Q2 · 예정 <strong>2</strong> · 완료 <strong>3</strong></div>
+            </div>
+            <div class="cnc-kpi-cell">
+                <div class="cnc-kpi-head">
+                    <span class="cnc-kpi-title">의결사항</span>
+                    <span class="cnc-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </span>
+                </div>
+                <div class="cnc-kpi-value success">37<span class="small">건</span></div>
+                <div class="cnc-kpi-sub">개선조치 연계 <strong>22</strong>건</div>
+            </div>
+            <div class="cnc-kpi-cell">
+                <div class="cnc-kpi-head">
+                    <span class="cnc-kpi-title">5인 미만 회의</span>
+                    <span class="cnc-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                </div>
+                <div class="cnc-kpi-value warning">2<span class="small">건</span></div>
+                <div class="cnc-kpi-sub">권장 5인 이상 미달 회의</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 등록 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">계약</span>
+                <select class="select" id="filter-contract">
+                    <option>전체</option>
+                    <option>청사 시설 보수공사 (5억)</option>
+                    <option>청사 청소·시설관리 위탁 (15억)</option>
+                    <option>도로 확장공사 1단계 (50억)</option>
+                    <option>정수장 증축 (120억)</option>
+                    <option>군민체육관 리모델링 (80억)</option>
+                    <option>농촌도로 포장공사 (30억)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select" id="filter-period">
+                    <option>전체</option>
+                    <option>이번 분기 (2026 Q2)</option>
+                    <option>올해 (2026)</option>
+                    <option>작년 (2025)</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="회의명 검색" id="filter-search">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
+        </div>
+
+        <div class="cnc-meta-row">
+            <span class="cnc-meta-count">전체 <strong id="result-count">14</strong>건 표시 중</span>
+        </div>
+
+        <!-- ─── 회의 목록 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">협의체 회의 이력</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.openCreateModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    회의 등록
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:130px;"><col><col style="width:90px;"><col style="width:80px;"><col style="width:80px;"><col style="width:80px;"><col style="width:70px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>회의일자</th>
+                        <th>계약 · 회의명</th>
+                        <th style="text-align:center;">참석자</th>
+                        <th style="text-align:center;">의결</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">회의록</th>
+                        <th style="text-align:center;">상세</th>
+                    </tr>
+                </thead>
+                <tbody id="cnc-tbody">
+                    <tr class="row-link" onclick="window.openDetail('m-2026-04-cleaning')">
+                        <td>2026-04-15<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:00 · 군청 회의실 A</div></td>
+                        <td>
+                            <span class="contract-chip service">청소·시설관리</span>
+                            <strong>4월 정기 협의체</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 청소·시설관리 위탁 (호남안전관리)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">8<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 3건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록_2026-04-15.pdf 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-04-cleaning')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-04-cheongsa')">
+                        <td>2026-04-22<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">10:00 · 청사 회의실</div></td>
+                        <td>
+                            <span class="contract-chip construction">공사</span>
+                            <strong>청사 보수 착공 전 안전협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">6<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 4건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-04-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-05-doro')">
+                        <td>2026-05-08<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">15:00 · 안전건설과</div></td>
+                        <td>
+                            <span class="contract-chip construction">공사</span>
+                            <strong>도로 확장공사 안전협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">도로 확장공사 1단계 (해인건설)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">7<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 3건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-05-doro')">상세</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.openDetail('m-2026-05-jeongsoojang')">
+                        <td>2026-05-20<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:00 · 정수장 회의실 (예정)</div></td>
+                        <td>
+                            <span class="contract-chip construction">공사</span>
+                            <strong>정수장 증축 착공 협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">정수장 증축 (전남시설) — 안전관리자 미달 결재 차단 ⚠</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">—</span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip zero">의결 0건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status scheduled">예정</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon missing"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-05-jeongsoojang')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-05-bdaehoe')">
+                        <td>2026-05-25<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">10:00 · 체육관 (예정)</div></td>
+                        <td>
+                            <span class="contract-chip construction">공사</span>
+                            <strong>체육관 리모델링 정기 협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군민체육관 리모델링 (해인건설)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">—</span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip zero">의결 0건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status scheduled">예정</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon missing"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-05-bdaehoe')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-03-cleaning')">
+                        <td>2026-03-20<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:00 · 군청 회의실 A</div></td>
+                        <td>
+                            <span class="contract-chip service">청소·시설관리</span>
+                            <strong>분기 협의체 1Q</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 청소·시설관리 위탁 (호남안전관리)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell warn">5<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 2건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-03-cleaning')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-04-trans')">
+                        <td>2026-04-05<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:30 · 자치행정과</div></td>
+                        <td>
+                            <span class="contract-chip outsource">위탁</span>
+                            <strong>관용차량 운영 위탁 협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">관용 차량 운영 위탁 (목포운수)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell warn">4<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 1건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-04-trans')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-02-cleaning')">
+                        <td>2026-02-15<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:00 · 군청 회의실 A</div></td>
+                        <td>
+                            <span class="contract-chip service">청소·시설관리</span>
+                            <strong>2월 정기 협의체</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 청소·시설관리 위탁 (호남안전관리)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">9<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 3건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-02-cleaning')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2026-01-cleaning')">
+                        <td>2026-01-12<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">14:00 · 군청 회의실 A</div></td>
+                        <td>
+                            <span class="contract-chip service">청소·시설관리</span>
+                            <strong>2026년 운영 개시 협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 청소·시설관리 위탁 (호남안전관리)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">10<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 5건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2026-01-cleaning')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('m-2025-12-bdaehoe')">
+                        <td>2025-12-18<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">10:00 · 체육관</div></td>
+                        <td>
+                            <span class="contract-chip construction">공사</span>
+                            <strong>체육관 리모델링 착공 협의</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군민체육관 리모델링 (해인건설)</div>
+                        </td>
+                        <td style="text-align:center;"><span class="cnc-count-cell">8<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="cnc-decision-chip">의결 4건</span></td>
+                        <td style="text-align:center;"><span class="cnc-status done">완료</span></td>
+                        <td style="text-align:center;"><span class="cnc-record-icon" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회의록 다운로드')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('m-2025-12-bdaehoe')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="2"></div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         CON03-D 회의 상세 모달
+    ============================================================ -->
+    <div class="cnc-modal-backdrop" id="detail-modal">
+        <div class="cnc-modal" role="dialog" aria-modal="true">
+            <div class="cnc-modal-header">
+                <div class="cnc-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--main)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    회의 상세
+                </div>
+                <button type="button" class="cnc-modal-close" onclick="window.closeDetail()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <div class="cnc-detail-banner" id="detail-banner">
+                <!-- JS 렌더 -->
+            </div>
+
+            <div class="cnc-modal-body" id="detail-body">
+                <!-- JS 렌더 -->
+            </div>
+
+            <div class="cnc-modal-footer">
+                <button class="btn" style="background:var(--status-danger-fg); color:white; border-color:var(--status-danger-fg);" type="button" id="del-btn" onclick="window.DYLayout._soon(event, '회의 삭제 확인 모달')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                    삭제
+                </button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PDF
+                    </button>
+                    <button class="btn btn-outline" type="button" onclick="window.closeDetail()">닫기</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '회의 수정 (CON03-M)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        수정
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CON03-M 회의 등록 모달
+    ============================================================ -->
+    <div class="cnc-modal-backdrop" id="create-modal">
+        <div class="cnc-modal md" role="dialog" aria-modal="true">
+            <div class="cnc-modal-header">
+                <div class="cnc-modal-title">협의체 회의 등록</div>
+                <button type="button" class="cnc-modal-close" onclick="window.closeCreateModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="cnc-modal-body">
+                <div class="cnc-form-row">
+                    <label class="label">계약<span class="req">*</span></label>
+                    <select id="form-contract">
+                        <option>청사 시설 보수공사 (담양건설) · 진행중</option>
+                        <option>청사 청소·시설관리 위탁 (호남안전관리) · 진행중</option>
+                        <option>도로 확장공사 1단계 (해인건설) · 진행중</option>
+                        <option>정수장 증축 (전남시설) · 결재 차단</option>
+                        <option>군민체육관 리모델링 (해인건설) · 진행중</option>
+                        <option>관용 차량 운영 위탁 (목포운수) · 진행중</option>
+                    </select>
+                </div>
+                <div class="cnc-form-grid-2">
+                    <div class="cnc-form-row">
+                        <label class="label">회의일자<span class="req">*</span></label>
+                        <input type="datetime-local" value="2026-05-13T14:00">
+                    </div>
+                    <div class="cnc-form-row">
+                        <label class="label">장소</label>
+                        <input type="text" placeholder="예: 군청 회의실 A">
+                    </div>
+                </div>
+                <div class="cnc-form-row">
+                    <label class="label">회의명<span class="req">*</span></label>
+                    <input type="text" placeholder="예: 5월 정기 협의체">
+                </div>
+
+                <div class="cnc-form-row">
+                    <label class="label">참석자<span class="req">*</span></label>
+                    <div class="cnc-pp-tabs">
+                        <button type="button" class="cnc-pp-tab is-active" data-pp="internal">내부 직원 검색</button>
+                        <button type="button" class="cnc-pp-tab" data-pp="external">외부 SUB 직원 입력</button>
+                    </div>
+                    <div class="cnc-pp-search" data-pp-area="internal">
+                        <input type="text" placeholder="구성원 이름·부서 검색">
+                        <button type="button" onclick="window.addParticipant('internal')">+ 추가</button>
+                    </div>
+                    <div class="cnc-pp-search" data-pp-area="external" style="display:none;">
+                        <input type="text" placeholder="회사명·이름·직위 (예: 담양건설 박관리 안전관리자)">
+                        <button type="button" onclick="window.addParticipant('external')">+ 추가</button>
+                    </div>
+                    <div class="cnc-pp-list" id="pp-list">
+                        <span class="cnc-pp-chip">박안전 (안전건설과 SHM) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                        <span class="cnc-pp-chip">김안전 (안전관리팀 SM) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                        <span class="cnc-pp-chip external">담양건설 박관리 (안전관리자) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                    </div>
+                    <div class="cnc-form-hint">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        산안법 §64 권장: <strong style="color:var(--text-black);">5인 이상</strong> (현재 3명)
+                    </div>
+                </div>
+
+                <div class="cnc-form-row">
+                    <label class="label">안건<span class="req">*</span></label>
+                    <textarea placeholder="회의 안건을 자유롭게 작성합니다 (1~5000자)">1. 5월 안전관리 활동 점검 결과 공유
+2. 다음달 위험요인 점검 일정 협의
+3. 신규 안전조치 도입 검토</textarea>
+                </div>
+                <div class="cnc-form-row">
+                    <label class="label">의결사항</label>
+                    <textarea placeholder="의결사항이 있으면 입력합니다. 줄바꿈으로 항목 구분."></textarea>
+                </div>
+                <div class="cnc-form-row">
+                    <label class="label">회의록 첨부</label>
+                    <input type="file" accept=".pdf,image/*" style="padding:6px 12px;">
+                    <div class="cnc-form-hint">PDF·이미지 권장 · 회의 종료 후 업로드</div>
+                </div>
+            </div>
+            <div class="cnc-modal-footer">
+                <div></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.closeCreateModal()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.saveMeeting()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 필터 ─── */
+        const tbody = document.getElementById('cnc-tbody');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const resultCount = document.getElementById('result-count');
+        function applyFilters() {
+            const c = document.getElementById('filter-contract').value;
+            const p = document.getElementById('filter-period').value;
+            const q = document.getElementById('filter-search').value.trim().toLowerCase();
+            let visible = 0;
+            allRows.forEach(tr => {
+                const text = tr.textContent.toLowerCase();
+                let show = true;
+                if (c !== '전체') {
+                    const key = c.split('(')[0].trim().toLowerCase();
+                    if (!text.includes(key)) show = false;
+                }
+                if (p !== '전체') {
+                    const dateCell = tr.children[0].textContent;
+                    if (p.includes('Q2') && !dateCell.includes('2026-04') && !dateCell.includes('2026-05') && !dateCell.includes('2026-06')) show = false;
+                    else if (p.includes('2026') && !dateCell.includes('2026-')) show = false;
+                    else if (p.includes('2025') && !dateCell.includes('2025-')) show = false;
+                }
+                if (q && !text.includes(q)) show = false;
+                tr.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            resultCount.textContent = visible;
+        }
+        ['filter-contract', 'filter-period'].forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+        let searchTimer = null;
+        document.getElementById('filter-search').addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyFilters, 300);
+        });
+        document.querySelector('.search-bar .search-submit').addEventListener('click', applyFilters);
+        window.clearFilters = function () {
+            document.getElementById('filter-contract').value = '전체';
+            document.getElementById('filter-period').value = '전체';
+            document.getElementById('filter-search').value = '';
+            applyFilters();
+        };
+
+        /* ─── 회의 데이터 ─── */
+        const MEETINGS = {
+            'm-2026-04-cleaning': {
+                date: '2026-04-15 14:00 ~ 15:30', location: '군청 회의실 A',
+                contract: '청사 청소·시설관리 위탁', contractType: 'service', sub: '(주)호남안전관리',
+                title: '4월 정기 협의체',
+                participants: [
+                    { type: 'internal', name: '박안전', role: 'SHM · 안전건설과' },
+                    { type: 'internal', name: '김안전', role: 'SM · 안전관리팀' },
+                    { type: 'internal', name: '한시설', role: '담당 · 시설관리과' },
+                    { type: 'internal', name: '오환경', role: '담당 · 환경과' },
+                    { type: 'external', company: '호남안전관리', name: '박위탁', role: '대표' },
+                    { type: 'external', company: '호남안전관리', name: '최현장', role: '현장소장' },
+                    { type: 'external', company: '호남안전관리', name: '김보건', role: '안전관리자' },
+                    { type: 'external', company: '호남안전관리', name: '이청소', role: '작업반장' },
+                ],
+                agenda: '1. 4월 청사 청소·시설 작업 안전점검 결과 공유\n2. 화학물질(세제) 안전관리 강화 방안\n3. 5월 작업자 교육 일정 협의\n4. 안전사고 무발생 100일 달성 기념 표창 안건',
+                decisions: [
+                    { text: '5월 1일부터 청소 작업자 전원 MSDS 교육 의무 이수 (1시간)', owner: '박위탁', due: '2026-04-30', impLink: true },
+                    { text: '화학물질 보관실 환기시설 추가 점검 (월 1회 → 주 1회)', owner: '한시설', due: '2026-05-15', impLink: true },
+                    { text: '5월 정기 협의체 일정: 2026-05-20 14:00', owner: '박안전', due: '—', impLink: false },
+                ],
+                attach: [{ name: '회의록_2026-04-15.pdf', size: '420KB' }, { name: '안전점검_보고서.pdf', size: '180KB' }]
+            },
+            'm-2026-04-cheongsa': {
+                date: '2026-04-22 10:00 ~ 11:30', location: '청사 회의실',
+                contract: '청사 시설 보수공사', contractType: 'construction', sub: '(주)담양건설',
+                title: '청사 보수 착공 전 안전협의',
+                participants: [
+                    { type: 'internal', name: '박안전', role: 'SHM · 안전건설과' },
+                    { type: 'internal', name: '최성호', role: 'SHM · 시설관리팀' },
+                    { type: 'internal', name: '이건설', role: '담당 · 건설지원팀' },
+                    { type: 'external', company: '담양건설', name: '홍길수', role: '대표' },
+                    { type: 'external', company: '담양건설', name: '박현장', role: '현장소장' },
+                    { type: 'external', company: '담양건설', name: '김안전관리', role: '안전관리자' },
+                ],
+                agenda: '1. 청사 시설 보수공사 작업 계획 확인\n2. 작업 구역 통제 및 출입 통제 방안\n3. 가설구조물 안전성 검토\n4. 일일 TBM 실시 일정',
+                decisions: [
+                    { text: '공사 구역 출입 통제 펜스 4-5월 상시 설치', owner: '박현장', due: '2026-04-26', impLink: true },
+                    { text: '가설구조물 안전성 검토 결과 5월 1일 전 제출', owner: '담양건설', due: '2026-05-01', impLink: true },
+                    { text: '매일 08:00 TBM 실시 (현장소장 주관)', owner: '박현장', due: '공사 종료시까지', impLink: false },
+                    { text: '주 1회 안전순찰 (수요일 14:00, 발주처+수급사)', owner: '박안전', due: '공사 종료시까지', impLink: false },
+                ],
+                attach: [{ name: '회의록_2026-04-22.pdf', size: '380KB' }, { name: '작업계획서.pdf', size: '1.2MB' }]
+            },
+            'm-2026-05-doro': {
+                date: '2026-05-08 15:00 ~ 16:30', location: '안전건설과 회의실',
+                contract: '도로 확장공사 1단계', contractType: 'construction', sub: '(주)해인건설',
+                title: '도로 확장공사 안전협의',
+                participants: [
+                    { type: 'internal', name: '박안전', role: 'SHM · 안전건설과' },
+                    { type: 'internal', name: '이건설', role: '담당 · 건설지원팀' },
+                    { type: 'internal', name: '김안전', role: 'SM · 안전관리팀' },
+                    { type: 'external', company: '해인건설', name: '정건설', role: '대표' },
+                    { type: 'external', company: '해인건설', name: '윤도로', role: '현장소장' },
+                    { type: 'external', company: '해인건설', name: '한안전', role: '안전관리자' },
+                    { type: 'external', company: '해인건설', name: '서장비', role: '장비반장' },
+                ],
+                agenda: '1. 5월 도로 확장공사 진행 상황 공유\n2. 교통 우회 및 신호수 배치 협의\n3. 중장비(굴착기·덤프) 작업 안전 절차\n4. 야간 작업 시 안전조치',
+                decisions: [
+                    { text: '신호수 1조 추가 배치 (왕복 4차선 구간)', owner: '윤도로', due: '2026-05-15', impLink: true },
+                    { text: '야간 작업 LED 경광등 및 반사 표지 추가 설치', owner: '윤도로', due: '2026-05-20', impLink: true },
+                    { text: '중장비 작업 시 신호수와 운전자 무전기 통신 의무화', owner: '한안전', due: '즉시', impLink: false },
+                ],
+                attach: [{ name: '회의록_2026-05-08.pdf', size: '510KB' }]
+            },
+            'm-2026-05-jeongsoojang': {
+                date: '2026-05-20 14:00 (예정)', location: '정수장 회의실',
+                contract: '정수장 증축', contractType: 'construction', sub: '(주)전남시설',
+                title: '정수장 증축 착공 협의 (예정)',
+                participants: [],
+                agenda: '1. 정수장 증축 작업 안전 계획 확인\n2. 안전관리자 추가 선임 협의 (법정 2명 · 현 1명)\n3. 작업 구역 보안 및 우회 동선',
+                decisions: [],
+                attach: []
+            },
+            'm-2026-05-bdaehoe': {
+                date: '2026-05-25 10:00 (예정)', location: '체육관 회의실',
+                contract: '군민체육관 리모델링', contractType: 'construction', sub: '(주)해인건설',
+                title: '체육관 리모델링 정기 협의 (예정)',
+                participants: [],
+                agenda: '1. 4-5월 진행 상황 점검\n2. 6월 중장비 진입 일정\n3. 체육관 주변 보행자 안전 대책',
+                decisions: [],
+                attach: []
+            },
+            'm-2026-03-cleaning': {
+                date: '2026-03-20 14:00 ~ 15:00', location: '군청 회의실 A',
+                contract: '청사 청소·시설관리 위탁', contractType: 'service', sub: '(주)호남안전관리',
+                title: '분기 협의체 1Q',
+                participants: [
+                    { type: 'internal', name: '박안전', role: 'SHM · 안전건설과' },
+                    { type: 'internal', name: '한시설', role: '담당 · 시설관리과' },
+                    { type: 'external', company: '호남안전관리', name: '박위탁', role: '대표' },
+                    { type: 'external', company: '호남안전관리', name: '최현장', role: '현장소장' },
+                    { type: 'external', company: '호남안전관리', name: '김보건', role: '안전관리자' },
+                ],
+                agenda: '1. 1분기 청소작업 안전점검 결과\n2. 화학물질 보관실 환기 개선\n3. 신규 작업자 안전교육',
+                decisions: [
+                    { text: '화학물질 보관실 환기팬 신규 설치', owner: '한시설', due: '2026-04-30', impLink: true },
+                    { text: '신규 작업자 교육 횟수 월 1회 → 월 2회', owner: '박위탁', due: '2026-04-01', impLink: false },
+                ],
+                attach: [{ name: '회의록_2026-03-20.pdf', size: '350KB' }]
+            },
+        };
+
+        const DEFAULT_DATA = {
+            date: '-', location: '-',
+            contract: '-', contractType: 'service', sub: '-',
+            title: '회의',
+            participants: [], agenda: '데이터 준비 중입니다.', decisions: [], attach: []
+        };
+
+        /* ─── 상세 모달 ─── */
+        window.openDetail = function (id) {
+            const m = MEETINGS[id] || DEFAULT_DATA;
+
+            // 헤더 배너
+            document.getElementById('detail-banner').innerHTML = `
+                <div class="meta">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span>${m.date}</span>
+                    <span class="dot"></span>
+                    <span>${m.location}</span>
+                </div>
+                <h3>${m.title}</h3>
+                <div class="sub">
+                    <span class="contract-chip ${m.contractType}">${m.contractType === 'construction' ? '공사' : (m.contractType === 'service' ? '용역' : '위탁')}</span>
+                    <strong>${m.contract}</strong>
+                    <span class="dot"></span>
+                    <span>${m.sub}</span>
+                </div>
+            `;
+
+            // 본문
+            const internal = m.participants.filter(p => p.type === 'internal');
+            const external = m.participants.filter(p => p.type === 'external');
+            const ppHtml = m.participants.length
+                ? m.participants.map(p => {
+                    const initial = (p.name || '').slice(0, 1);
+                    const isExt = p.type === 'external';
+                    return `
+                        <div class="cnc-participant ${isExt ? 'external' : ''}">
+                            <span class="avatar">${initial}</span>
+                            <div class="body">
+                                <div class="name">${p.name} <span class="badge">${isExt ? '외부' : '내부'}</span></div>
+                                <div class="role">${isExt ? (p.company + ' · ' + p.role) : p.role}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">아직 참석자가 등록되지 않았습니다.</p>';
+
+            const decisionsHtml = m.decisions.length
+                ? m.decisions.map((d, i) => `
+                    <div class="cnc-decision-row">
+                        <span class="cnc-decision-num">${i + 1}</span>
+                        <div class="cnc-decision-body">
+                            <div class="cnc-decision-text">${d.text}</div>
+                            <div class="cnc-decision-meta">
+                                <span>책임 <strong style="color:var(--text-black);">${d.owner}</strong></span>
+                                <span>·</span>
+                                <span>기한 ${d.due}</span>
+                                ${d.impLink ? '<span>·</span><a class="action-link" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, \'개선조치 (IMP01-D) 자동 생성\');">개선조치 연계 →</a>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">의결사항이 없습니다.</p>';
+
+            const attachHtml = m.attach.length
+                ? m.attach.map(a => `
+                    <div class="cnc-attach-row" onclick="window.DYLayout._soon({preventDefault:()=>{}}, '${a.name} 다운로드')">
+                        <span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+                        <span class="name">${a.name}</span>
+                        <span class="size">${a.size}</span>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">첨부 파일이 없습니다.</p>';
+
+            document.getElementById('detail-body').innerHTML = `
+                <div class="cnc-section">
+                    <h4>참석자 (${m.participants.length}명 · 내부 ${internal.length} / 외부 ${external.length})</h4>
+                    <div class="cnc-participant-grid">${ppHtml}</div>
+                </div>
+
+                <div class="cnc-section">
+                    <h4>안건</h4>
+                    <div class="cnc-agenda">${m.agenda}</div>
+                </div>
+
+                <div class="cnc-section">
+                    <h4>의결사항 (${m.decisions.length}건)</h4>
+                    <div class="cnc-decision-list">${decisionsHtml}</div>
+                </div>
+
+                <div class="cnc-section">
+                    <h4>첨부 파일</h4>
+                    ${attachHtml}
+                </div>
+            `;
+
+            document.getElementById('detail-modal').classList.add('is-open');
+        };
+        window.closeDetail = function () {
+            document.getElementById('detail-modal').classList.remove('is-open');
+        };
+
+        /* ─── 등록 모달 ─── */
+        window.openCreateModal = function () {
+            document.getElementById('create-modal').classList.add('is-open');
+        };
+        window.closeCreateModal = function () {
+            document.getElementById('create-modal').classList.remove('is-open');
+        };
+        window.saveMeeting = function () {
+            window.closeCreateModal();
+            showToast('협의체 회의가 등록되었습니다. 참석자에게 새올 알림 발송됨. (목업)');
+        };
+
+        /* 참석자 입력 탭 전환 */
+        document.querySelectorAll('.cnc-pp-tab').forEach(b => {
+            b.addEventListener('click', () => {
+                const t = b.dataset.pp;
+                document.querySelectorAll('.cnc-pp-tab').forEach(x => x.classList.toggle('is-active', x.dataset.pp === t));
+                document.querySelectorAll('[data-pp-area]').forEach(x => {
+                    x.style.display = x.dataset.ppArea === t ? 'flex' : 'none';
+                });
+            });
+        });
+
+        window.addParticipant = function (type) {
+            const area = document.querySelector(`[data-pp-area="${type}"]`);
+            const input = area.querySelector('input');
+            const v = input.value.trim();
+            if (!v) return;
+            const list = document.getElementById('pp-list');
+            const chip = document.createElement('span');
+            chip.className = 'cnc-pp-chip' + (type === 'external' ? ' external' : '');
+            chip.innerHTML = `${v} <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+            list.appendChild(chip);
+            input.value = '';
+        };
+
+        document.querySelectorAll('.cnc-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>
