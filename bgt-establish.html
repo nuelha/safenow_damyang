@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예산 편성 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── BGT03-F 전용 ─── */
+
+        .bgt-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--card-line); }
+        .bgt-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; font-size: 14px; font-weight: 600;
+            color: var(--text-gray); background: transparent;
+            border: none; border-bottom: 2px solid transparent;
+            cursor: pointer; margin-bottom: -1px;
+            transition: all .15s ease; text-decoration: none;
+        }
+        .bgt-tab:hover { color: var(--main-dark); }
+        .bgt-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+
+        /* 컨텍스트 헤더 */
+        .bgt-ctx-bar {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            flex-wrap: wrap;
+        }
+        .bgt-ctx-bar .selector {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .bgt-ctx-bar label { font-size: 13px; font-weight: 600; color: var(--text-gray); }
+        .bgt-ctx-bar select {
+            padding: 7px 28px 7px 12px;
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            border: 1px solid var(--card-line);
+            border-radius: 7px;
+            background-color: white;
+            background-position: right 8px center;
+        }
+        .bgt-ctx-bar .status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            margin-left: auto;
+        }
+        .bgt-ctx-bar .status-chip.draft   { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+        .bgt-ctx-bar .status-chip.requested { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .bgt-ctx-bar .status-chip.approved { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+
+        /* 합계 배너 */
+        .bgt-total-banner {
+            display: flex; align-items: center; gap: 18px;
+            padding: 22px 28px;
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+            border-radius: var(--radius-card);
+            color: white;
+            position: relative; overflow: hidden;
+        }
+        .bgt-total-banner::before {
+            content: ""; position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .bgt-total-banner-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.15);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            color: white;
+            position: relative;
+        }
+        .bgt-total-banner-main { flex: 1; position: relative; }
+        .bgt-total-banner-label {
+            font-size: 13px; color: rgba(255,255,255,0.85);
+            margin-bottom: 4px;
+        }
+        .bgt-total-banner-value {
+            font-size: 32px; font-weight: 800;
+            letter-spacing: -0.8px;
+            line-height: 1;
+        }
+        .bgt-total-banner-value .unit {
+            font-size: 16px; font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            margin-left: 4px;
+        }
+        .bgt-total-banner-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            margin-top: 6px;
+        }
+        .bgt-total-banner-meta strong { color: white; font-weight: 700; }
+
+        /* 검증 메시지 */
+        .bgt-validation {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 18px;
+            background: var(--status-success-bg);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            font-size: 13px;
+            color: var(--status-success-fg);
+        }
+        .bgt-validation.warn {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            color: var(--status-warning-fg);
+        }
+        .bgt-validation strong { font-weight: 700; }
+
+        /* 편성 트리 - card */
+        .bgt-est-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-est-card-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fafbfb;
+        }
+        .bgt-est-card-head h3 {
+            font-size: 15px; font-weight: 700; color: var(--main-dark2);
+        }
+
+        /* 편성 행 */
+        .bgt-est-row {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 14px;
+            align-items: center;
+            padding: 10px 22px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .bgt-est-row:last-child { border-bottom: none; }
+        .bgt-est-row.depth-1 {
+            background: var(--brand-50);
+            font-weight: 700;
+        }
+        .bgt-est-row.depth-2 {
+            background: white;
+            padding-left: 50px;
+        }
+        .bgt-est-row.depth-3 {
+            background: white;
+            padding-left: 80px;
+        }
+
+        .bgt-est-name {
+            display: flex; align-items: center; gap: 8px;
+            min-width: 0;
+        }
+        .bgt-est-name .depth-badge {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            flex-shrink: 0;
+        }
+        .bgt-est-row.depth-1 .bgt-est-name .depth-badge {
+            background: var(--main); color: white;
+        }
+        .bgt-est-row.depth-2 .bgt-est-name .depth-badge {
+            background: var(--status-info-fg); color: white;
+        }
+        .bgt-est-name .label {
+            color: var(--text-black);
+        }
+        .bgt-est-row.depth-1 .bgt-est-name .label {
+            font-size: 15px;
+            color: var(--main-dark2);
+            font-weight: 700;
+        }
+
+        .bgt-est-input-wrap {
+            display: flex; align-items: center; gap: 6px;
+            justify-content: flex-end;
+        }
+        .bgt-est-input {
+            padding: 6px 10px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: right;
+            color: var(--main-dark);
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            width: 130px;
+            font-variant-numeric: tabular-nums;
+        }
+        .bgt-est-input:focus {
+            border-color: var(--main);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .bgt-est-input.readonly {
+            background: var(--brand-100);
+            color: var(--main-dark);
+            cursor: default;
+            border-color: var(--status-success-border);
+        }
+        .bgt-est-input.readonly:focus { border-color: var(--status-success-border); box-shadow: none; }
+        .bgt-est-unit {
+            font-size: 12px; font-weight: 600;
+            color: var(--text-gray);
+        }
+
+        /* 비고 영역 */
+        .bgt-note-section {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 18px 22px;
+        }
+        .bgt-note-section h3 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .bgt-note-section h3::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .bgt-note-section textarea {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+            outline: none;
+        }
+        .bgt-note-section textarea:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+
+        /* 푸터 액션 바 */
+        .bgt-footer {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 14px 22px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+            z-index: 10;
+        }
+        .bgt-footer .info {
+            font-size: 13px; color: var(--text-gray);
+        }
+        .bgt-footer .info strong { color: var(--main-dark2); font-weight: 700; }
+        .bgt-footer .actions {
+            display: flex; gap: 8px;
+        }
+
+        /* 결재 안내 모달 */
+        .bgt-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .bgt-modal-backdrop.is-open { display: flex; }
+        .bgt-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 480px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .bgt-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-modal-body {
+            padding: 20px 24px;
+            font-size: 14px; color: var(--text-black); line-height: 1.6;
+        }
+        .bgt-modal-body .onnara-box {
+            margin-top: 12px;
+            padding: 14px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--main-dark2);
+        }
+        .bgt-modal-body .onnara-box strong { font-weight: 700; }
+        .bgt-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        @media (max-width: 1023px) {
+            .bgt-est-row { grid-template-columns: 1fr; gap: 6px; }
+            .bgt-est-input-wrap { justify-content: flex-start; }
+            .bgt-est-row.depth-2, .bgt-est-row.depth-3 { padding-left: 22px; }
+            .bgt-est-name .label { padding-left: 0; }
+            .bgt-est-row.depth-2 .bgt-est-name::before {
+                content: "  └ "; color: var(--text-lightgray); margin-right: 4px;
+            }
+            .bgt-est-row.depth-3 .bgt-est-name::before {
+                content: "    └ "; color: var(--text-lightgray); margin-right: 4px;
+            }
+        }
+    </style>
+</head>
+<body data-dy-page="bgt-status" data-page-title="예산 — 편성" data-page-subtitle="부서별 안전보건 예산 편성 입력 (3단계 항목별)">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="bgt-tabs" role="tablist">
+            <a class="bgt-tab" href="bgt-status.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="bgt-tab" href="bgt-tree.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+                예방 항목 트리
+            </a>
+            <button class="bgt-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                편성
+            </button>
+            <a class="bgt-tab" href="bgt-execute.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                집행
+            </a>
+            <a class="bgt-tab" href="bgt-settings.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </a>
+        </div>
+
+        <!-- ─── 컨텍스트 ─── -->
+        <div class="bgt-ctx-bar">
+            <div class="selector">
+                <label>부서</label>
+                <select>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>보건소</option>
+                </select>
+            </div>
+            <div class="selector">
+                <label>연도</label>
+                <select>
+                    <option>2026</option>
+                    <option>2025</option>
+                </select>
+            </div>
+            <span class="status-chip draft">편성 중 · 결재 미요청</span>
+        </div>
+
+        <!-- ─── 합계 배너 ─── -->
+        <div class="bgt-total-banner">
+            <span class="bgt-total-banner-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <div class="bgt-total-banner-main">
+                <div class="bgt-total-banner-label">자치행정과 2026 편성 합계</div>
+                <div class="bgt-total-banner-value" id="total-amount">250,000<span class="unit">천원</span></div>
+                <div class="bgt-total-banner-meta">1단계 5건 · 2단계 12건 · 3단계 18건 — 마지막 저장 <strong>2026-05-12 14:30</strong> (임시저장)</div>
+            </div>
+        </div>
+
+        <!-- ─── 검증 메시지 ─── -->
+        <div class="bgt-validation" id="validation-msg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>모든 1단계 항목 합계가 하위 합계와 일치합니다 (<strong>250,000천원</strong>).</span>
+        </div>
+
+        <!-- ─── 편성 입력 트리 ─── -->
+        <section class="bgt-est-card">
+            <div class="bgt-est-card-head">
+                <h3>예방 항목별 편성 (3단계 항목에 직접 입력 · 상위는 자동 합산)</h3>
+                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '항목 일괄 import 양식')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    엑셀 import
+                </button>
+            </div>
+            <div id="est-rows"></div>
+        </section>
+
+        <!-- ─── 비고 ─── -->
+        <section class="bgt-note-section">
+            <h3>비고</h3>
+            <textarea placeholder="편성 사유·근거·특이사항 등을 자유롭게 입력하세요.">2026년 자치행정과 안전관리 예산 — 청사 안전관리 강화 및 분기 정기교육 확대 반영. 전년 대비 보호장비 구입비 12% 증액.</textarea>
+        </section>
+
+        <!-- ─── 푸터 액션 ─── -->
+        <div class="bgt-footer">
+            <div class="info">
+                마지막 저장 <strong>2026-05-12 14:30</strong> · 입력 항목 <strong id="filled-count">18</strong>/18개
+            </div>
+            <div class="actions">
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장 (DRAFT 유지)')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    임시저장
+                </button>
+                <button class="btn btn-primary" type="button" onclick="window.openApproval()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    결재 요청 (온나라)
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 결재 요청 안내 모달 -->
+    <div class="bgt-modal-backdrop" id="approval-modal">
+        <div class="bgt-modal" role="dialog" aria-modal="true">
+            <div class="bgt-modal-header">예산 편성 결재 요청</div>
+            <div class="bgt-modal-body">
+                <p><strong>자치행정과 2026 예산 편성 (250,000천원)</strong>을 결재 요청하시겠습니까?</p>
+                <p style="font-size:12px; color:var(--text-gray); margin-top:6px;">요청 즉시 system status가 <strong style="color:var(--text-black);">REQUESTED</strong>로 전환되고 CEO·GM에게 새올 포틀릿 알림이 발송됩니다.</p>
+                <div class="onnara-box">
+                    <strong>※ 온나라 결재 시스템 안내 (결정사항 #2)</strong><br>
+                    본 결재 요청은 안내 팝업이며, 실제 결재 진행은 별도로 <strong>온나라 결재 시스템</strong>에서 진행해야 합니다. 결재 완료 후 본 화면의 [결재 결과 업데이트]에서 결과를 입력하세요.
+                </div>
+            </div>
+            <div class="bgt-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeApproval()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.confirmApproval()">결재 요청</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+        function fmt(n) { return n.toLocaleString(); }
+
+        /* ─── 편성 데이터 (자치행정과 2026 — 250,000천원) ─── */
+        const TREE = [
+            {
+                id: 'edu', name: '안전보건교육', children: [
+                    { id: 'edu-1', name: '정기교육', children: [
+                        { id: 'edu-1-1', name: '사무직 정기교육 (반기 6h)', value: 18000 },
+                        { id: 'edu-1-2', name: '현장직 정기교육 (분기 6h)', value: 25000 },
+                        { id: 'edu-1-3', name: '관리감독자 정기교육 (연 16h)', value: 12000 },
+                    ]},
+                    { id: 'edu-2', name: '신규 채용 교육', children: [
+                        { id: 'edu-2-1', name: '신규 채용 교육 운영', value: 15000 },
+                    ]},
+                    { id: 'edu-3', name: '특별 안전보건교육', children: [
+                        { id: 'edu-3-1', name: '특별교육 운영', value: 5000 },
+                    ]},
+                ]
+            },
+            {
+                id: 'ins', name: '시설 안전 점검', children: [
+                    { id: 'ins-1', name: '청사 정기 점검', children: [
+                        { id: 'ins-1-1', name: '본관 분기 정기점검', value: 25000 },
+                        { id: 'ins-1-2', name: '별관 분기 정기점검', value: 15000 },
+                    ]},
+                    { id: 'ins-2', name: '별관 소방 점검', children: [
+                        { id: 'ins-2-1', name: '별관 소방 점검 운영', value: 20000 },
+                    ]},
+                    { id: 'ins-3', name: '전기 안전 점검', children: [
+                        { id: 'ins-3-1', name: '전기 안전 점검 운영', value: 15000 },
+                    ]},
+                ]
+            },
+            {
+                id: 'rsk', name: '위험성평가 시행', children: [
+                    { id: 'rsk-1', name: '정기 위험성평가', children: [
+                        { id: 'rsk-1-1', name: '정기 평가 운영 (연 1회)', value: 25000 },
+                    ]},
+                    { id: 'rsk-2', name: '수시 위험성평가', children: [
+                        { id: 'rsk-2-1', name: '수시 평가 운영', value: 10000 },
+                    ]},
+                ]
+            },
+            {
+                id: 'ppe', name: '보호장비 구입', children: [
+                    { id: 'ppe-1', name: '개인 보호구', children: [
+                        { id: 'ppe-1-1', name: '안전모·안전화·장갑', value: 25000 },
+                        { id: 'ppe-1-2', name: '방진·방독 마스크', value: 10000 },
+                    ]},
+                    { id: 'ppe-2', name: '비상장비', children: [
+                        { id: 'ppe-2-1', name: '소화기·AED·구급함', value: 5000 },
+                    ]},
+                ]
+            },
+            {
+                id: 'con', name: '도급사업 안전관리', children: [
+                    { id: 'con-1', name: '청사 보수공사 안전관리', children: [
+                        { id: 'con-1-1', name: '청사 보수공사 안전관리 운영', value: 30000 },
+                    ]},
+                    { id: 'con-2', name: '청소·시설관리 위탁', children: [
+                        { id: 'con-2-1', name: '청소·시설관리 위탁 운영', value: 15000 },
+                    ]},
+                    { id: 'con-3', name: '협의체 운영', children: [
+                        { id: 'con-3-1', name: '협의체 운영비', value: 5000 },
+                    ]},
+                ]
+            },
+        ];
+
+        /* 값 합계 재귀 계산 */
+        function sumNode(node) {
+            if (node.children) {
+                return node.children.reduce((s, c) => s + sumNode(c), 0);
+            }
+            return node.value || 0;
+        }
+
+        /* 렌더 */
+        const container = document.getElementById('est-rows');
+
+        function render() {
+            let html = '';
+            TREE.forEach(d1 => {
+                const d1Sum = sumNode(d1);
+                html += rowHtml(d1, 1, d1Sum, true);
+                d1.children.forEach(d2 => {
+                    const d2Sum = sumNode(d2);
+                    html += rowHtml(d2, 2, d2Sum, true);
+                    if (d2.children) {
+                        d2.children.forEach(d3 => {
+                            html += rowHtml(d3, 3, d3.value, false);
+                        });
+                    }
+                });
+            });
+            container.innerHTML = html;
+            updateTotal();
+        }
+
+        function rowHtml(node, depth, value, readonly) {
+            return `
+                <div class="bgt-est-row depth-${depth}" data-id="${node.id}">
+                    <div class="bgt-est-name">
+                        <span class="depth-badge">${depth}단계</span>
+                        <span class="label">${node.name}</span>
+                    </div>
+                    <div class="bgt-est-input-wrap">
+                        ${readonly
+                            ? `<input class="bgt-est-input readonly" type="text" value="${fmt(value)}" readonly>`
+                            : `<input class="bgt-est-input" type="text" value="${fmt(value)}" data-id="${node.id}" oninput="window.updateInput(this)">`}
+                        <span class="bgt-est-unit">천원</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function findById(list, id) {
+            for (const n of list) {
+                if (n.id === id) return n;
+                if (n.children) {
+                    const r = findById(n.children, id);
+                    if (r) return r;
+                }
+            }
+            return null;
+        }
+
+        window.updateInput = function (input) {
+            const id = input.dataset.id;
+            const node = findById(TREE, id);
+            if (!node) return;
+            const raw = input.value.replace(/,/g, '').replace(/[^\d]/g, '');
+            const num = parseInt(raw) || 0;
+            node.value = num;
+            input.value = fmt(num);
+
+            // 상위 노드 값 업데이트
+            TREE.forEach(d1 => {
+                document.querySelector(`.bgt-est-row[data-id="${d1.id}"] .bgt-est-input`).value = fmt(sumNode(d1));
+                d1.children.forEach(d2 => {
+                    const row = document.querySelector(`.bgt-est-row[data-id="${d2.id}"] .bgt-est-input`);
+                    if (row) row.value = fmt(sumNode(d2));
+                });
+            });
+            updateTotal();
+        };
+
+        function updateTotal() {
+            const total = TREE.reduce((s, d) => s + sumNode(d), 0);
+            document.getElementById('total-amount').innerHTML = `${fmt(total)}<span class="unit">천원</span>`;
+            // 검증
+            const v = document.getElementById('validation-msg');
+            v.classList.remove('warn');
+            v.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span>모든 1단계 항목 합계가 하위 합계와 일치합니다 (<strong>${fmt(total)}천원</strong>).</span>`;
+        }
+
+        /* 결재 요청 모달 */
+        window.openApproval = function () {
+            document.getElementById('approval-modal').classList.add('is-open');
+        };
+        window.closeApproval = function () {
+            document.getElementById('approval-modal').classList.remove('is-open');
+        };
+        window.confirmApproval = function () {
+            window.closeApproval();
+            showToast('결재 요청 완료. status=REQUESTED 전환 + CEO·GM 새올 알림 발송됨. (목업)');
+        };
+        document.querySelectorAll('.bgt-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('is-open'); });
+        });
+
+        render();
+    })();
+    </script>
+</body>
+</html>

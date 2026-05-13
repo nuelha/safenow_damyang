@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전계획 캘린더 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── PLN03-V 전용 ─── */
+
+        .pln-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pln-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+            text-decoration: none;
+        }
+        .pln-tab:hover { color: var(--main-dark); }
+        .pln-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
+        /* 월 네비게이션 바 */
+        .cal-nav-bar {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .cal-month-nav {
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .cal-month-btn {
+            width: 36px; height: 36px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-black);
+        }
+        .cal-month-btn:hover {
+            background: var(--brand-50);
+            border-color: var(--main);
+            color: var(--main);
+        }
+        .cal-month-label {
+            font-size: 18px; font-weight: 800;
+            color: var(--main-dark2);
+            letter-spacing: -0.4px;
+            min-width: 140px;
+            text-align: center;
+        }
+        .cal-today-btn {
+            padding: 7px 14px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-black);
+            cursor: pointer;
+        }
+        .cal-today-btn:hover { background: var(--brand-50); border-color: var(--main); color: var(--main); }
+
+        .cal-view-toggle {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            margin-left: auto;
+        }
+        .cal-view-btn {
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .cal-view-btn:last-child { border-right: none; }
+        .cal-view-btn.is-active {
+            background: var(--main);
+            color: white;
+        }
+
+        /* 캘린더 본체 */
+        .cal-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-top: 1px solid var(--card-line);
+        }
+        .cal-weekday {
+            padding: 12px 14px;
+            font-size: 12px; font-weight: 700;
+            color: var(--text-gray);
+            background: #fafbfb;
+            text-align: center;
+            border-right: 1px solid var(--card-line);
+        }
+        .cal-weekday:last-child { border-right: none; }
+        .cal-weekday.sun { color: var(--status-danger-fg); }
+        .cal-weekday.sat { color: var(--status-info-fg); }
+
+        .cal-day {
+            min-height: 124px;
+            padding: 8px;
+            border-right: 1px solid var(--card-line);
+            border-bottom: 1px solid var(--card-line);
+            background: white;
+            display: flex; flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            transition: background .12s ease;
+        }
+        .cal-day:nth-child(7n) { border-right: none; }
+        .cal-day:hover { background: var(--brand-50); }
+        .cal-day.is-other { background: #fafbfb; color: var(--text-lightgray); }
+        .cal-day.is-other .cal-day-num { color: var(--text-lightgray); }
+        .cal-day.is-today { background: var(--brand-50); }
+        .cal-day.is-today .cal-day-num {
+            background: var(--main);
+            color: white;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .cal-day-num {
+            font-size: 13px; font-weight: 700;
+            color: var(--text-black);
+            margin-bottom: 2px;
+        }
+        .cal-day-num.sun { color: var(--status-danger-fg); }
+        .cal-day-num.sat { color: var(--status-info-fg); }
+
+        /* 이벤트 라벨 */
+        .cal-event {
+            display: flex; align-items: center; gap: 4px;
+            padding: 2px 6px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            cursor: pointer;
+            position: relative;
+        }
+        .cal-event .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .cal-event-text {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1;
+        }
+        .cal-event.education      { background: #e0eefb; color: #3e7bc7; }
+        .cal-event.education .dot { background: #3e7bc7; }
+        .cal-event.inspection     { background: #fdedda; color: #e58a3c; }
+        .cal-event.inspection .dot { background: #e58a3c; }
+        .cal-event.risk_assessment      { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .cal-event.risk_assessment .dot { background: var(--status-danger-fg); }
+        .cal-event.budget         { background: var(--brand-100); color: var(--main-dark); }
+        .cal-event.budget .dot    { background: var(--main); }
+        .cal-event.contract       { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .cal-event.contract .dot  { background: var(--status-purple-fg); }
+        .cal-event.etc            { background: var(--status-neutral-bg); color: var(--status-neutral-fg); }
+        .cal-event.etc .dot       { background: var(--status-neutral-fg); }
+
+        .cal-event-more {
+            font-size: 11px;
+            color: var(--main);
+            font-weight: 700;
+            cursor: pointer;
+            padding: 1px 6px;
+        }
+        .cal-event-more:hover { text-decoration: underline; }
+
+        /* 범례 */
+        .cal-legend {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 22px;
+            border-top: 1px solid var(--card-line);
+            font-size: 12px; color: var(--text-gray);
+            flex-wrap: wrap;
+        }
+        .cal-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+        .cal-legend-item .swatch {
+            width: 12px; height: 12px;
+            border-radius: 3px;
+        }
+        .cal-legend-item.education .swatch { background: #3e7bc7; }
+        .cal-legend-item.inspection .swatch { background: #e58a3c; }
+        .cal-legend-item.risk_assessment .swatch { background: var(--status-danger-fg); }
+        .cal-legend-item.budget .swatch { background: var(--main); }
+        .cal-legend-item.contract .swatch { background: var(--status-purple-fg); }
+        .cal-legend-item.etc .swatch { background: var(--status-neutral-fg); }
+
+        /* 일별 이벤트 모달 */
+        .cal-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .cal-modal-backdrop.is-open { display: flex; }
+        .cal-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 540px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .cal-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .cal-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .cal-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .cal-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .cal-modal-body { padding: 18px 24px; overflow-y: auto; flex: 1; }
+
+        .cal-event-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        .cal-event-row:hover { border-color: var(--main); background: var(--brand-50); }
+        .cal-event-row .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        .cal-event-row .icon.education      { background: #3e7bc7; }
+        .cal-event-row .icon.inspection     { background: #e58a3c; }
+        .cal-event-row .icon.risk_assessment { background: var(--status-danger-fg); }
+        .cal-event-row .icon.budget         { background: var(--main); }
+        .cal-event-row .icon.contract       { background: var(--status-purple-fg); }
+        .cal-event-row .icon.etc            { background: var(--status-neutral-fg); }
+        .cal-event-row .body { flex: 1; min-width: 0; }
+        .cal-event-row .title { font-size: 13px; font-weight: 700; color: var(--text-black); }
+        .cal-event-row .meta { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        @media (max-width: 1023px) {
+            .cal-day { min-height: 90px; padding: 6px; }
+            .cal-event-text { display: none; }
+            .cal-event { padding: 2px 4px; }
+            .cal-nav-bar { flex-wrap: wrap; }
+            .cal-view-toggle { margin-left: 0; }
+        }
+        @media (max-width: 767px) {
+            .cal-day { min-height: 60px; }
+        }
+    </style>
+</head>
+<body data-dy-page="pln-list" data-page-title="안전계획 — 캘린더" data-page-subtitle="안전계획 항목 일정 시각화">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="pln-tabs" role="tablist">
+            <a class="pln-tab" href="pln-status.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="pln-tab" href="pln-list.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                계획 목록
+            </a>
+            <button class="pln-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                캘린더
+            </button>
+            <a class="pln-tab" href="pln-settings.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </a>
+        </div>
+
+        <!-- ─── 월 네비게이션 ─── -->
+        <div class="cal-nav-bar">
+            <div class="cal-month-nav">
+                <button class="cal-month-btn" id="prev-month" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <span class="cal-month-label" id="month-label">2026년 05월</span>
+                <button class="cal-month-btn" id="next-month" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+            <button class="cal-today-btn" type="button" onclick="window.gotoToday()">오늘</button>
+
+            <div class="cal-view-toggle">
+                <button class="cal-view-btn is-active" type="button">월</button>
+                <button class="cal-view-btn" type="button" onclick="window.DYLayout._soon(event, '주별 뷰 (timeline)')">주</button>
+                <button class="cal-view-btn" type="button" onclick="window.DYLayout._soon(event, '일별 뷰 (시간순)')">일</button>
+            </div>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select" id="filter-dept">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리과</option>
+                    <option>농업기술센터</option>
+                    <option>상수도사업소</option>
+                    <option>문화관광과</option>
+                    <option>보건소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">관리대상</span>
+                <select class="select" id="filter-target">
+                    <option>전체</option>
+                    <option>군청 청사</option>
+                    <option>군민체육관</option>
+                    <option>상수도사업소 본관</option>
+                    <option>죽녹원</option>
+                    <option>도로 확장공사</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">카테고리</span>
+                <select class="select" id="filter-cat">
+                    <option>전체</option>
+                    <option>교육</option>
+                    <option>점검</option>
+                    <option>평가</option>
+                    <option>예산</option>
+                    <option>도급</option>
+                    <option>기타</option>
+                </select>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
+        </div>
+
+        <!-- ─── 캘린더 ─── -->
+        <section class="cal-card">
+            <div class="cal-grid" id="weekdays">
+                <div class="cal-weekday sun">일</div>
+                <div class="cal-weekday">월</div>
+                <div class="cal-weekday">화</div>
+                <div class="cal-weekday">수</div>
+                <div class="cal-weekday">목</div>
+                <div class="cal-weekday">금</div>
+                <div class="cal-weekday sat">토</div>
+            </div>
+            <div class="cal-grid" id="cal-grid">
+                <!-- JS 렌더 -->
+            </div>
+            <div class="cal-legend">
+                <span style="color:var(--text-black); font-weight:700;">카테고리:</span>
+                <span class="cal-legend-item education"><span class="swatch"></span>교육</span>
+                <span class="cal-legend-item inspection"><span class="swatch"></span>점검</span>
+                <span class="cal-legend-item risk_assessment"><span class="swatch"></span>평가</span>
+                <span class="cal-legend-item budget"><span class="swatch"></span>예산</span>
+                <span class="cal-legend-item contract"><span class="swatch"></span>도급</span>
+                <span class="cal-legend-item etc"><span class="swatch"></span>기타</span>
+                <span style="margin-left:auto; color:var(--text-gray);">총 <strong id="event-count" style="color:var(--main);">—</strong>건 표시</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         일별 이벤트 모달
+    ============================================================ -->
+    <div class="cal-modal-backdrop" id="day-modal">
+        <div class="cal-modal" role="dialog" aria-modal="true">
+            <div class="cal-modal-header">
+                <div class="cal-modal-title" id="day-modal-title">2026-05-13</div>
+                <button type="button" class="cal-modal-close" onclick="window.closeDayModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="cal-modal-body" id="day-modal-body">
+                <!-- JS 렌더 -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        const CAT_LABEL = {
+            education: '교육', inspection: '점검', risk_assessment: '평가',
+            budget: '예산', contract: '도급', etc: '기타'
+        };
+
+        const CAT_ICON = {
+            education: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+            inspection: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+            risk_assessment: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+            budget: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+            contract: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/></svg>',
+            etc: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>'
+        };
+
+        const CAT_ROUTE = {
+            education: 'EDU01-V',
+            inspection: 'INS02-D',
+            risk_assessment: 'RSK02-D',
+            budget: 'BGT04-F',
+            contract: 'CON01-D',
+            etc: 'item-edit'
+        };
+
+        /* ─── 이벤트 데이터 (2026년 전체) ─── */
+        const EVENTS = [
+            // 5월
+            { date: '2026-05-05', cat: 'inspection', title: '군청 청사 정기 점검 (2Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
+            { date: '2026-05-15', cat: 'education', title: '정수장 종사자 안전보건교육', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
+            { date: '2026-05-15', cat: 'inspection', title: '농기계 임대사업소 안전점검', target: '농기계 임대사업소', assignee: '정농업', dept: '농업기술센터' },
+            { date: '2026-05-18', cat: 'inspection', title: '청사 정기 안전점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
+            { date: '2026-05-20', cat: 'contract', title: '정수장 증축 협의체 회의 (예정)', target: '상수도사업소', assignee: '신상수', dept: '상수도사업소' },
+            { date: '2026-05-25', cat: 'contract', title: '체육관 리모델링 정기 협의', target: '군민체육관', assignee: '정하나', dept: '문화관광과' },
+            { date: '2026-05-22', cat: 'inspection', title: '담양읍 행정복지센터 정기 점검', target: '담양읍 행정복지센터', assignee: '서지역', dept: '담양읍사무소' },
+            { date: '2026-05-28', cat: 'budget', title: '안전관리 예산 집행 (1H 정산)', target: '군청 청사', assignee: '박재무', dept: '시설관리과' },
+            { date: '2026-05-30', cat: 'inspection', title: '문화관광시설 분기 안전점검', target: '문화관광과 산하', assignee: '정하나', dept: '문화관광과' },
+
+            // 6월
+            { date: '2026-06-05', cat: 'budget', title: '체육관 보호장비 보충 구매', target: '군민체육관', assignee: '정하나', dept: '문화관광과' },
+            { date: '2026-06-10', cat: 'inspection', title: '보건소 자율 안전점검 (2회차)', target: '보건소 청사', assignee: '강보건', dept: '보건소' },
+            { date: '2026-06-15', cat: 'education', title: '도급사 합동 안전교육', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
+            { date: '2026-06-20', cat: 'risk_assessment', title: '청사 위험성평가 보완', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
+            { date: '2026-06-25', cat: 'inspection', title: '소방설비 분기 점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
+            { date: '2026-06-30', cat: 'education', title: '전직원 안전보건교육', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
+            { date: '2026-06-30', cat: 'inspection', title: '청사 정기 안전점검 (2Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
+            { date: '2026-06-30', cat: 'budget', title: '안전관리 예산 집행 (1H)', target: '전 부서', assignee: '박재무', dept: '안전건설과' },
+
+            // 4월
+            { date: '2026-04-15', cat: 'contract', title: '청사 보수공사 협의체', target: '군청 청사', assignee: '박안전', dept: '안전건설과' },
+            { date: '2026-04-22', cat: 'risk_assessment', title: '농기계 임대사업소 위험성평가', target: '농기계 임대사업소', assignee: '정농업', dept: '농업기술센터' },
+            { date: '2026-04-28', cat: 'inspection', title: '죽녹원 시설물 정기 안전점검', target: '죽녹원', assignee: '신예지', dept: '문화관광과' },
+            { date: '2026-04-30', cat: 'risk_assessment', title: '청사 위험성평가 정기', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
+            { date: '2026-04-30', cat: 'inspection', title: '청사 소방설비 점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
+
+            // 7월
+            { date: '2026-07-10', cat: 'inspection', title: '소방설비 정기점검', target: '담양읍 행정복지센터', assignee: '이지영', dept: '담양읍사무소' },
+            { date: '2026-07-20', cat: 'education', title: '동절기 대비 안전교육', target: '전 부서', assignee: '박안전', dept: '안전건설과' },
+
+            // 9월
+            { date: '2026-09-15', cat: 'risk_assessment', title: '증축공사 수시 위험성평가', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
+            { date: '2026-09-30', cat: 'inspection', title: '청사 정기 안전점검 (3Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
+            { date: '2026-09-30', cat: 'education', title: '안전관리자 정기교육', target: '안전건설과', assignee: '박안전', dept: '안전건설과' },
+        ];
+
+        /* ─── 캘린더 렌더 ─── */
+        const TODAY = new Date('2026-05-13');
+        let viewYear = 2026;
+        let viewMonth = 5; // 1-12
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function dateKey(y, m, d) { return `${y}-${pad(m)}-${pad(d)}`; }
+
+        function getFilteredEvents() {
+            const dept = document.getElementById('filter-dept').value;
+            const target = document.getElementById('filter-target').value;
+            const cat = document.getElementById('filter-cat').value;
+            return EVENTS.filter(e => {
+                if (dept !== '전체' && e.dept !== dept) return false;
+                if (target !== '전체' && !e.target.includes(target)) return false;
+                if (cat !== '전체' && CAT_LABEL[e.cat] !== cat) return false;
+                return true;
+            });
+        }
+
+        function render() {
+            const grid = document.getElementById('cal-grid');
+            grid.innerHTML = '';
+
+            document.getElementById('month-label').textContent = `${viewYear}년 ${pad(viewMonth)}월`;
+
+            const firstDay = new Date(viewYear, viewMonth - 1, 1);
+            const firstDow = firstDay.getDay(); // 0 = Sun
+            const lastDate = new Date(viewYear, viewMonth, 0).getDate();
+            const prevLastDate = new Date(viewYear, viewMonth - 1, 0).getDate();
+
+            const events = getFilteredEvents();
+            const eventsByDate = {};
+            events.forEach(e => {
+                if (!eventsByDate[e.date]) eventsByDate[e.date] = [];
+                eventsByDate[e.date].push(e);
+            });
+
+            // 시작 일자 (이전 달 마지막 주)
+            const cells = [];
+            for (let i = firstDow - 1; i >= 0; i--) {
+                const d = prevLastDate - i;
+                const m = viewMonth === 1 ? 12 : viewMonth - 1;
+                const y = viewMonth === 1 ? viewYear - 1 : viewYear;
+                cells.push({ y, m, d, otherMonth: true });
+            }
+            for (let d = 1; d <= lastDate; d++) {
+                cells.push({ y: viewYear, m: viewMonth, d, otherMonth: false });
+            }
+            while (cells.length % 7 !== 0 || cells.length < 35) {
+                const last = cells[cells.length - 1];
+                const next = new Date(last.y, last.m - 1, last.d + 1);
+                cells.push({ y: next.getFullYear(), m: next.getMonth() + 1, d: next.getDate(), otherMonth: next.getMonth() + 1 !== viewMonth });
+            }
+
+            let visibleCount = 0;
+            cells.forEach((cell, idx) => {
+                const dow = idx % 7;
+                const isToday = cell.y === TODAY.getFullYear() && cell.m === TODAY.getMonth() + 1 && cell.d === TODAY.getDate();
+                const dateStr = dateKey(cell.y, cell.m, cell.d);
+                const dayEvents = eventsByDate[dateStr] || [];
+                if (!cell.otherMonth) visibleCount += dayEvents.length;
+
+                const dayCell = document.createElement('div');
+                dayCell.className = 'cal-day' + (cell.otherMonth ? ' is-other' : '') + (isToday ? ' is-today' : '');
+                dayCell.dataset.date = dateStr;
+
+                const numCls = ['cal-day-num'];
+                if (dow === 0) numCls.push('sun');
+                else if (dow === 6) numCls.push('sat');
+
+                let eventsHtml = '';
+                const maxShow = 3;
+                dayEvents.slice(0, maxShow).forEach(e => {
+                    eventsHtml += `
+                        <span class="cal-event ${e.cat}" data-event="${encodeURIComponent(JSON.stringify(e))}" onclick="event.stopPropagation(); window.showEvent(${JSON.stringify(JSON.stringify(e)).replace(/"/g, '&quot;')})">
+                            <span class="dot"></span>
+                            <span class="cal-event-text">${e.title}</span>
+                        </span>
+                    `;
+                });
+                if (dayEvents.length > maxShow) {
+                    eventsHtml += `<span class="cal-event-more">+${dayEvents.length - maxShow}건 더</span>`;
+                }
+
+                dayCell.innerHTML = `<span class="${numCls.join(' ')}">${cell.d}</span>${eventsHtml}`;
+                dayCell.addEventListener('click', () => window.openDayModal(dateStr, dayEvents));
+                grid.appendChild(dayCell);
+            });
+
+            document.getElementById('event-count').textContent = visibleCount;
+        }
+
+        window.showEvent = function (json) {
+            const e = typeof json === 'string' ? JSON.parse(json) : json;
+            showToast(`${CAT_LABEL[e.cat]} · ${e.title} → ${CAT_ROUTE[e.cat]} 이동 예정 (목업)`);
+        };
+
+        window.openDayModal = function (dateStr, events) {
+            if (!events || events.length === 0) return;
+            document.getElementById('day-modal-title').textContent = `${dateStr} · ${events.length}건의 일정`;
+            document.getElementById('day-modal-body').innerHTML = events.map(e => `
+                <div class="cal-event-row" onclick="window.showEvent(${JSON.stringify(JSON.stringify(e)).replace(/"/g, '&quot;')})">
+                    <span class="icon ${e.cat}">${CAT_ICON[e.cat]}</span>
+                    <div class="body">
+                        <div class="title">${e.title}</div>
+                        <div class="meta">${CAT_LABEL[e.cat]} · ${e.target} · ${e.assignee} (${e.dept})</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-lightgray)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            `).join('');
+            document.getElementById('day-modal').classList.add('is-open');
+        };
+        window.closeDayModal = function () {
+            document.getElementById('day-modal').classList.remove('is-open');
+        };
+
+        /* 네비게이션 */
+        document.getElementById('prev-month').addEventListener('click', () => {
+            if (viewMonth === 1) { viewMonth = 12; viewYear--; }
+            else viewMonth--;
+            render();
+        });
+        document.getElementById('next-month').addEventListener('click', () => {
+            if (viewMonth === 12) { viewMonth = 1; viewYear++; }
+            else viewMonth++;
+            render();
+        });
+        window.gotoToday = function () {
+            viewYear = TODAY.getFullYear();
+            viewMonth = TODAY.getMonth() + 1;
+            render();
+        };
+
+        /* 필터 */
+        ['filter-dept', 'filter-target', 'filter-cat'].forEach(id => {
+            document.getElementById(id).addEventListener('change', render);
+        });
+        window.clearFilters = function () {
+            document.getElementById('filter-dept').value = '전체';
+            document.getElementById('filter-target').value = '전체';
+            document.getElementById('filter-cat').value = '전체';
+            render();
+        };
+
+        document.querySelectorAll('.cal-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+
+        render();
+    })();
+    </script>
+</body>
+</html>

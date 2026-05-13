@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예산 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── BGT05-S 전용 ─── */
+
+        .bgt-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--card-line); }
+        .bgt-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; font-size: 14px; font-weight: 600;
+            color: var(--text-gray); background: transparent;
+            border: none; border-bottom: 2px solid transparent;
+            cursor: pointer; margin-bottom: -1px;
+            transition: all .15s ease; text-decoration: none;
+        }
+        .bgt-tab:hover { color: var(--main-dark); }
+        .bgt-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+
+        /* 안내 */
+        .bgt-note {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; color: var(--status-warning-fg);
+        }
+        .bgt-note svg { flex-shrink: 0; margin-top: 1px; }
+
+        /* 서브 탭 */
+        .bgt-subtabs {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: white;
+        }
+        .bgt-subtab {
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .bgt-subtab:last-child { border-right: none; }
+        .bgt-subtab.is-active {
+            background: var(--main);
+            color: white;
+        }
+        .bgt-subpane { display: none; }
+        .bgt-subpane.is-active { display: block; }
+
+        /* 카드 헤더 */
+        .bgt-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-card-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .bgt-card-head h3 {
+            font-size: 14px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-card-head .actions { display: flex; gap: 6px; }
+        .bgt-card-head .desc { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 마스터 테이블 */
+        .bgt-master-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .bgt-master-table th {
+            padding: 10px 18px;
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark2);
+            background: #fafbfb;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .bgt-master-table th.center { text-align: center; }
+        .bgt-master-table th.right { text-align: right; }
+        .bgt-master-table td {
+            padding: 10px 18px;
+            border-bottom: 1px solid var(--card-line);
+            color: var(--text-black);
+        }
+        .bgt-master-table tbody tr:last-child td { border-bottom: none; }
+        .bgt-master-table tbody tr:hover { background: var(--brand-50); }
+        .bgt-master-table .depth-cell {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 4px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+        }
+        .bgt-master-table .depth-cell.d1 { background: var(--main); color: white; }
+        .bgt-master-table .depth-cell.d2 { background: var(--status-info-fg); color: white; }
+        .bgt-master-table .dept-cell {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .bgt-master-table .dept-cell.dept { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .bgt-master-table .code-cell {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .bgt-master-table .name-cell {
+            padding-left: 0;
+        }
+        .bgt-master-table .name-cell.d2 { padding-left: 20px; }
+        .bgt-master-table .name-cell.d3 { padding-left: 40px; }
+        .bgt-master-table .active-toggle {
+            display: inline-flex; align-items: center;
+            width: 32px; height: 18px;
+            border-radius: 999px;
+            background: var(--main);
+            position: relative;
+            cursor: pointer;
+        }
+        .bgt-master-table .active-toggle::after {
+            content: ""; position: absolute;
+            top: 2px; right: 2px;
+            width: 14px; height: 14px;
+            background: white;
+            border-radius: 50%;
+        }
+        .bgt-master-table .active-toggle.off {
+            background: var(--gray-300);
+        }
+        .bgt-master-table .active-toggle.off::after {
+            right: auto;
+            left: 2px;
+        }
+        .bgt-master-table .usage {
+            font-variant-numeric: tabular-nums;
+            color: var(--text-gray);
+            font-size: 12px;
+            text-align: right;
+        }
+        .bgt-master-table .usage strong { color: var(--text-black); font-weight: 700; }
+
+        .bgt-mini-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid var(--card-line);
+            color: var(--text-black);
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .bgt-mini-btn:hover { border-color: var(--main); color: var(--main); background: var(--brand-50); }
+
+        /* 정책 그리드 */
+        .bgt-policy-grid {
+            padding: 20px 22px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .bgt-policy-row {
+            display: flex; flex-direction: column; gap: 8px;
+            padding: 14px 16px;
+            background: #fafbfb;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+        }
+        .bgt-policy-row .label {
+            font-size: 13px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .bgt-policy-row .label .lawref {
+            font-size: 10px; font-weight: 500;
+            color: var(--text-gray);
+            padding: 1px 6px;
+            background: var(--gray-100);
+            border-radius: 3px;
+        }
+        .bgt-policy-row select {
+            width: 100%;
+            padding: 7px 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            background: white;
+        }
+        .bgt-policy-row select:focus {
+            border-color: var(--main);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .bgt-policy-row .hint {
+            font-size: 11px; color: var(--text-gray);
+        }
+        .bgt-policy-row .ceo-only {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 3px;
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            margin-left: 4px;
+        }
+
+        /* 자동 복사 카드 */
+        .bgt-copy-card {
+            padding: 22px;
+            display: flex; flex-direction: column; gap: 18px;
+        }
+        .bgt-copy-options {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .bgt-copy-options label {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            transition: border-color .12s ease;
+        }
+        .bgt-copy-options label:hover { border-color: var(--main); }
+        .bgt-copy-options label input { margin: 0; }
+        .bgt-copy-options label .title {
+            font-size: 14px; font-weight: 700; color: var(--text-black);
+        }
+        .bgt-copy-options label .desc {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 2px;
+        }
+        .bgt-copy-options label .body { flex: 1; }
+
+        .bgt-copy-info {
+            padding: 14px 18px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            font-size: 13px;
+            color: var(--main-dark2);
+            line-height: 1.6;
+        }
+        .bgt-copy-info strong { font-weight: 700; }
+        .bgt-copy-info .last-copy {
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .bgt-copy-info .last-copy .icon {
+            width: 24px; height: 24px;
+            background: var(--status-success-fg);
+            color: white;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .bgt-copy-info .last-copy .text { color: var(--text-black); }
+        .bgt-copy-info .last-copy strong { font-weight: 700; }
+
+        .bgt-copy-actions {
+            display: flex; justify-content: flex-end; gap: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--card-line);
+        }
+
+        /* 확인 모달 */
+        .bgt-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .bgt-modal-backdrop.is-open { display: flex; }
+        .bgt-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 480px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .bgt-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-modal-body { padding: 20px 24px; font-size: 14px; color: var(--text-black); line-height: 1.6; }
+        .bgt-modal-body .warn {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--status-warning-fg);
+        }
+        .bgt-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        @media (max-width: 1023px) {
+            .bgt-policy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-dy-page="bgt-status" data-page-title="예산 — 설정" data-page-subtitle="예방 항목 마스터·편성집행 정책·신년 트리 자동 복사">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="bgt-tabs" role="tablist">
+            <a class="bgt-tab" href="bgt-status.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="bgt-tab" href="bgt-tree.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+                예방 항목 트리
+            </a>
+            <a class="bgt-tab" href="bgt-establish.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                편성
+            </a>
+            <a class="bgt-tab" href="bgt-execute.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                집행
+            </a>
+            <button class="bgt-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ─── 안내 ─── -->
+        <div class="bgt-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>CEO·GM·SHM 접근 가능.</strong> 예방 항목 마스터 변경은 BGT02-V 트리에 즉시 반영. 편성·집행 정책 변경은 CEO만 가능. 신년 자동 복사는 매년 1월 1일 실행.</span>
+        </div>
+
+        <!-- ─── 서브탭 ─── -->
+        <div class="bgt-subtabs" role="tablist">
+            <button class="bgt-subtab is-active" type="button" data-sub="master">예방 항목 마스터</button>
+            <button class="bgt-subtab" type="button" data-sub="policy">편성·집행 정책</button>
+            <button class="bgt-subtab" type="button" data-sub="copy">신년 트리 자동 복사</button>
+        </div>
+
+        <!-- ===========================================================
+             ▼ 예방 항목 마스터
+        =========================================================== -->
+        <div class="bgt-subpane is-active" data-subpane="master">
+            <div class="bgt-card">
+                <div class="bgt-card-head">
+                    <div>
+                        <h3>예방 항목 마스터 (budget_categories)</h3>
+                        <div class="desc">3 depth 트리 일괄 관리 · 공통(NULL) + 부서별 특화</div>
+                    </div>
+                    <div class="actions">
+                        <button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'budget_categories_template.xlsx 양식 다운로드')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            양식 다운로드
+                        </button>
+                        <button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '일괄 import (4-Step)')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            일괄 import
+                        </button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '항목 추가 (BGT05-M 모달)')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            항목 추가
+                        </button>
+                    </div>
+                </div>
+                <table class="bgt-master-table">
+                    <colgroup>
+                        <col style="width:120px;"><col><col style="width:70px;"><col style="width:130px;"><col style="width:80px;"><col style="width:80px;"><col style="width:80px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>코드</th>
+                            <th>명칭</th>
+                            <th class="center">depth</th>
+                            <th>부서</th>
+                            <th class="center">활성</th>
+                            <th class="right">사용 횟수</th>
+                            <th class="center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="code-cell">EDU</span></td><td class="name-cell"><strong>안전보건교육</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>320</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">EDU-01</span></td><td class="name-cell d2"><strong>정기교육</strong></td><td class="center"><span class="depth-cell d2">2</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>280</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU-01')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">EDU-01-01</span></td><td class="name-cell d3">사무직 정기교육 (반기 6h)</td><td class="center"><span class="depth-cell">3</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>120</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU-01-01')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">EDU-01-02</span></td><td class="name-cell d3">현장직 정기교육 (분기 6h)</td><td class="center"><span class="depth-cell">3</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>100</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU-01-02')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">EDU-01-03</span></td><td class="name-cell d3">관리감독자 정기교육 (연 16h)</td><td class="center"><span class="depth-cell">3</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>60</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU-01-03')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">EDU-02</span></td><td class="name-cell d2"><strong>신규 채용 교육</strong></td><td class="center"><span class="depth-cell d2">2</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>40</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — EDU-02')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">INS</span></td><td class="name-cell"><strong>시설 안전 점검</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>185</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — INS')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">INS-01</span></td><td class="name-cell d2"><strong>청사 정기 점검</strong></td><td class="center"><span class="depth-cell d2">2</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>92</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — INS-01')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">RSK</span></td><td class="name-cell"><strong>위험성평가 시행</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>104</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — RSK')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">PPE</span></td><td class="name-cell"><strong>보호장비 구입</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>72</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — PPE')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">CON</span></td><td class="name-cell"><strong>도급사업 안전관리</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>58</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — CON')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">JACHI-01</span></td><td class="name-cell"><strong>청사 시설관리 (부서)</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell dept">자치행정과</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>32</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — JACHI-01')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">FARM-01</span></td><td class="name-cell"><strong>농기계 안전관리 (부서)</strong></td><td class="center"><span class="depth-cell d1">1</span></td><td><span class="dept-cell dept">농업기술센터</span></td><td class="center"><span class="active-toggle"></span></td><td class="usage"><strong>28</strong></td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — FARM-01')">편집</button></td></tr>
+                        <tr><td><span class="code-cell">LEGACY-01</span></td><td class="name-cell" style="color:var(--text-lightgray); text-decoration:line-through;">구 운영비 (폐지)</td><td class="center"><span class="depth-cell">1</span></td><td><span class="dept-cell">공통</span></td><td class="center"><span class="active-toggle off"></span></td><td class="usage">0</td><td class="center"><button class="bgt-mini-btn" type="button" onclick="window.DYLayout._soon(event, '항목 편집 — LEGACY-01')">편집</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===========================================================
+             ▼ 편성·집행 정책
+        =========================================================== -->
+        <div class="bgt-subpane" data-subpane="policy">
+            <div class="bgt-card">
+                <div class="bgt-card-head">
+                    <div>
+                        <h3>편성·집행 정책</h3>
+                        <div class="desc">결재 흐름·집행 초과 처리 등 정책 마스터 (CEO만 변경 가능)</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '정책 저장 (CEO 권한 검증)')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        정책 저장
+                    </button>
+                </div>
+                <div class="bgt-policy-grid">
+                    <div class="bgt-policy-row">
+                        <div class="label">집행 초과 시 처리 <span class="ceo-only">CEO만</span></div>
+                        <select>
+                            <option>경고만 (집행은 진행)</option>
+                            <option selected>결재 차단 (초과분 별도 결재 필요)</option>
+                            <option>자동 거부 (초과 시 등록 불가)</option>
+                        </select>
+                        <div class="hint">현재: <strong>결재 차단</strong> · 초과 시 별도 결재 트리거</div>
+                    </div>
+                    <div class="bgt-policy-row">
+                        <div class="label">결재 요청 단위 <span class="lawref">결정사항 #2</span></div>
+                        <select>
+                            <option selected>부서별 일괄 (1건)</option>
+                            <option>1단계 카테고리별 분리 (5건)</option>
+                        </select>
+                        <div class="hint">부서별 일괄: 부서 전체 편성을 1건의 결재로 일괄 처리</div>
+                    </div>
+                    <div class="bgt-policy-row">
+                        <div class="label">결재 권한자</div>
+                        <select>
+                            <option selected>군수 (CEO)</option>
+                            <option>부군수 (GM) 위임 가능</option>
+                            <option>안전건설과장 (SHM) 위임 가능</option>
+                        </select>
+                        <div class="hint">현재: <strong>군수</strong> · 위임 시 결재 권한자 변경 이력 자동 기록</div>
+                    </div>
+                    <div class="bgt-policy-row">
+                        <div class="label">집행 결재 정책</div>
+                        <select>
+                            <option>항목별 (집행 1건당 결재)</option>
+                            <option selected>분기별 일괄 (3개월 누적 결재)</option>
+                            <option>연간 일괄 (편성 결재로 충분)</option>
+                        </select>
+                        <div class="hint">현재: <strong>분기별 일괄</strong> · 분기 종료 시 자동 결재 요청</div>
+                    </div>
+                    <div class="bgt-policy-row">
+                        <div class="label">집행 등록 알림 대상</div>
+                        <select>
+                            <option>본인만</option>
+                            <option selected>부서장 + SHM</option>
+                            <option>전 부서장 + CEO</option>
+                        </select>
+                        <div class="hint">현재: <strong>부서장 + SHM</strong> · 새올 포틀릿 알림</div>
+                    </div>
+                    <div class="bgt-policy-row">
+                        <div class="label">집행 영수증 의무 첨부</div>
+                        <select>
+                            <option>선택 (미첨부 허용)</option>
+                            <option selected>1,000천원 이상 필수</option>
+                            <option>전 건 필수</option>
+                        </select>
+                        <div class="hint">현재: <strong>1,000천원 이상 필수</strong> · 미첨부 시 등록 차단</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===========================================================
+             ▼ 신년 트리 자동 복사
+        =========================================================== -->
+        <div class="bgt-subpane" data-subpane="copy">
+            <div class="bgt-card">
+                <div class="bgt-card-head">
+                    <div>
+                        <h3>신년 트리 자동 복사 설정</h3>
+                        <div class="desc">매년 1월 1일 budget_categories를 신년에 자동 복사 · 편성·집행 데이터는 새로 입력</div>
+                    </div>
+                </div>
+                <div class="bgt-copy-card">
+                    <div class="bgt-copy-options">
+                        <label>
+                            <input type="checkbox" checked>
+                            <div class="body">
+                                <div class="title">매년 1월 1일 budget_categories 복사</div>
+                                <div class="desc">활성 상태의 카테고리만 복사 (트리 구조 유지)</div>
+                            </div>
+                        </label>
+                        <label>
+                            <input type="checkbox">
+                            <div class="body">
+                                <div class="title">budget_items도 복사 (전년 동일 편성)</div>
+                                <div class="desc">⚠ 권장하지 않음 · 신년 편성은 새로 입력하는 것이 일반적</div>
+                            </div>
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            <div class="body">
+                                <div class="title">복사 결과 알림</div>
+                                <div class="desc">SHM+ 권한자에게 새올 포틀릿 알림 발송 ("신년 트리 N개 항목 복사 완료")</div>
+                            </div>
+                        </label>
+                        <label>
+                            <input type="checkbox">
+                            <div class="body">
+                                <div class="title">비활성 카테고리도 복사 (전체 마이그레이션)</div>
+                                <div class="desc">참고용으로 보존 · 신년에 활성화 여부 재검토 필요</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="bgt-copy-info">
+                        <strong>마지막 자동 복사 이력</strong>
+                        <div class="last-copy">
+                            <span class="icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </span>
+                            <div class="text">
+                                <strong>2026-01-01 00:00</strong> · 활성 항목 <strong>320개</strong> 복사 완료 · SHM+ 8명에게 새올 알림 발송됨
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bgt-copy-actions">
+                        <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '복사 이력 전체 보기 (audit_logs)')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            복사 이력
+                        </button>
+                        <button class="btn btn-primary" type="button" onclick="window.openCopyModal()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                            이번 연도 즉시 복사
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 수동 복사 확인 모달 -->
+    <div class="bgt-modal-backdrop" id="copy-modal">
+        <div class="bgt-modal" role="dialog" aria-modal="true">
+            <div class="bgt-modal-header">트리 즉시 복사 확인</div>
+            <div class="bgt-modal-body">
+                <p>2026년 budget_categories를 <strong>2027년</strong>으로 즉시 복사하시겠습니까?</p>
+                <p style="font-size:12px; color:var(--text-gray); margin-top:6px;">활성 항목 <strong>320개</strong>가 복사되며, 편성·집행 데이터는 복사되지 않습니다.</p>
+                <div class="warn">
+                    ⚠ 동일 연도가 이미 존재하면 복사가 차단됩니다. 기존 2027 트리가 있다면 먼저 삭제하거나 비활성화하세요.
+                </div>
+            </div>
+            <div class="bgt-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeCopyModal()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.confirmCopy()">복사 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* 서브탭 전환 */
+        document.querySelectorAll('.bgt-subtab[data-sub]').forEach(b => {
+            b.addEventListener('click', () => {
+                const target = b.dataset.sub;
+                document.querySelectorAll('.bgt-subtab[data-sub]').forEach(x => x.classList.toggle('is-active', x.dataset.sub === target));
+                document.querySelectorAll('.bgt-subpane').forEach(p => p.classList.toggle('is-active', p.dataset.subpane === target));
+            });
+        });
+
+        /* 활성 토글 */
+        document.querySelectorAll('.active-toggle').forEach(t => {
+            t.addEventListener('click', (e) => {
+                e.stopPropagation();
+                t.classList.toggle('off');
+                showToast(`항목 활성 상태 변경됨 (${t.classList.contains('off') ? '비활성' : '활성'})`);
+            });
+        });
+
+        /* 수동 복사 모달 */
+        window.openCopyModal = function () { document.getElementById('copy-modal').classList.add('is-open'); };
+        window.closeCopyModal = function () { document.getElementById('copy-modal').classList.remove('is-open'); };
+        window.confirmCopy = function () {
+            window.closeCopyModal();
+            showToast('2027년 트리 복사 완료. 320개 항목 + SHM+ 8명 알림 발송됨. (목업)');
+        };
+        document.querySelectorAll('.bgt-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('is-open'); });
+        });
+    })();
+    </script>
+</body>
+</html>

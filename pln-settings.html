@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전계획 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── PLN04-S 전용 ─── */
+
+        .pln-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pln-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+            text-decoration: none;
+        }
+        .pln-tab:hover { color: var(--main-dark); }
+        .pln-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
+        /* 설정 안내 */
+        .pln-settings-note {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; color: var(--status-warning-fg);
+        }
+        .pln-settings-note svg { flex-shrink: 0; margin-top: 1px; }
+
+        /* 내부 서브탭 */
+        .pln-subtabs {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: white;
+        }
+        .pln-subtab {
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .pln-subtab:last-child { border-right: none; }
+        .pln-subtab.is-active {
+            background: var(--main);
+            color: white;
+        }
+        .pln-subpane { display: none; }
+        .pln-subpane.is-active { display: block; }
+
+        /* 카드 + 헤더 */
+        .pln-master {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .pln-master-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .pln-master-head h3 {
+            font-size: 14px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pln-master-head .desc { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 표준 템플릿 테이블 */
+        .pln-tpl-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .pln-tpl-table th, .pln-tpl-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .pln-tpl-table th {
+            background: #fafbfb;
+            font-weight: 700;
+            color: var(--main-dark2);
+            font-size: 12px;
+        }
+        .pln-tpl-table td { color: var(--text-black); }
+        .pln-tpl-table tbody tr:last-child td { border-bottom: none; }
+        .pln-tpl-table tbody tr:hover { background: var(--brand-50); }
+
+        .pln-tpl-code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .pln-target-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .pln-target-chip.facility { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .pln-target-chip.task     { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .pln-target-chip.business { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 카테고리 카드 */
+        .pln-cat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            padding: 18px 22px;
+        }
+        .pln-cat-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px;
+            background: #fafbfb;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .pln-cat-card:hover {
+            border-color: var(--main);
+            background: white;
+        }
+        .pln-cat-icon-big {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        .pln-cat-icon-big.education      { background: #3e7bc7; }
+        .pln-cat-icon-big.inspection     { background: #e58a3c; }
+        .pln-cat-icon-big.risk_assessment { background: var(--status-danger-fg); }
+        .pln-cat-icon-big.budget         { background: var(--main); }
+        .pln-cat-icon-big.contract       { background: var(--status-purple-fg); }
+        .pln-cat-icon-big.etc            { background: var(--status-neutral-fg); }
+
+        .pln-cat-body { flex: 1; min-width: 0; }
+        .pln-cat-name { font-size: 15px; font-weight: 700; color: var(--main-dark2); }
+        .pln-cat-meta {
+            font-size: 11px; color: var(--text-gray);
+            margin-top: 2px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pln-cat-meta .pln-tpl-code {
+            font-size: 10px;
+            padding: 1px 5px;
+        }
+        .pln-cat-edit {
+            color: var(--text-lightgray);
+            flex-shrink: 0;
+        }
+        .pln-cat-card:hover .pln-cat-edit { color: var(--main); }
+
+        /* 필수 항목 정책 */
+        .pln-policy-list {
+            display: flex; flex-direction: column;
+        }
+        .pln-policy-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 140px 140px 80px;
+            gap: 14px;
+            align-items: center;
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+        }
+        .pln-policy-row:last-child { border-bottom: none; }
+        .pln-policy-row:hover { background: var(--brand-50); }
+        .pln-policy-row .num {
+            font-size: 14px; font-weight: 800;
+            color: var(--main);
+            text-align: center;
+        }
+        .pln-policy-row .title {
+            color: var(--text-black);
+            font-weight: 700;
+        }
+        .pln-policy-row .title .legal {
+            display: block;
+            font-size: 11px;
+            color: var(--text-gray);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .pln-policy-freq {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .pln-policy-target { color: var(--text-gray); font-size: 12px; }
+        .pln-policy-edit {
+            color: var(--text-gray);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .pln-policy-edit:hover { color: var(--main); }
+
+        /* 편집 버튼 */
+        .pln-mini-edit {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 12px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid var(--card-line);
+            color: var(--text-black);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .pln-mini-edit:hover { border-color: var(--main); color: var(--main); background: var(--brand-50); }
+
+        @media (max-width: 1023px) {
+            .pln-cat-grid { grid-template-columns: 1fr; }
+            .pln-policy-row { grid-template-columns: 40px 1fr 1fr; gap: 8px; }
+            .pln-policy-row .pln-policy-target,
+            .pln-policy-row .pln-policy-edit { grid-column: 2 / 4; }
+        }
+    </style>
+</head>
+<body data-dy-page="pln-list" data-page-title="안전계획 — 설정" data-page-subtitle="표준 템플릿·카테고리·필수 항목 정책 마스터 관리">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="pln-tabs" role="tablist">
+            <a class="pln-tab" href="pln-status.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="pln-tab" href="pln-list.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                계획 목록
+            </a>
+            <a class="pln-tab" href="pln-calendar.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                캘린더
+            </a>
+            <button class="pln-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ─── 안내 ─── -->
+        <div class="pln-settings-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>CEO·GM·SHM 접근 가능.</strong> 마스터 변경은 PLN02-F 신규 등록·기존 계획 검증에 즉시 영향이 있습니다. 필수 항목 정책 변경은 CEO만 가능.</span>
+        </div>
+
+        <!-- ─── 내부 서브탭 ─── -->
+        <div class="pln-subtabs" role="tablist">
+            <button class="pln-subtab is-active" type="button" data-sub="template">표준 템플릿</button>
+            <button class="pln-subtab" type="button" data-sub="category">카테고리 마스터</button>
+            <button class="pln-subtab" type="button" data-sub="policy">필수 항목 정책</button>
+        </div>
+
+        <!-- ───────────────────────────────────────────────
+             ▼ 표준 템플릿
+        ─────────────────────────────────────────────── -->
+        <div class="pln-subpane is-active" data-subpane="template">
+            <div class="pln-master">
+                <div class="pln-master-head">
+                    <div>
+                        <h3>표준 안전계획 템플릿</h3>
+                        <div class="desc">관리대상 type·중대재해법 분류별 표준 계획 항목 묶음</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '신규 템플릿 추가')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        템플릿 추가
+                    </button>
+                </div>
+                <table class="pln-tpl-table">
+                    <colgroup>
+                        <col style="width:240px;"><col><col style="width:160px;"><col style="width:80px;"><col style="width:90px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>코드</th>
+                            <th>템플릿명</th>
+                            <th>적용 대상</th>
+                            <th style="text-align:center;">항목 수</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pln-tpl-code">FACILITY_PUBLIC_USE</span></td>
+                            <td><strong>공중이용시설 표준 계획</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군청·체육관·도서관 등 공공시설</div></td>
+                            <td><span class="pln-target-chip facility">시설 / 공중이용</span></td>
+                            <td style="text-align:center; font-weight:700;">12</td>
+                            <td style="text-align:center;">
+                                <button class="pln-mini-edit" type="button" onclick="window.DYLayout._soon(event, '템플릿 편집 — FACILITY_PUBLIC_USE (12개 항목)')">편집</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="pln-tpl-code">FACILITY_RAW_MATERIAL</span></td>
+                            <td><strong>원료·제조물 시설 표준 계획</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">정수장·하수처리장·환경자원시설</div></td>
+                            <td><span class="pln-target-chip facility">시설 / 원료</span></td>
+                            <td style="text-align:center; font-weight:700;">10</td>
+                            <td style="text-align:center;">
+                                <button class="pln-mini-edit" type="button" onclick="window.DYLayout._soon(event, '템플릿 편집 — FACILITY_RAW_MATERIAL (10개 항목)')">편집</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="pln-tpl-code">FACILITY_TRANSPORT</span></td>
+                            <td><strong>공중교통수단 표준 계획</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군용 버스·관용 차량 등</div></td>
+                            <td><span class="pln-target-chip facility">시설 / 공중교통</span></td>
+                            <td style="text-align:center; font-weight:700;">8</td>
+                            <td style="text-align:center;">
+                                <button class="pln-mini-edit" type="button" onclick="window.DYLayout._soon(event, '템플릿 편집 — FACILITY_TRANSPORT (8개 항목)')">편집</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="pln-tpl-code">BUSINESS</span></td>
+                            <td><strong>사업 표준 계획</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">도급공사·위탁사업 등</div></td>
+                            <td><span class="pln-target-chip business">사업</span></td>
+                            <td style="text-align:center; font-weight:700;">15</td>
+                            <td style="text-align:center;">
+                                <button class="pln-mini-edit" type="button" onclick="window.DYLayout._soon(event, '템플릿 편집 — BUSINESS (15개 항목)')">편집</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="pln-tpl-code">TASK</span></td>
+                            <td><strong>업무 표준 계획</strong><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">행정업무·일반사무</div></td>
+                            <td><span class="pln-target-chip task">업무</span></td>
+                            <td style="text-align:center; font-weight:700;">6</td>
+                            <td style="text-align:center;">
+                                <button class="pln-mini-edit" type="button" onclick="window.DYLayout._soon(event, '템플릿 편집 — TASK (6개 항목)')">편집</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ───────────────────────────────────────────────
+             ▼ 카테고리 마스터
+        ─────────────────────────────────────────────── -->
+        <div class="pln-subpane" data-subpane="category">
+            <div class="pln-master">
+                <div class="pln-master-head">
+                    <div>
+                        <h3>계획 항목 카테고리</h3>
+                        <div class="desc">캘린더 색상·정렬 순서 · 카테고리별 색상은 6종 고정 (디자인시스템 기준)</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '카테고리 추가 (기타 외)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        카테고리 추가
+                    </button>
+                </div>
+                <div class="pln-cat-grid">
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 교육')">
+                        <span class="pln-cat-icon-big education">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">교육</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">education</span>
+                                <span>정렬 1</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 점검')">
+                        <span class="pln-cat-icon-big inspection">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">점검</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">inspection</span>
+                                <span>정렬 2</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 평가')">
+                        <span class="pln-cat-icon-big risk_assessment">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">평가</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">risk_assessment</span>
+                                <span>정렬 3</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 예산')">
+                        <span class="pln-cat-icon-big budget">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">예산</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">budget</span>
+                                <span>정렬 4</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 도급')">
+                        <span class="pln-cat-icon-big contract">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">도급</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">contract</span>
+                                <span>정렬 5</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    <div class="pln-cat-card" onclick="window.DYLayout._soon(event, '카테고리 편집 — 기타')">
+                        <span class="pln-cat-icon-big etc">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                        <div class="pln-cat-body">
+                            <div class="pln-cat-name">기타</div>
+                            <div class="pln-cat-meta">
+                                <span class="pln-tpl-code">etc</span>
+                                <span>정렬 6</span>
+                            </div>
+                        </div>
+                        <span class="pln-cat-edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ───────────────────────────────────────────────
+             ▼ 필수 항목 정책
+        ─────────────────────────────────────────────── -->
+        <div class="pln-subpane" data-subpane="policy">
+            <div class="pln-master">
+                <div class="pln-master-head">
+                    <div>
+                        <h3>법령상 필수 항목 정책</h3>
+                        <div class="desc">PLN02-F 신규 등록 시 자동 검증 · 필수 항목 미포함 시 경고 표시</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '필수 항목 추가 (CEO 권한)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        필수 항목 추가
+                    </button>
+                </div>
+                <div class="pln-policy-list">
+                    <div class="pln-policy-row">
+                        <span class="num">1</span>
+                        <div class="title">
+                            안전보건교육
+                            <span class="legal">산안법 §29 · 정기교육 (사무직 분기 3시간, 현장직 6시간)</span>
+                        </div>
+                        <span class="pln-policy-freq">분기 1회 이상</span>
+                        <span class="pln-policy-target">전 부서 / 전 관리대상</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '안전보건교육 정책 편집 (CEO만)');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">2</span>
+                        <div class="title">
+                            위험성평가
+                            <span class="legal">산안법 §36 · 정기 위험성평가</span>
+                        </div>
+                        <span class="pln-policy-freq">연 1회 이상</span>
+                        <span class="pln-policy-target">전 관리대상</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '위험성평가 정책 편집');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">3</span>
+                        <div class="title">
+                            정기 안전점검
+                            <span class="legal">시설물안전법 § 시설 종별 정기점검</span>
+                        </div>
+                        <span class="pln-policy-freq">분기 1회 (1·2종) / 반기 1회 (3종)</span>
+                        <span class="pln-policy-target">시설 / 공중이용·원료</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '정기 안전점검 정책 편집');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">4</span>
+                        <div class="title">
+                            안전관리 예산 집행
+                            <span class="legal">중대재해처벌법 시행령 §4 4호 · 안전보건 예방 예산 편성·집행</span>
+                        </div>
+                        <span class="pln-policy-freq">반기 1회 (1H · 2H)</span>
+                        <span class="pln-policy-target">전 부서</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '예산 집행 정책 편집');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">5</span>
+                        <div class="title">
+                            관리감독자 직무교육
+                            <span class="legal">산안법 §32 · 관리감독자 (부서장·팀장) 정기교육</span>
+                        </div>
+                        <span class="pln-policy-freq">연 1회 (16시간 이상)</span>
+                        <span class="pln-policy-target">관리감독자 보유 부서</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '관리감독자 교육 정책 편집');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">6</span>
+                        <div class="title">
+                            도급사업 안전협의체
+                            <span class="legal">산안법 §64 · 도급공사 협의체 운영</span>
+                        </div>
+                        <span class="pln-policy-freq">월 1회 이상</span>
+                        <span class="pln-policy-target">도급계약 보유 시</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '협의체 운영 정책 편집');">편집</a>
+                    </div>
+                    <div class="pln-policy-row">
+                        <span class="num">7</span>
+                        <div class="title">
+                            안전사고 보고·기록
+                            <span class="legal">산안법 §57 · 산업재해 보고</span>
+                        </div>
+                        <span class="pln-policy-freq">상시 (발생 즉시)</span>
+                        <span class="pln-policy-target">전 부서</span>
+                        <a class="pln-policy-edit" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '사고 보고 정책 편집');">편집</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* 서브탭 전환 */
+        document.querySelectorAll('.pln-subtab[data-sub]').forEach(b => {
+            b.addEventListener('click', () => {
+                const target = b.dataset.sub;
+                document.querySelectorAll('.pln-subtab[data-sub]').forEach(x => {
+                    x.classList.toggle('is-active', x.dataset.sub === target);
+                });
+                document.querySelectorAll('.pln-subpane').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.subpane === target);
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

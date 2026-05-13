@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예산 집행 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── BGT04-F 전용 ─── */
+
+        .bgt-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--card-line); }
+        .bgt-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; font-size: 14px; font-weight: 600;
+            color: var(--text-gray); background: transparent;
+            border: none; border-bottom: 2px solid transparent;
+            cursor: pointer; margin-bottom: -1px;
+            transition: all .15s ease; text-decoration: none;
+        }
+        .bgt-tab:hover { color: var(--main-dark); }
+        .bgt-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+
+        /* 컨텍스트 바 */
+        .bgt-ctx-bar {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            flex-wrap: wrap;
+        }
+        .bgt-ctx-bar label { font-size: 13px; font-weight: 600; color: var(--text-gray); }
+        .bgt-ctx-bar select {
+            padding: 7px 28px 7px 12px;
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            border: 1px solid var(--card-line);
+            border-radius: 7px;
+            background-color: white;
+            background-position: right 8px center;
+        }
+        .bgt-ctx-bar .selector { display: flex; align-items: center; gap: 6px; }
+        .bgt-ctx-bar .status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border: 1px solid var(--status-success-border);
+            margin-left: auto;
+        }
+
+        /* 합계 카드 (KPI 3분할) */
+        .bgt-exec-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-exec-summary > div {
+            padding: 18px 22px;
+            border-right: 1px solid var(--card-line);
+        }
+        .bgt-exec-summary > div:last-child { border-right: none; }
+        .bgt-exec-summary .label { font-size: 13px; color: var(--text-gray); margin-bottom: 4px; }
+        .bgt-exec-summary .value {
+            font-size: 26px; font-weight: 800;
+            color: var(--main); letter-spacing: -0.6px;
+            line-height: 1;
+        }
+        .bgt-exec-summary .value .unit {
+            font-size: 13px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .bgt-exec-summary .value.exec { color: var(--main-dark); }
+        .bgt-exec-summary .value.remain { color: var(--status-warning-fg); }
+        .bgt-exec-summary .bar {
+            margin-top: 8px;
+            height: 6px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .bgt-exec-summary .bar > div {
+            height: 100%; background: var(--main);
+            border-radius: 999px;
+        }
+        .bgt-exec-summary .sub { font-size: 12px; color: var(--text-gray); margin-top: 4px; }
+
+        /* 집행 항목 카드 */
+        .bgt-exec-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-exec-card-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fafbfb;
+        }
+        .bgt-exec-card-head h3 {
+            font-size: 15px; font-weight: 700; color: var(--main-dark2);
+        }
+
+        /* 집행 항목 테이블 */
+        .bgt-exec-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .bgt-exec-table th {
+            padding: 10px 14px;
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark2);
+            background: #fafbfb;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .bgt-exec-table th:nth-child(2),
+        .bgt-exec-table th:nth-child(3),
+        .bgt-exec-table th:nth-child(4) { text-align: right; }
+        .bgt-exec-table th:nth-child(5) { text-align: center; }
+        .bgt-exec-table td {
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .bgt-exec-table tbody tr { cursor: pointer; transition: background .12s ease; }
+        .bgt-exec-table tbody tr:hover { background: var(--brand-50); }
+        .bgt-exec-table tbody tr.is-selected { background: var(--brand-100); }
+        .bgt-exec-table tbody tr:last-child td { border-bottom: none; }
+
+        .bgt-exec-table .name {
+            color: var(--text-black);
+            font-weight: 600;
+        }
+        .bgt-exec-table .name .breadcrumb {
+            display: block;
+            font-size: 11px; color: var(--text-gray);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .bgt-exec-table .amount {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            color: var(--text-black);
+            white-space: nowrap;
+        }
+        .bgt-exec-table .amount .unit { color: var(--text-gray); font-weight: 500; font-size: 11px; margin-left: 2px; }
+        .bgt-exec-table .amount.exec { color: var(--main-dark); font-weight: 700; }
+        .bgt-exec-table .amount.remain { color: var(--status-warning-fg); }
+
+        .bgt-exec-table .rate-cell {
+            display: flex; align-items: center; gap: 6px;
+            justify-content: flex-end;
+        }
+        .bgt-exec-table .rate-bar {
+            flex: 1;
+            height: 5px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+            max-width: 60px;
+        }
+        .bgt-exec-table .rate-bar > div {
+            height: 100%; background: var(--main);
+            border-radius: 999px;
+        }
+        .bgt-exec-table .rate-bar > div.warning { background: var(--status-warning-fg); }
+        .bgt-exec-table .rate-bar > div.over { background: var(--status-danger-fg); }
+        .bgt-exec-table .rate-text {
+            font-size: 12px; font-weight: 700;
+            min-width: 36px; text-align: right;
+            color: var(--text-black);
+        }
+        .bgt-exec-table .rate-text.warn { color: var(--status-warning-fg); }
+        .bgt-exec-table .rate-text.over { color: var(--status-danger-fg); }
+
+        .bgt-exec-table .add-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            border: 1px solid var(--status-success-border);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .bgt-exec-table .add-btn:hover { background: var(--main); color: white; }
+
+        /* 집행 이력 카드 */
+        .bgt-history-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .bgt-history-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fafbfb;
+        }
+        .bgt-history-head h3 {
+            font-size: 15px; font-weight: 700; color: var(--main-dark2);
+        }
+        .bgt-history-head .item-label {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 2px;
+        }
+        .bgt-history-head .item-label strong { color: var(--main-dark); font-weight: 700; }
+
+        .bgt-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .bgt-history-table th {
+            padding: 10px 14px;
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark2);
+            background: #fafbfb;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .bgt-history-table th.right { text-align: right; }
+        .bgt-history-table th.center { text-align: center; }
+        .bgt-history-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .bgt-history-table td:last-child { text-align: center; }
+        .bgt-history-table tbody tr:last-child td { border-bottom: none; }
+
+        .bgt-history-amount {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--text-black);
+            text-align: right;
+            display: block;
+        }
+        .bgt-history-amount .unit {
+            color: var(--text-gray); font-weight: 500; font-size: 11px;
+            margin-left: 2px;
+        }
+        .bgt-attach-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px;
+            border-radius: 5px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            cursor: pointer;
+        }
+        .bgt-attach-icon:hover { background: var(--brand-500); color: white; }
+        .bgt-attach-icon.missing {
+            background: var(--gray-100); color: var(--text-lightgray); cursor: default;
+        }
+
+        .bgt-history-empty {
+            padding: 40px 22px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+        .bgt-history-empty svg {
+            margin: 0 auto 8px;
+            color: var(--text-lightgray);
+            display: block;
+        }
+
+        /* 집행 등록 모달 */
+        .bgt-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .bgt-modal-backdrop.is-open { display: flex; }
+        .bgt-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 540px;
+            max-height: 92vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .bgt-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .bgt-modal-title { font-size: 18px; font-weight: 700; color: var(--main-dark2); }
+        .bgt-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray); border-radius: 8px;
+        }
+        .bgt-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .bgt-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .bgt-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+        .bgt-form-row { margin-bottom: 14px; }
+        .bgt-form-row .label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin-bottom: 6px;
+        }
+        .bgt-form-row .label .req { color: var(--status-danger-fg); margin-left: 2px; }
+        .bgt-form-row input,
+        .bgt-form-row select,
+        .bgt-form-row textarea {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+            font-family: inherit;
+        }
+        .bgt-form-row textarea { min-height: 64px; resize: vertical; }
+        .bgt-form-row input:focus,
+        .bgt-form-row select:focus,
+        .bgt-form-row textarea:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .bgt-form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .bgt-form-hint { font-size: 12px; color: var(--text-gray); margin-top: 4px; }
+        .bgt-over-warn {
+            display: none;
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            color: var(--status-warning-fg);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .bgt-over-warn.show { display: block; }
+
+        @media (max-width: 1023px) {
+            .bgt-exec-summary { grid-template-columns: 1fr; }
+            .bgt-exec-summary > div { border-right: none; border-bottom: 1px solid var(--card-line); }
+            .bgt-exec-summary > div:last-child { border-bottom: none; }
+            .bgt-form-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-dy-page="bgt-status" data-page-title="예산 — 집행" data-page-subtitle="결재 완료된 편성 항목에 대해 집행 내역 등록·관리">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="bgt-tabs" role="tablist">
+            <a class="bgt-tab" href="bgt-status.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="bgt-tab" href="bgt-tree.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+                예방 항목 트리
+            </a>
+            <a class="bgt-tab" href="bgt-establish.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                편성
+            </a>
+            <button class="bgt-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                집행
+            </button>
+            <a class="bgt-tab" href="bgt-settings.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </a>
+        </div>
+
+        <!-- ─── 컨텍스트 ─── -->
+        <div class="bgt-ctx-bar">
+            <div class="selector">
+                <label>부서</label>
+                <select>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                </select>
+            </div>
+            <div class="selector">
+                <label>연도</label>
+                <select>
+                    <option>2026</option>
+                    <option>2025</option>
+                </select>
+            </div>
+            <span class="status-chip">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                결재 완료
+            </span>
+        </div>
+
+        <!-- ─── 합계 KPI 3분할 ─── -->
+        <section class="bgt-exec-summary">
+            <div>
+                <div class="label">편성액 (결재 완료)</div>
+                <div class="value">250,000<span class="unit">천원</span></div>
+                <div class="sub">자치행정과 2026 · 결재 2026-01-20</div>
+            </div>
+            <div>
+                <div class="label">집행액 (5월 누적)</div>
+                <div class="value exec">180,000<span class="unit">천원</span></div>
+                <div class="bar"><div style="width:72%;"></div></div>
+                <div class="sub">집행률 <strong style="color:var(--text-black);">72%</strong> · 전년 동기 65%</div>
+            </div>
+            <div>
+                <div class="label">잔여 예산</div>
+                <div class="value remain">70,000<span class="unit">천원</span></div>
+                <div class="sub">7개월 잔여 · 월평균 <strong style="color:var(--text-black);">10,000천원</strong> 가능</div>
+            </div>
+        </section>
+
+        <!-- ─── 집행 항목 테이블 ─── -->
+        <section class="bgt-exec-card">
+            <div class="bgt-exec-card-head">
+                <h3>집행 항목 선택 (3단계 항목별)</h3>
+                <span style="font-size:12px; color:var(--text-gray);">행 클릭 시 하단에 집행 이력 표시</span>
+            </div>
+            <table class="bgt-exec-table">
+                <colgroup>
+                    <col><col style="width:120px;"><col style="width:120px;"><col style="width:140px;"><col style="width:90px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>편성 항목</th>
+                        <th>편성</th>
+                        <th>집행</th>
+                        <th>집행률</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="item-tbody">
+                    <tr data-item="edu-1-1" class="is-selected" onclick="window.selectItem('edu-1-1')">
+                        <td class="name">사무직 정기교육 (반기 6h)<span class="breadcrumb">안전보건교육 · 정기교육</span></td>
+                        <td class="amount">18,000<span class="unit">천원</span></td>
+                        <td class="amount exec">14,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:78%;"></div></div>
+                                <span class="rate-text">78%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('edu-1-1');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="edu-1-2" onclick="window.selectItem('edu-1-2')">
+                        <td class="name">현장직 정기교육 (분기 6h)<span class="breadcrumb">안전보건교육 · 정기교육</span></td>
+                        <td class="amount">25,000<span class="unit">천원</span></td>
+                        <td class="amount exec">18,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:72%;"></div></div>
+                                <span class="rate-text">72%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('edu-1-2');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="edu-1-3" onclick="window.selectItem('edu-1-3')">
+                        <td class="name">관리감독자 정기교육 (연 16h)<span class="breadcrumb">안전보건교육 · 정기교육</span></td>
+                        <td class="amount">12,000<span class="unit">천원</span></td>
+                        <td class="amount exec">8,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div class="warning" style="width:67%;"></div></div>
+                                <span class="rate-text warn">67%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('edu-1-3');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="ins-1-1" onclick="window.selectItem('ins-1-1')">
+                        <td class="name">본관 분기 정기점검<span class="breadcrumb">시설 안전 점검 · 청사 정기 점검</span></td>
+                        <td class="amount">25,000<span class="unit">천원</span></td>
+                        <td class="amount exec">18,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:72%;"></div></div>
+                                <span class="rate-text">72%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('ins-1-1');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="ins-1-2" onclick="window.selectItem('ins-1-2')">
+                        <td class="name">별관 분기 정기점검<span class="breadcrumb">시설 안전 점검 · 청사 정기 점검</span></td>
+                        <td class="amount">15,000<span class="unit">천원</span></td>
+                        <td class="amount exec">10,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:67%;"></div></div>
+                                <span class="rate-text warn">67%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('ins-1-2');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="rsk-1-1" onclick="window.selectItem('rsk-1-1')">
+                        <td class="name">정기 위험성평가 (연 1회)<span class="breadcrumb">위험성평가 시행 · 정기 평가</span></td>
+                        <td class="amount">25,000<span class="unit">천원</span></td>
+                        <td class="amount exec">22,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:88%;"></div></div>
+                                <span class="rate-text">88%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('rsk-1-1');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="ppe-1-1" onclick="window.selectItem('ppe-1-1')">
+                        <td class="name">안전모·안전화·장갑<span class="breadcrumb">보호장비 구입 · 개인 보호구</span></td>
+                        <td class="amount">25,000<span class="unit">천원</span></td>
+                        <td class="amount exec">20,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div style="width:80%;"></div></div>
+                                <span class="rate-text">80%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('ppe-1-1');">+ 등록</a></td>
+                    </tr>
+                    <tr data-item="con-1-1" onclick="window.selectItem('con-1-1')">
+                        <td class="name">청사 보수공사 안전관리 운영<span class="breadcrumb">도급사업 안전관리 · 청사 보수공사</span></td>
+                        <td class="amount">30,000<span class="unit">천원</span></td>
+                        <td class="amount exec">15,000<span class="unit">천원</span></td>
+                        <td>
+                            <div class="rate-cell">
+                                <div class="rate-bar"><div class="warning" style="width:50%;"></div></div>
+                                <span class="rate-text warn">50%</span>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="add-btn" href="#" onclick="event.stopPropagation(); window.openAddExec('con-1-1');">+ 등록</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ─── 집행 이력 ─── -->
+        <section class="bgt-history-card">
+            <div class="bgt-history-head">
+                <div>
+                    <h3>집행 이력</h3>
+                    <div class="item-label">선택 항목 — <strong id="selected-item-name">사무직 정기교육 (반기 6h)</strong></div>
+                </div>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.openAddExec()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    집행 등록
+                </button>
+            </div>
+            <div id="history-body">
+                <!-- JS 렌더 -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         집행 등록 모달
+    ============================================================ -->
+    <div class="bgt-modal-backdrop" id="add-modal">
+        <div class="bgt-modal" role="dialog" aria-modal="true">
+            <div class="bgt-modal-header">
+                <div class="bgt-modal-title">집행 등록</div>
+                <button type="button" class="bgt-modal-close" onclick="window.closeAddExec()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="bgt-modal-body">
+                <div class="bgt-form-row">
+                    <label class="label">편성 항목<span class="req">*</span></label>
+                    <select id="form-item">
+                        <option value="edu-1-1" data-alloc="18000" data-exec="14000">안전보건교육 → 정기교육 → 사무직 정기교육 (편성 18,000 / 집행 14,000)</option>
+                        <option value="edu-1-2" data-alloc="25000" data-exec="18000">안전보건교육 → 정기교육 → 현장직 정기교육 (편성 25,000 / 집행 18,000)</option>
+                        <option value="ins-1-1" data-alloc="25000" data-exec="18000">시설 안전 점검 → 본관 분기 정기점검 (편성 25,000 / 집행 18,000)</option>
+                        <option value="ppe-1-1" data-alloc="25000" data-exec="20000">보호장비 → 안전모·안전화·장갑 (편성 25,000 / 집행 20,000)</option>
+                    </select>
+                    <div class="bgt-form-hint">결재 완료(APPROVED) 편성 항목만 선택 가능</div>
+                </div>
+                <div class="bgt-form-grid-2">
+                    <div class="bgt-form-row">
+                        <label class="label">집행일자<span class="req">*</span></label>
+                        <input type="date" value="2026-05-13">
+                    </div>
+                    <div class="bgt-form-row">
+                        <label class="label">집행액 (천원)<span class="req">*</span></label>
+                        <input type="number" id="form-amount" placeholder="3000" oninput="window.checkOver()">
+                        <div class="bgt-over-warn" id="over-warn">
+                            ⚠ 편성액을 <strong id="over-amount">0천원</strong> 초과합니다. 결재 정책에 따라 차단될 수 있습니다.
+                        </div>
+                    </div>
+                </div>
+                <div class="bgt-form-row">
+                    <label class="label">거래처</label>
+                    <input type="text" placeholder="예: A교육원">
+                </div>
+                <div class="bgt-form-row">
+                    <label class="label">내용<span class="req">*</span></label>
+                    <textarea placeholder="집행 내역 설명">2026년 2분기 사무직 정기교육 운영비 (5월 분)</textarea>
+                </div>
+                <div class="bgt-form-row">
+                    <label class="label">첨부 (영수증 등)</label>
+                    <input type="file" style="padding:6px 12px;">
+                    <div class="bgt-form-hint">PDF·이미지 권장</div>
+                </div>
+            </div>
+            <div class="bgt-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeAddExec()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.saveExec()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* 집행 이력 데이터 */
+        const HISTORY = {
+            'edu-1-1': [
+                { date: '2026-04-15', amount: 6000, vendor: 'A교육원', desc: '1Q 사무직 정기교육 (반기 6h, 1차) 운영', attach: true },
+                { date: '2026-04-20', amount: 2000, vendor: 'B인쇄소', desc: '교재·인쇄물 제작', attach: true },
+                { date: '2026-05-05', amount: 4000, vendor: 'A교육원', desc: '2Q 사무직 정기교육 1회차 운영', attach: true },
+                { date: '2026-05-10', amount: 2000, vendor: 'C상담실', desc: '교육 후 만족도 조사 및 결과 보고서', attach: false },
+            ],
+            'edu-1-2': [
+                { date: '2026-03-20', amount: 8000, vendor: 'A교육원', desc: '1Q 현장직 정기교육 (분기 6h) 운영', attach: true },
+                { date: '2026-04-22', amount: 6000, vendor: 'A교육원', desc: '2Q 현장직 정기교육 운영', attach: true },
+                { date: '2026-05-08', amount: 4000, vendor: 'D보호장비', desc: '실습 안전장비 임대', attach: true },
+            ],
+            'edu-1-3': [
+                { date: '2026-04-10', amount: 5000, vendor: '대한산업안전협회', desc: '관리감독자 연간 16h 교육 1차', attach: true },
+                { date: '2026-05-12', amount: 3000, vendor: '대한산업안전협회', desc: '관리감독자 연간 16h 교육 2차', attach: true },
+            ],
+            'ins-1-1': [
+                { date: '2026-03-15', amount: 8000, vendor: '본관전기안전', desc: '본관 1Q 정기점검 (전기·소방·기계)', attach: true },
+                { date: '2026-04-30', amount: 5000, vendor: '본관전기안전', desc: '본관 2Q 정기점검 1차', attach: true },
+                { date: '2026-05-10', amount: 5000, vendor: '본관전기안전', desc: '본관 2Q 정기점검 2차 (기록 보강)', attach: true },
+            ],
+            'ins-1-2': [
+                { date: '2026-03-25', amount: 5000, vendor: '별관소방안전', desc: '별관 1Q 정기점검', attach: true },
+                { date: '2026-04-28', amount: 5000, vendor: '별관소방안전', desc: '별관 2Q 정기점검', attach: true },
+            ],
+            'rsk-1-1': [
+                { date: '2026-04-15', amount: 12000, vendor: '한국안전기술원', desc: '정기 위험성평가 외부 컨설팅', attach: true },
+                { date: '2026-04-30', amount: 10000, vendor: '한국안전기술원', desc: '평가 결과 보고서 작성·검토', attach: true },
+            ],
+            'ppe-1-1': [
+                { date: '2026-02-15', amount: 8000, vendor: 'A보호장비', desc: '1H 안전모·안전화 일괄 구매 (전직원)', attach: true },
+                { date: '2026-04-10', amount: 7000, vendor: 'A보호장비', desc: '청사 보수공사 인력 추가 장구', attach: true },
+                { date: '2026-05-05', amount: 5000, vendor: 'B보호장비', desc: '장갑·안경 등 소모성 보호구 보충', attach: true },
+            ],
+            'con-1-1': [
+                { date: '2026-04-15', amount: 8000, vendor: '담양건설', desc: '청사 시설 보수공사 1차 안전관리비 (착공 전)', attach: true },
+                { date: '2026-05-10', amount: 7000, vendor: '담양건설', desc: '청사 시설 보수공사 2차 안전관리비', attach: true },
+            ],
+        };
+
+        const ITEM_NAMES = {
+            'edu-1-1': '사무직 정기교육 (반기 6h)',
+            'edu-1-2': '현장직 정기교육 (분기 6h)',
+            'edu-1-3': '관리감독자 정기교육 (연 16h)',
+            'ins-1-1': '본관 분기 정기점검',
+            'ins-1-2': '별관 분기 정기점검',
+            'rsk-1-1': '정기 위험성평가 (연 1회)',
+            'ppe-1-1': '안전모·안전화·장갑',
+            'con-1-1': '청사 보수공사 안전관리 운영',
+        };
+
+        function fmt(n) { return n.toLocaleString(); }
+
+        function renderHistory(itemId) {
+            const list = HISTORY[itemId] || [];
+            document.getElementById('selected-item-name').textContent = ITEM_NAMES[itemId] || '—';
+            const body = document.getElementById('history-body');
+
+            if (!list.length) {
+                body.innerHTML = `
+                    <div class="bgt-history-empty">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        집행 이력이 없습니다. [집행 등록]으로 등록하세요.
+                    </div>`;
+                return;
+            }
+
+            const total = list.reduce((s, h) => s + h.amount, 0);
+            body.innerHTML = `
+                <table class="bgt-history-table">
+                    <colgroup>
+                        <col style="width:130px;"><col style="width:120px;"><col style="width:130px;"><col><col style="width:70px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>일자</th>
+                            <th class="right">집행액</th>
+                            <th>거래처</th>
+                            <th>내용</th>
+                            <th class="center">첨부</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${list.map(h => `
+                            <tr>
+                                <td>${h.date}</td>
+                                <td><span class="bgt-history-amount">${fmt(h.amount)}<span class="unit">천원</span></span></td>
+                                <td>${h.vendor}</td>
+                                <td>${h.desc}</td>
+                                <td>
+                                    ${h.attach
+                                        ? `<span class="bgt-attach-icon" onclick="window.DYLayout._soon(event, '영수증 다운로드')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>`
+                                        : `<span class="bgt-attach-icon missing"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:var(--brand-50); font-weight:700;">
+                            <td style="color:var(--main-dark2);">합계 (${list.length}건)</td>
+                            <td><span class="bgt-history-amount" style="color:var(--main-dark2);">${fmt(total)}<span class="unit">천원</span></span></td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+        }
+
+        window.selectItem = function (id) {
+            document.querySelectorAll('.bgt-exec-table tbody tr').forEach(r => r.classList.toggle('is-selected', r.dataset.item === id));
+            renderHistory(id);
+        };
+
+        /* 집행 등록 모달 */
+        window.openAddExec = function (itemId) {
+            const modal = document.getElementById('add-modal');
+            if (itemId) {
+                const sel = document.getElementById('form-item');
+                Array.from(sel.options).forEach(o => o.selected = o.value === itemId);
+            }
+            modal.classList.add('is-open');
+            window.checkOver();
+        };
+        window.closeAddExec = function () {
+            document.getElementById('add-modal').classList.remove('is-open');
+        };
+        window.saveExec = function () {
+            window.closeAddExec();
+            showToast('집행이 등록되었습니다. 집행률이 자동 갱신됩니다. (목업)');
+        };
+        window.checkOver = function () {
+            const sel = document.getElementById('form-item');
+            const opt = sel.options[sel.selectedIndex];
+            const alloc = parseInt(opt.dataset.alloc) || 0;
+            const exec = parseInt(opt.dataset.exec) || 0;
+            const amount = parseInt(document.getElementById('form-amount').value) || 0;
+            const remain = alloc - exec;
+            const warn = document.getElementById('over-warn');
+            if (amount > remain) {
+                warn.classList.add('show');
+                document.getElementById('over-amount').textContent = fmt(amount - remain) + '천원';
+            } else {
+                warn.classList.remove('show');
+            }
+        };
+
+        document.querySelectorAll('.bgt-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('is-open'); });
+        });
+
+        renderHistory('edu-1-1');
+    })();
+    </script>
+</body>
+</html>

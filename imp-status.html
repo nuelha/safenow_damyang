@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개선조치 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── IMP01-V 전용 ─── */
+
+        .imp-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--card-line); }
+        .imp-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; font-size: 14px; font-weight: 600;
+            color: var(--text-gray); background: transparent;
+            border: none; border-bottom: 2px solid transparent;
+            cursor: pointer; margin-bottom: -1px;
+            transition: all .15s ease; text-decoration: none;
+        }
+        .imp-tab:hover { color: var(--main-dark); }
+        .imp-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+
+        /* 필터 바 */
+        .imp-filter {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .imp-filter-year {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .imp-filter-year .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .imp-filter-year select {
+            padding: 6px 24px 6px 8px;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            border: none;
+            background-color: transparent;
+        }
+        .imp-filter .form-group { display: flex; align-items: center; gap: 8px; }
+        .imp-filter .form-group label { font-size: 13px; font-weight: 600; color: var(--text-gray); }
+        .imp-filter-meta {
+            margin-left: auto;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .imp-filter-meta strong { color: var(--text-black); font-weight: 700; }
+
+        /* KPI 4분할 */
+        .imp-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .imp-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 122px; justify-content: center;
+            cursor: pointer;
+            transition: background .12s ease;
+        }
+        .imp-kpi-cell:hover { background: var(--brand-50); }
+        .imp-kpi-cell:last-child { border-right: none; }
+        .imp-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .imp-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .imp-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .imp-kpi-icon.info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+        .imp-kpi-icon.warn    { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .imp-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .imp-kpi-icon.danger  { background: var(--status-danger-bg);  color: var(--status-danger-fg); }
+        .imp-kpi-value {
+            font-size: 30px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .imp-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .imp-kpi-value.info    { color: var(--status-info-fg); }
+        .imp-kpi-value.warning { color: var(--status-warning-fg); }
+        .imp-kpi-value.success { color: var(--status-success-fg); }
+        .imp-kpi-value.danger  { color: var(--status-danger-fg); }
+        .imp-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 기한초과 배너 */
+        .imp-alert-banner {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            background: var(--status-danger-bg);
+            border: 1px solid var(--status-danger-border);
+            border-radius: var(--radius-button);
+        }
+        .imp-alert-banner .icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: white;
+            color: var(--status-danger-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .imp-alert-banner .msg { flex: 1; font-size: 14px; color: var(--status-danger-fg); }
+        .imp-alert-banner .msg strong { font-weight: 700; }
+        .imp-alert-banner .msg .sub { display: block; font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 2분할: 시기도래 + 출처 분포 */
+        .imp-two-col {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+        }
+
+        /* 시기도래 리스트 */
+        .imp-due-list {
+            display: flex; flex-direction: column;
+            padding: 8px 0;
+        }
+        .imp-due-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 22px;
+            cursor: pointer;
+            transition: background .12s ease;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .imp-due-item:last-child { border-bottom: none; }
+        .imp-due-item:hover { background: var(--brand-50); }
+        .imp-due-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            color: white;
+        }
+        .imp-due-icon.risk_assessment { background: var(--status-danger-fg); }
+        .imp-due-icon.inspection      { background: #e58a3c; }
+        .imp-due-icon.opinion         { background: var(--status-info-fg); }
+        .imp-due-icon.incident        { background: var(--status-purple-fg); }
+        .imp-due-icon.manual          { background: var(--text-gray); }
+
+        .imp-due-body { flex: 1; min-width: 0; }
+        .imp-due-title {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 600; color: var(--text-black);
+        }
+        .imp-due-cat {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .imp-due-cat.risk_assessment { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .imp-due-cat.inspection      { background: #fdedda; color: #e58a3c; }
+        .imp-due-cat.opinion         { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .imp-due-cat.incident        { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .imp-due-cat.manual          { background: var(--gray-100); color: var(--text-gray); }
+        .imp-due-meta {
+            font-size: 11px; color: var(--text-gray);
+            margin-top: 2px;
+        }
+        .imp-due-dday {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .imp-due-dday.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .imp-due-dday.today { background: var(--status-warning-bg); color: var(--status-warning-fg); font-weight: 800; }
+        .imp-due-dday.over { background: var(--status-danger-bg); color: var(--status-danger-fg); font-weight: 800; }
+
+        /* 출처별 도넛 */
+        .imp-source-card .card-body {
+            padding: 20px 24px;
+        }
+        .imp-source-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+        .imp-source-chart {
+            position: relative;
+            width: 160px; height: 160px;
+            margin: 0 auto;
+        }
+        .imp-source-chart svg {
+            transform: rotate(-90deg);
+            width: 100%; height: 100%;
+        }
+        .imp-source-chart .center {
+            position: absolute;
+            inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .imp-source-chart .center .total {
+            font-size: 28px; font-weight: 800;
+            color: var(--main-dark2);
+            line-height: 1;
+        }
+        .imp-source-chart .center .label {
+            font-size: 11px; color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        .imp-source-legend {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .imp-source-row {
+            display: grid;
+            grid-template-columns: 14px 1fr 40px 60px;
+            gap: 8px;
+            align-items: center;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+        .imp-source-row .swatch {
+            width: 12px; height: 12px;
+            border-radius: 3px;
+        }
+        .imp-source-row.risk_assessment .swatch { background: var(--status-danger-fg); }
+        .imp-source-row.inspection .swatch      { background: #e58a3c; }
+        .imp-source-row.opinion .swatch         { background: var(--status-info-fg); }
+        .imp-source-row.incident .swatch        { background: var(--status-purple-fg); }
+        .imp-source-row.manual .swatch          { background: var(--text-gray); }
+        .imp-source-row .name {
+            color: var(--text-black);
+            font-weight: 600;
+        }
+        .imp-source-row .count {
+            text-align: right;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-black);
+        }
+        .imp-source-row .pct {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 부서별 진행률 차트 */
+        .imp-dept-chart {
+            padding: 20px 22px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .imp-dept-row {
+            display: grid;
+            grid-template-columns: 130px 1fr 90px;
+            align-items: center;
+            gap: 10px;
+        }
+        .imp-dept-name {
+            font-size: 13px; font-weight: 600; color: var(--text-black);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .imp-dept-track {
+            position: relative;
+            height: 22px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .imp-dept-fill {
+            position: absolute;
+            top: 0; bottom: 0; left: 0;
+            background: var(--main);
+            border-radius: 999px;
+            display: flex; align-items: center;
+            padding-left: 10px;
+            font-size: 11px; font-weight: 700;
+            color: white;
+        }
+        .imp-dept-fill.warning { background: var(--status-warning-fg); }
+        .imp-dept-fill.danger { background: var(--status-danger-fg); }
+        .imp-dept-count {
+            font-size: 12px; font-weight: 700;
+            text-align: right;
+            color: var(--text-black);
+            font-variant-numeric: tabular-nums;
+        }
+        .imp-dept-count .small { color: var(--text-gray); font-weight: 500; font-size: 11px; }
+
+        @media (max-width: 1023px) {
+            .imp-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .imp-two-col { grid-template-columns: 1fr; }
+            .imp-source-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-dy-page="imp-list" data-page-title="개선조치 — 현황" data-page-subtitle="위험성평가·점검·의견·사고 출처별 개선조치 진행 현황">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="imp-tabs" role="tablist">
+            <button class="imp-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </button>
+            <a class="imp-tab" href="imp-list.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                전체 목록
+            </a>
+            <button class="imp-tab" type="button" onclick="window.DYLayout._soon(event, '재발방지대책 (IMP02-L) — 사고 출처 한정')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                재발방지대책
+            </button>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="imp-filter">
+            <div class="imp-filter-year">
+                <span class="icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </span>
+                <select>
+                    <option>2026년</option>
+                    <option>2025년</option>
+                    <option>전체</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>부서</label>
+                <select class="select">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리과</option>
+                    <option>농업기술센터</option>
+                    <option>환경과</option>
+                    <option>보건소</option>
+                    <option>상수도사업소</option>
+                    <option>문화관광과</option>
+                    <option>담양읍사무소</option>
+                </select>
+            </div>
+            <span class="imp-filter-meta">
+                대상 관리대상 <strong>32건</strong> · 최근 자동 생성 <strong>2026-05-12 18:00</strong>
+            </span>
+        </div>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="imp-kpi-grid">
+            <div class="imp-kpi-cell" onclick="window.location.href='imp-list.html'">
+                <div class="imp-kpi-head">
+                    <span class="imp-kpi-title">전체</span>
+                    <span class="imp-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </span>
+                </div>
+                <div class="imp-kpi-value">40<span class="small">건</span></div>
+                <div class="imp-kpi-sub">2026년 누적 등록 + 자동 생성</div>
+            </div>
+            <div class="imp-kpi-cell" onclick="window.location.href='imp-list.html'">
+                <div class="imp-kpi-head">
+                    <span class="imp-kpi-title">예정</span>
+                    <span class="imp-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="imp-kpi-value">5<span class="small">건</span></div>
+                <div class="imp-kpi-sub">PENDING · 담당자 배정 대기</div>
+            </div>
+            <div class="imp-kpi-cell" onclick="window.location.href='imp-list.html'">
+                <div class="imp-kpi-head">
+                    <span class="imp-kpi-title">진행 중</span>
+                    <span class="imp-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </span>
+                </div>
+                <div class="imp-kpi-value info">8<span class="small">건</span></div>
+                <div class="imp-kpi-sub">IN_PROGRESS · 조치 중</div>
+            </div>
+            <div class="imp-kpi-cell" onclick="window.location.href='imp-list.html'">
+                <div class="imp-kpi-head">
+                    <span class="imp-kpi-title">완료</span>
+                    <span class="imp-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="imp-kpi-value success">24<span class="small">건</span></div>
+                <div class="imp-kpi-sub">완료율 <strong style="color:var(--text-black);">60%</strong> · 전년 +12%p</div>
+            </div>
+        </section>
+
+        <!-- ─── 기한초과 경고 배너 ─── -->
+        <div class="imp-alert-banner">
+            <span class="icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <span class="msg">
+                <strong>기한 초과 개선조치 3건</strong>이 있습니다 — 즉시 확인이 필요합니다.
+                <span class="sub">군청 청사 안전난간 교체 외 2건 · 담당 부서장에게 새올 알림 발송됨</span>
+            </span>
+            <a class="btn btn-primary btn-sm" href="imp-list.html?filter=overdue" style="color:white;">
+                기한초과 목록 →
+            </a>
+        </div>
+
+        <!-- ─── 2분할: 시기도래 + 출처별 분포 ─── -->
+        <div class="imp-two-col">
+
+            <!-- 시기도래 (D-7 이내) -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">시기도래 (1주 이내 마감)</h2>
+                    <a class="text-muted" href="imp-list.html" style="font-size:13px;">전체 보기 →</a>
+                </div>
+                <div class="imp-due-list">
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon risk_assessment">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                본관 2층 전기실 분기별 절연저항 점검 + 누전차단기 교체
+                                <span class="imp-due-cat risk_assessment">위험성평가</span>
+                            </div>
+                            <div class="imp-due-meta">군청 청사 · 김안전 · 출처: 청사 위험성평가 2026</div>
+                        </div>
+                        <span class="imp-due-dday over">D+5</span>
+                    </div>
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon inspection">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                밀폐공간 작업 시 산소 농도 측정기 미배치 보완
+                                <span class="imp-due-cat inspection">안전점검</span>
+                            </div>
+                            <div class="imp-due-meta">환경자원시설 · 박성민 · 출처: 환경과 자율 점검</div>
+                        </div>
+                        <span class="imp-due-dday over">D+12</span>
+                    </div>
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon inspection">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                정수장 약품 보관실 환기 시설 점검·보강
+                                <span class="imp-due-cat inspection">안전점검</span>
+                            </div>
+                            <div class="imp-due-meta">상수도사업소 본관 · 이안전 · 출처: 정수장 정기 점검</div>
+                        </div>
+                        <span class="imp-due-dday over">D+10</span>
+                    </div>
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon opinion">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                옥외 휴게실 흡연 구역 분리 표지판 설치
+                                <span class="imp-due-cat opinion">의견청취</span>
+                            </div>
+                            <div class="imp-due-meta">군청 청사 · 한시설 · 출처: 2026 1Q 의견청취</div>
+                        </div>
+                        <span class="imp-due-dday today">오늘</span>
+                    </div>
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon risk_assessment">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                가스누출 감지기 추가 설치 + 월 1회 점검 정례화
+                                <span class="imp-due-cat risk_assessment">위험성평가</span>
+                            </div>
+                            <div class="imp-due-meta">군청 청사 · 김안전 · 출처: 청사 위험성평가 2026</div>
+                        </div>
+                        <span class="imp-due-dday warn">D-3</span>
+                    </div>
+                    <div class="imp-due-item" onclick="window.location.href='imp-detail.html'">
+                        <span class="imp-due-icon incident">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </span>
+                        <div class="imp-due-body">
+                            <div class="imp-due-title">
+                                도로 작업장 신호수 추가 배치 (재발방지)
+                                <span class="imp-due-cat incident">사고</span>
+                            </div>
+                            <div class="imp-due-meta">도로 확장공사 1단계 · 윤도로 · 출처: 2026-05-02 아차사고</div>
+                        </div>
+                        <span class="imp-due-dday warn">D-5</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 출처별 분포 (도넛 차트) -->
+            <section class="card imp-source-card">
+                <div class="card-header">
+                    <h2 class="card-title">출처별 분포</h2>
+                    <span class="text-muted" style="font-size:13px;">2026년 누적</span>
+                </div>
+                <div class="card-body">
+                    <div class="imp-source-grid">
+                        <div class="imp-source-chart">
+                            <svg viewBox="0 0 36 36">
+                                <!-- 위험성평가 18 / 안전점검 9 / 의견청취 6 / 사고 2 / 수동 5 = 40 -->
+                                <!-- 위험성평가 45% (162도) -->
+                                <circle cx="18" cy="18" r="15.91549" fill="transparent" stroke="var(--status-danger-fg)" stroke-width="5.5" stroke-dasharray="45 55" stroke-dashoffset="0"></circle>
+                                <!-- 안전점검 22.5% (81도) -->
+                                <circle cx="18" cy="18" r="15.91549" fill="transparent" stroke="#e58a3c" stroke-width="5.5" stroke-dasharray="22.5 77.5" stroke-dashoffset="-45"></circle>
+                                <!-- 의견청취 15% (54도) -->
+                                <circle cx="18" cy="18" r="15.91549" fill="transparent" stroke="var(--status-info-fg)" stroke-width="5.5" stroke-dasharray="15 85" stroke-dashoffset="-67.5"></circle>
+                                <!-- 사고 5% (18도) -->
+                                <circle cx="18" cy="18" r="15.91549" fill="transparent" stroke="var(--status-purple-fg)" stroke-width="5.5" stroke-dasharray="5 95" stroke-dashoffset="-82.5"></circle>
+                                <!-- 수동 12.5% (45도) -->
+                                <circle cx="18" cy="18" r="15.91549" fill="transparent" stroke="var(--text-gray)" stroke-width="5.5" stroke-dasharray="12.5 87.5" stroke-dashoffset="-87.5"></circle>
+                            </svg>
+                            <div class="center">
+                                <div class="total">40</div>
+                                <div class="label">전체 개선조치</div>
+                            </div>
+                        </div>
+                        <div class="imp-source-legend">
+                            <div class="imp-source-row risk_assessment">
+                                <span class="swatch"></span>
+                                <span class="name">위험성평가</span>
+                                <span class="count">18</span>
+                                <span class="pct">45%</span>
+                            </div>
+                            <div class="imp-source-row inspection">
+                                <span class="swatch"></span>
+                                <span class="name">안전점검</span>
+                                <span class="count">9</span>
+                                <span class="pct">22.5%</span>
+                            </div>
+                            <div class="imp-source-row opinion">
+                                <span class="swatch"></span>
+                                <span class="name">의견청취</span>
+                                <span class="count">6</span>
+                                <span class="pct">15%</span>
+                            </div>
+                            <div class="imp-source-row incident">
+                                <span class="swatch"></span>
+                                <span class="name">사고 (재발방지)</span>
+                                <span class="count">2</span>
+                                <span class="pct">5%</span>
+                            </div>
+                            <div class="imp-source-row manual">
+                                <span class="swatch"></span>
+                                <span class="name">수동 등록</span>
+                                <span class="count">5</span>
+                                <span class="pct">12.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ─── 부서별 진행률 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">부서별 진행률</h2>
+                <span class="text-muted" style="font-size:13px;">완료 ÷ 전체 (2026년)</span>
+            </div>
+            <div class="imp-dept-chart">
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">안전건설과</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill" style="width:92%;">92%</div></div>
+                    <span class="imp-dept-count">11<span class="small"> / 12</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">시설관리과</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill" style="width:75%;">75%</div></div>
+                    <span class="imp-dept-count">6<span class="small"> / 8</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">농업기술센터</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill" style="width:75%;">75%</div></div>
+                    <span class="imp-dept-count">3<span class="small"> / 4</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">상수도사업소</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill" style="width:67%;">67%</div></div>
+                    <span class="imp-dept-count">2<span class="small"> / 3</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">환경과</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill warning" style="width:50%;">50%</div></div>
+                    <span class="imp-dept-count">3<span class="small"> / 6</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">문화관광과</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill warning" style="width:50%;">50%</div></div>
+                    <span class="imp-dept-count">1<span class="small"> / 2</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">담양읍사무소</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill warning" style="width:50%;">50%</div></div>
+                    <span class="imp-dept-count">1<span class="small"> / 2</span></span>
+                </div>
+                <div class="imp-dept-row">
+                    <span class="imp-dept-name">보건소</span>
+                    <div class="imp-dept-track"><div class="imp-dept-fill danger" style="width:40%;">40%</div></div>
+                    <span class="imp-dept-count">2<span class="small"> / 5</span></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

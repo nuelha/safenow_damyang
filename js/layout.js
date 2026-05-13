@@ -68,7 +68,7 @@
             // 안전점검 (INS / SFR-012)
             { id: 'ins-status',    label: '안전점검',          icon: 'check',    href: 'ins-status.html',       screen: 'INS01-V' },
             // 개선조치 (IMP / SFR-003)
-            { id: 'imp-list',      label: '개선조치',          icon: 'check',    href: 'imp-list.html',         screen: 'IMP01-L' },
+            { id: 'imp-list',      label: '개선조치',          icon: 'check',    href: 'imp-status.html',       screen: 'IMP01-V' },
             // 인력평가 (EVL / SFR-009)
             { id: 'evl-list',      label: '인력평가',          icon: 'user',     href: 'evl-list.html',         screen: 'EVL01-V' },
             // 안전관리자 인력 (STF / SFR-010)
