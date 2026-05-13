@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전관리자 인력 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── STF01-V / STF02-V / STF03-S 전용 ─── */
+
+        /* 서브 탭 (POL/EVL 패턴) */
+        .stf-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .stf-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+        }
+        .stf-tab:hover { color: var(--main-dark); }
+        .stf-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+        .stf-pane { display: none; }
+        .stf-pane.is-active { display: block; }
+
+        /* 종합 현황 4 카드 */
+        .stf-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        .stf-summary-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 18px 20px;
+            display: flex; flex-direction: column; gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stf-summary-card.met::before {
+            content: ""; position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: var(--status-success-fg);
+        }
+        .stf-summary-card.unmet::before {
+            content: ""; position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: var(--status-danger-fg);
+        }
+        .stf-summary-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .stf-summary-title {
+            font-size: 14px; font-weight: 700; color: var(--text-black);
+        }
+        .stf-summary-title .law {
+            display: block;
+            font-size: 10px; font-weight: 500;
+            color: var(--text-lightgray);
+            margin-top: 2px;
+        }
+        .stf-summary-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .stf-summary-icon.unmet { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+
+        .stf-summary-counts {
+            display: flex; align-items: baseline; gap: 8px;
+            margin-top: 4px;
+        }
+        .stf-summary-counts .num {
+            font-size: 26px; font-weight: 800;
+            color: var(--main); line-height: 1;
+            letter-spacing: -0.6px;
+        }
+        .stf-summary-counts.unmet .num { color: var(--status-danger-fg); }
+        .stf-summary-counts .slash { font-size: 16px; color: var(--text-lightgray); font-weight: 600; }
+        .stf-summary-counts .legal { font-size: 16px; font-weight: 700; color: var(--text-black); }
+        .stf-summary-counts .unit { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+
+        .stf-summary-foot {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 6px;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .stf-summary-status {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+        .stf-summary-status.met {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .stf-summary-status.unmet {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+
+        /* 결재 차단 경고 배너 */
+        .stf-alert-banner {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            background: var(--status-danger-bg);
+            border: 1px solid var(--status-danger-border);
+            border-radius: var(--radius-button);
+        }
+        .stf-alert-banner .icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: white;
+            color: var(--status-danger-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .stf-alert-banner .msg { flex: 1; font-size: 14px; color: var(--status-danger-fg); }
+        .stf-alert-banner .msg strong { font-weight: 700; }
+        .stf-alert-banner .msg .sub { display: block; font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 부서별 충족 cell */
+        .stf-dept-cell {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-variant-numeric: tabular-nums;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .stf-dept-cell .met-icon { color: var(--status-success-fg); }
+        .stf-dept-cell .unmet-icon { color: var(--status-warning-fg); }
+        .stf-dept-cell.unmet { color: var(--status-warning-fg); }
+        .stf-dept-cell.zero { color: var(--text-lightgray); font-weight: 500; }
+
+        /* 충족 상태 chip */
+        .stf-status-chip {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .stf-status-chip.met {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .stf-status-chip.unmet {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+
+        /* D-day cell */
+        .stf-dday {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+        }
+        .stf-dday.urgent {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+        }
+        .stf-dday.critical {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+        }
+
+        /* 공사 결재 상태 chip */
+        .stf-contract-status {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .stf-contract-status.done {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .stf-contract-status.progress {
+            background: var(--status-info-bg);
+            color: var(--status-info-fg);
+            border-color: var(--status-info-border);
+        }
+        .stf-contract-status.blocked {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+        .stf-contract-status.optional {
+            background: var(--status-neutral-bg);
+            color: var(--status-neutral-fg);
+            border-color: var(--status-neutral-border);
+        }
+
+        /* 공사 출처 chip */
+        .stf-src-chip {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--status-info-bg);
+            color: var(--status-info-fg);
+            border: 1px solid var(--status-info-border);
+            margin-left: 6px;
+        }
+        .stf-src-chip.manual {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            border-color: var(--card-line);
+        }
+
+        /* 공사 규모별 법정 인원 안내 */
+        .stf-legal-info {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 20px 24px;
+        }
+        .stf-legal-info h3 {
+            font-size: 15px; font-weight: 700; color: var(--main-dark2);
+            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .stf-legal-info h3::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .stf-legal-ladder {
+            display: flex; flex-direction: column;
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            border: 1px solid var(--card-line);
+        }
+        .stf-legal-row {
+            display: grid;
+            grid-template-columns: 1fr 120px 1fr;
+            align-items: center;
+            padding: 12px 18px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-line);
+            background: white;
+        }
+        .stf-legal-row:last-child { border-bottom: none; }
+        .stf-legal-row:nth-child(odd) { background: #fafbfb; }
+        .stf-legal-row .range { color: var(--text-black); font-weight: 600; }
+        .stf-legal-row .req {
+            font-weight: 700;
+            color: var(--main-dark2);
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .stf-legal-row .req .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 28px; height: 28px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            font-weight: 800;
+            margin-right: 4px;
+        }
+        .stf-legal-row .req.zero .num {
+            background: var(--gray-100);
+            color: var(--text-lightgray);
+        }
+        .stf-legal-row .note { font-size: 12px; color: var(--text-gray); }
+
+        /* 설정 — 부서 단위 / 공사 규모 / 자격증 매핑 서브탭 */
+        .stf-subtabs {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: white;
+            margin-bottom: 16px;
+        }
+        .stf-subtab {
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .stf-subtab:last-child { border-right: none; }
+        .stf-subtab.is-active {
+            background: var(--main);
+            color: white;
+        }
+        .stf-subpane { display: none; }
+        .stf-subpane.is-active { display: block; }
+
+        /* 설정 — 법정 마스터 테이블 */
+        .stf-master-table {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .stf-master-table table { width: 100%; border-collapse: collapse; }
+        .stf-master-table th,
+        .stf-master-table td {
+            padding: 12px 18px;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .stf-master-table th {
+            background: #fafbfb;
+            font-weight: 700;
+            color: var(--main-dark2);
+            font-size: 12px;
+        }
+        .stf-master-table td { color: var(--text-black); }
+        .stf-master-table tbody tr:last-child td { border-bottom: none; }
+        .stf-master-table tbody tr:hover { background: var(--brand-50); }
+        .stf-master-table .num-cell {
+            font-weight: 700;
+            color: var(--main-dark2);
+            text-align: center;
+        }
+        .stf-master-table .num-cell.zero { color: var(--text-lightgray); font-weight: 500; }
+
+        /* 자격증 매핑 카드 */
+        .stf-qual-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .stf-qual-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 18px 20px;
+        }
+        .stf-qual-card h4 {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 700; color: var(--main-dark2);
+            margin-bottom: 12px;
+        }
+        .stf-qual-card h4 .badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            font-weight: 700;
+        }
+        .stf-qual-list {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .stf-qual-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            background: #fafbfb;
+            border-radius: 8px;
+            color: var(--text-black);
+        }
+        .stf-qual-item .type {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: white;
+            color: var(--text-gray);
+            border: 1px solid var(--card-line);
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        /* 설정 경고 박스 */
+        .stf-settings-note {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            margin-bottom: 16px;
+            font-size: 12px; color: var(--status-warning-fg);
+        }
+        .stf-settings-note svg { flex-shrink: 0; margin-top: 1px; }
+
+        @media (max-width: 1023px) {
+            .stf-summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .stf-qual-grid { grid-template-columns: 1fr; }
+            .stf-legal-row { grid-template-columns: 1fr 80px; }
+            .stf-legal-row .note { grid-column: 1 / -1; padding-top: 4px; }
+        }
+    </style>
+</head>
+<body data-dy-page="stf-status" data-page-title="안전관리자 인력" data-page-subtitle="법정 인원 충족·공사별 선임·자격증 검증">
+    <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="stf-tabs" role="tablist">
+            <button class="stf-tab is-active" type="button" data-tab="overview">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                전체 현황
+            </button>
+            <button class="stf-tab" type="button" data-tab="construction">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                공사별 선임
+            </button>
+            <button class="stf-tab" type="button" data-tab="settings">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
+
+        <!-- ============================================================
+             ▼ Pane 1: 전체 현황 (STF01-V)
+        ============================================================ -->
+        <div class="stf-pane is-active" data-pane="overview">
+
+            <!-- 종합 현황 4 카드 -->
+            <section class="stf-summary-grid">
+                <!-- 안전관리자 -->
+                <div class="stf-summary-card unmet">
+                    <div class="stf-summary-head">
+                        <div class="stf-summary-title">
+                            안전관리자
+                            <span class="law">산안법 §17</span>
+                        </div>
+                        <span class="stf-summary-icon unmet">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </span>
+                    </div>
+                    <div class="stf-summary-counts unmet">
+                        <span class="num">10</span>
+                        <span class="slash">/</span>
+                        <span class="legal">12</span>
+                        <span class="unit">명</span>
+                    </div>
+                    <div class="stf-summary-foot">
+                        <span class="stf-summary-status unmet">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            미충족
+                        </span>
+                        <span style="color:var(--status-danger-fg); font-weight:700;">부족 2명</span>
+                    </div>
+                </div>
+
+                <!-- 보건관리자 -->
+                <div class="stf-summary-card met">
+                    <div class="stf-summary-head">
+                        <div class="stf-summary-title">
+                            보건관리자
+                            <span class="law">산안법 §18</span>
+                        </div>
+                        <span class="stf-summary-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </span>
+                    </div>
+                    <div class="stf-summary-counts">
+                        <span class="num">5</span>
+                        <span class="slash">/</span>
+                        <span class="legal">5</span>
+                        <span class="unit">명</span>
+                    </div>
+                    <div class="stf-summary-foot">
+                        <span class="stf-summary-status met">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            충족
+                        </span>
+                        <span style="font-size:11px;">100%</span>
+                    </div>
+                </div>
+
+                <!-- 관리감독자 -->
+                <div class="stf-summary-card met">
+                    <div class="stf-summary-head">
+                        <div class="stf-summary-title">
+                            관리감독자
+                            <span class="law">산안법 §16</span>
+                        </div>
+                        <span class="stf-summary-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="11" r="4"/><path d="M22 11h-6"/></svg>
+                        </span>
+                    </div>
+                    <div class="stf-summary-counts">
+                        <span class="num">32</span>
+                        <span class="slash">/</span>
+                        <span class="legal">32</span>
+                        <span class="unit">명</span>
+                    </div>
+                    <div class="stf-summary-foot">
+                        <span class="stf-summary-status met">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            충족
+                        </span>
+                        <span style="font-size:11px;">부서장 자동 매핑</span>
+                    </div>
+                </div>
+
+                <!-- 산업보건의 -->
+                <div class="stf-summary-card met">
+                    <div class="stf-summary-head">
+                        <div class="stf-summary-title">
+                            산업보건의
+                            <span class="law">산안법 §22</span>
+                        </div>
+                        <span class="stf-summary-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+                        </span>
+                    </div>
+                    <div class="stf-summary-counts">
+                        <span class="num">1</span>
+                        <span class="slash">/</span>
+                        <span class="legal">1</span>
+                        <span class="unit">명</span>
+                    </div>
+                    <div class="stf-summary-foot">
+                        <span class="stf-summary-status met">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            충족
+                        </span>
+                        <span style="font-size:11px;">위촉 의사 1명</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 결재 차단 경고 -->
+            <div class="stf-alert-banner">
+                <span class="icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </span>
+                <span class="msg">
+                    <strong>안전관리자 부족 2명</strong> — 환경과·보건소 미충족. 결재 차단 영향 <strong>1건</strong> (정수장 증축 공사)
+                    <span class="sub">결정사항 #21 — 50억 이상 공사는 안전관리자 미달 시 결재 진행이 차단됩니다.</span>
+                </span>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.switchTab('construction')">
+                    공사별 선임 보기 →
+                </button>
+            </div>
+
+            <!-- 부서별 충족 현황 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">부서별 충족 현황</h2>
+                    <span class="text-muted" style="font-size:13px;">전체 9개 부서 · 부서 행 클릭 시 ORG03-V 이동</span>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col><col style="width:120px;"><col style="width:120px;"><col style="width:120px;"><col style="width:120px;"><col style="width:120px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>부서</th>
+                            <th style="text-align:center;">안전관리자</th>
+                            <th style="text-align:center;">보건관리자</th>
+                            <th style="text-align:center;">관리감독자</th>
+                            <th style="text-align:center;">산업보건의</th>
+                            <th style="text-align:center;">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 자치행정과')">
+                            <td><strong>자치행정과</strong> <span style="color:var(--text-gray); font-size:12px;">(15명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">3명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 안전건설과')">
+                            <td><strong>안전건설과</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 2/2</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">4명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 농업기술센터')">
+                            <td><strong>농업기술센터</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">3명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 시설관리과')">
+                            <td><strong>시설관리과</strong> <span style="color:var(--text-gray); font-size:12px;">(18명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">3명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 환경과')">
+                            <td><strong>환경과</strong> <span style="color:var(--text-gray); font-size:12px;">(14명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell unmet"><span class="unmet-icon">⚠</span> 0/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">2명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip unmet">미충족</span></td>
+                        </tr>
+                        <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 보건소')">
+                            <td><strong>보건소</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell unmet"><span class="unmet-icon">⚠</span> 0/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 2/2</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">3명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip unmet">미충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 담양읍사무소')">
+                            <td><strong>담양읍사무소</strong> <span style="color:var(--text-gray); font-size:12px;">(18명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">2명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 상수도사업소')">
+                            <td><strong>상수도사업소</strong> <span style="color:var(--text-gray); font-size:12px;">(12명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">2명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 문화관광과')">
+                            <td><strong>문화관광과</strong> <span style="color:var(--text-gray); font-size:12px;">(16명)</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell">2명</span></td>
+                            <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 자격증 만료 임박 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">자격증 만료 임박 (3개월 이내)</h2>
+                    <span class="text-muted" style="font-size:13px;">전담인력 보유 자격증 기준</span>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col style="width:130px;"><col><col><col style="width:120px;"><col style="width:80px;"><col style="width:130px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>부서</th>
+                            <th>자격증</th>
+                            <th>만료일</th>
+                            <th style="text-align:center;">D-day</th>
+                            <th style="text-align:center;">알림</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 한시설')">
+                            <td><strong>한시설</strong></td>
+                            <td>시설관리과</td>
+                            <td>산업안전기사 <span class="type-tag">국가기술</span></td>
+                            <td>2026-06-10</td>
+                            <td style="text-align:center;"><span class="stf-dday critical">D-28</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.notifyExpire('한시설')">갱신 안내</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 신상수')">
+                            <td><strong>신상수</strong></td>
+                            <td>상수도사업소</td>
+                            <td>산업위생기사 <span class="type-tag">국가기술</span></td>
+                            <td>2026-07-15</td>
+                            <td style="text-align:center;"><span class="stf-dday urgent">D-63</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.notifyExpire('신상수')">갱신 안내</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 정농업')">
+                            <td><strong>정농업</strong></td>
+                            <td>농업기술센터 농업지도팀</td>
+                            <td>산업안전기사 <span class="type-tag">국가기술</span></td>
+                            <td>2026-07-30</td>
+                            <td style="text-align:center;"><span class="stf-dday urgent">D-78</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.notifyExpire('정농업')">갱신 안내</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 김안전')">
+                            <td><strong>김안전</strong></td>
+                            <td>자치행정과</td>
+                            <td>산업안전기사 <span class="type-tag">국가기술</span></td>
+                            <td>2026-08-15</td>
+                            <td style="text-align:center;"><span class="stf-dday">D-94</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.notifyExpire('김안전')">갱신 안내</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ Pane 2: 공사별 선임 (STF02-V)
+        ============================================================ -->
+        <div class="stf-pane" data-pane="construction">
+
+            <!-- 필터 -->
+            <div class="rsk-filter-row">
+                <div class="form-group">
+                    <span class="form-label-inline">공사 규모</span>
+                    <select class="select">
+                        <option>전체</option>
+                        <option>50억 미만</option>
+                        <option>50~120억</option>
+                        <option>120~800억</option>
+                        <option>800억 이상</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <span class="form-label-inline">결재 상태</span>
+                    <select class="select">
+                        <option>전체</option>
+                        <option>완료</option>
+                        <option>진행</option>
+                        <option>차단</option>
+                    </select>
+                </div>
+                <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+            </div>
+
+            <!-- 공사별 테이블 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">진행 중·결재 진행 공사</h2>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '공사 선택 + 안전관리자 선임 (ORG03-M)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        안전관리자 선임
+                    </button>
+                </div>
+                <table class="table-figma">
+                    <colgroup>
+                        <col><col style="width:100px;"><col style="width:70px;"><col style="width:70px;"><col style="width:90px;"><col style="width:100px;"><col style="width:130px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>공사명</th>
+                            <th style="text-align:right;">예산</th>
+                            <th style="text-align:center;">법정</th>
+                            <th style="text-align:center;">배치</th>
+                            <th style="text-align:center;">충족</th>
+                            <th style="text-align:center;">결재</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 청사 시설 보수공사')">
+                            <td>
+                                <strong>청사 시설 보수공사</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">시설관리과 · 2026-04-15 ~ 2026-06-30</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">5억</td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span class="stf-status-chip" style="background:var(--gray-100); color:var(--text-gray); border-color:var(--card-line);">선택</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status done">완료</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 도로 확장공사 1단계')">
+                            <td>
+                                <strong>도로 확장공사 (1단계)</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">건설지원팀 · 2026-05-01 ~ 2026-11-30</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">50억</td>
+                            <td style="text-align:center; font-weight:700;">1명</td>
+                            <td style="text-align:center; color:var(--status-success-fg); font-weight:700;">1명</td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status progress">진행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                        <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 정수장 증축')">
+                            <td>
+                                <strong>정수장 증축</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">상수도사업소 · 2026-06-01 ~ 2027-05-31</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">120억</td>
+                            <td style="text-align:center; font-weight:700;">2명</td>
+                            <td style="text-align:center; color:var(--status-danger-fg); font-weight:700;">1명</td>
+                            <td style="text-align:center;"><span class="stf-status-chip unmet">미달</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status blocked">차단</span></td>
+                            <td style="text-align:center;"><button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '안전관리자 선임 (ORG03-M) - 정수장 증축')">선임</button></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 군민체육관 리모델링')">
+                            <td>
+                                <strong>군민체육관 리모델링</strong>
+                                <span class="stf-src-chip manual">직접등록</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">문화관광과 · 2026-04-01 ~ 2026-10-31</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">80억</td>
+                            <td style="text-align:center; font-weight:700;">1명</td>
+                            <td style="text-align:center; color:var(--status-success-fg); font-weight:700;">1명</td>
+                            <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status progress">진행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 농촌도로 포장공사')">
+                            <td>
+                                <strong>농촌도로 포장공사 (2026 1차)</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">건설지원팀 · 2026-05-15 ~ 2026-08-31</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">30억</td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status optional">선택</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status progress">진행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 농기계 보관소 신축')">
+                            <td>
+                                <strong>농기계 보관소 신축</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">농업기술센터 · 2026-04-10 ~ 2026-07-15</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">3억</td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status optional">선택</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status progress">진행중</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 청사 옥상 방수')">
+                            <td>
+                                <strong>청사 옥상 방수 보수</strong>
+                                <span class="stf-src-chip">e호조</span>
+                                <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">시설관리과 · 2026-03-01 ~ 2026-04-30</div>
+                            </td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">2억</td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-weight:500;">0명</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status optional">선택</span></td>
+                            <td style="text-align:center;"><span class="stf-contract-status done">완료</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div data-pagination data-current="1" data-total="2"></div>
+            </section>
+
+            <!-- 공사 규모별 법정 인원 안내 -->
+            <section class="stf-legal-info">
+                <h3>공사 규모별 법정 안전관리자 인원</h3>
+                <div class="stf-legal-ladder">
+                    <div class="stf-legal-row">
+                        <span class="range">50억 미만</span>
+                        <span class="req zero"><span class="num">0</span> 명</span>
+                        <span class="note">법정 비대상 (선택 선임)</span>
+                    </div>
+                    <div class="stf-legal-row">
+                        <span class="range">50억 ~ 120억</span>
+                        <span class="req"><span class="num">1</span> 명</span>
+                        <span class="note">중규모 공사</span>
+                    </div>
+                    <div class="stf-legal-row">
+                        <span class="range">120억 ~ 800억</span>
+                        <span class="req"><span class="num">2</span> 명</span>
+                        <span class="note">중대규모 공사</span>
+                    </div>
+                    <div class="stf-legal-row">
+                        <span class="range">800억 ~ 1,500억</span>
+                        <span class="req"><span class="num">3</span> 명</span>
+                        <span class="note">대규모 공사</span>
+                    </div>
+                    <div class="stf-legal-row">
+                        <span class="range">1,500억 이상</span>
+                        <span class="req"><span class="num">4</span> 명</span>
+                        <span class="note">초대규모 공사</span>
+                    </div>
+                </div>
+                <p style="margin-top:14px; padding:12px 16px; background:var(--brand-100); border-radius:8px; font-size:12px; color:var(--text-black); line-height:1.6;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--main-dark)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <strong style="color:var(--main-dark2);">결정사항 #21</strong> · 50억 이상 공사는 안전관리자 미달 시 결재 진행이 자동 차단됩니다.
+                </p>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ Pane 3: 설정 (STF03-S)
+        ============================================================ -->
+        <div class="stf-pane" data-pane="settings">
+
+            <div class="stf-settings-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+                <span><strong>CEO·GM만 편집 가능.</strong> 마스터 변경 시 ORG03-V·STF01-V·CON 모듈에 일괄 영향이 있습니다.</span>
+            </div>
+
+            <div class="stf-subtabs" role="tablist">
+                <button class="stf-subtab is-active" type="button" data-sub="dept">부서 단위 법정 인원</button>
+                <button class="stf-subtab" type="button" data-sub="construction">공사 규모 법정 인원</button>
+                <button class="stf-subtab" type="button" data-sub="qual">자격증 매핑</button>
+            </div>
+
+            <!-- 부서 단위 -->
+            <div class="stf-subpane is-active" data-subpane="dept">
+                <div class="stf-master-table">
+                    <div style="padding: 14px 22px; border-bottom: 1px solid var(--card-line); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2);">부서 인원에 따른 법정 인원 (산안법 시행령 §16, §20)</h3>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '부서 단위 법정 인원 마스터 편집')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            편집
+                        </button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>부서 인원</th>
+                                <th style="text-align:center;">안전관리자</th>
+                                <th style="text-align:center;">보건관리자</th>
+                                <th style="text-align:center;">산업보건의</th>
+                                <th>비고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>50명 미만</strong></td>
+                                <td class="num-cell zero">0</td>
+                                <td class="num-cell zero">0</td>
+                                <td class="num-cell zero">0</td>
+                                <td style="font-size:12px; color:var(--text-gray);">법정 비대상</td>
+                            </tr>
+                            <tr>
+                                <td><strong>50명 ~ 99명</strong></td>
+                                <td class="num-cell">1</td>
+                                <td class="num-cell zero">0</td>
+                                <td class="num-cell zero">0</td>
+                                <td style="font-size:12px; color:var(--text-gray);">안전관리자 선임 의무</td>
+                            </tr>
+                            <tr>
+                                <td><strong>100명 ~ 299명</strong></td>
+                                <td class="num-cell">1</td>
+                                <td class="num-cell">1</td>
+                                <td class="num-cell zero">0</td>
+                                <td style="font-size:12px; color:var(--text-gray);">보건관리자 추가 의무</td>
+                            </tr>
+                            <tr>
+                                <td><strong>300명 ~ 499명</strong></td>
+                                <td class="num-cell">2</td>
+                                <td class="num-cell">1</td>
+                                <td class="num-cell zero">0</td>
+                                <td style="font-size:12px; color:var(--text-gray);">안전관리자 증원</td>
+                            </tr>
+                            <tr>
+                                <td><strong>500명 ~ 999명</strong></td>
+                                <td class="num-cell">3</td>
+                                <td class="num-cell">2</td>
+                                <td class="num-cell">1</td>
+                                <td style="font-size:12px; color:var(--text-gray);">산업보건의 위촉 의무</td>
+                            </tr>
+                            <tr>
+                                <td><strong>1,000명 이상</strong></td>
+                                <td class="num-cell">4</td>
+                                <td class="num-cell">3</td>
+                                <td class="num-cell">1</td>
+                                <td style="font-size:12px; color:var(--text-gray);">대형 사업장</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 공사 규모 -->
+            <div class="stf-subpane" data-subpane="construction">
+                <div class="stf-master-table">
+                    <div style="padding: 14px 22px; border-bottom: 1px solid var(--card-line); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2);">공사 규모에 따른 법정 안전관리자 인원</h3>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '공사 규모 법정 인원 마스터 편집')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            편집
+                        </button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>공사 예산</th>
+                                <th style="text-align:center;">법정 안전관리자</th>
+                                <th>결재 차단 적용</th>
+                                <th>비고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>50억 미만</strong></td>
+                                <td class="num-cell zero">0명 (선택)</td>
+                                <td style="font-size:12px; color:var(--text-lightgray);">미적용</td>
+                                <td style="font-size:12px; color:var(--text-gray);">소규모 공사</td>
+                            </tr>
+                            <tr>
+                                <td><strong>50억 ~ 120억</strong></td>
+                                <td class="num-cell">1명</td>
+                                <td style="font-size:12px; color:var(--status-danger-fg); font-weight:600;">적용 ⚠</td>
+                                <td style="font-size:12px; color:var(--text-gray);">중규모 공사</td>
+                            </tr>
+                            <tr>
+                                <td><strong>120억 ~ 800억</strong></td>
+                                <td class="num-cell">2명</td>
+                                <td style="font-size:12px; color:var(--status-danger-fg); font-weight:600;">적용 ⚠</td>
+                                <td style="font-size:12px; color:var(--text-gray);">중대규모 공사</td>
+                            </tr>
+                            <tr>
+                                <td><strong>800억 ~ 1,500억</strong></td>
+                                <td class="num-cell">3명</td>
+                                <td style="font-size:12px; color:var(--status-danger-fg); font-weight:600;">적용 ⚠</td>
+                                <td style="font-size:12px; color:var(--text-gray);">대규모 공사</td>
+                            </tr>
+                            <tr>
+                                <td><strong>1,500억 이상</strong></td>
+                                <td class="num-cell">4명</td>
+                                <td style="font-size:12px; color:var(--status-danger-fg); font-weight:600;">적용 ⚠</td>
+                                <td style="font-size:12px; color:var(--text-gray);">초대규모 공사</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 자격증 매핑 -->
+            <div class="stf-subpane" data-subpane="qual">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2);">역할별 필수 자격증 마스터</h3>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '자격증 매핑 마스터 편집')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        편집
+                    </button>
+                </div>
+                <div class="stf-qual-grid">
+                    <div class="stf-qual-card">
+                        <h4>안전관리자 <span class="badge">SAFETY_MGR</span></h4>
+                        <div class="stf-qual-list">
+                            <div class="stf-qual-item">산업안전기사 <span class="type">국가기술</span></div>
+                            <div class="stf-qual-item">산업안전산업기사 <span class="type">국가기술</span></div>
+                            <div class="stf-qual-item">건설안전기사 <span class="type">국가기술</span></div>
+                            <div class="stf-qual-item">안전관리자 양성교육 수료 <span class="type">교육</span></div>
+                            <div class="stf-qual-item">실무 경력 5년 이상 <span class="type">경력</span></div>
+                        </div>
+                    </div>
+                    <div class="stf-qual-card">
+                        <h4>보건관리자 <span class="badge">HEALTH_MGR</span></h4>
+                        <div class="stf-qual-list">
+                            <div class="stf-qual-item">산업위생기사 <span class="type">국가기술</span></div>
+                            <div class="stf-qual-item">산업위생산업기사 <span class="type">국가기술</span></div>
+                            <div class="stf-qual-item">간호사 (실무 경력 1년 이상) <span class="type">면허</span></div>
+                            <div class="stf-qual-item">의사 면허 <span class="type">면허</span></div>
+                            <div class="stf-qual-item">실무 경력 5년 이상 <span class="type">경력</span></div>
+                        </div>
+                    </div>
+                    <div class="stf-qual-card">
+                        <h4>산업보건의 <span class="badge">HEALTH_DOCTOR</span></h4>
+                        <div class="stf-qual-list">
+                            <div class="stf-qual-item">의사 면허 <span class="type">면허</span></div>
+                            <div class="stf-qual-item">산업의학과 전문의 <span class="type">전문의</span></div>
+                            <div class="stf-qual-item">예방의학과 전문의 <span class="type">전문의</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) { alert(msg); return; }
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* 메인 탭 */
+        window.switchTab = function (target) {
+            document.querySelectorAll('.stf-tab[data-tab]').forEach(b => {
+                b.classList.toggle('is-active', b.dataset.tab === target);
+            });
+            document.querySelectorAll('.stf-pane').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.pane === target);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        document.querySelectorAll('.stf-tab[data-tab]').forEach(b => {
+            b.addEventListener('click', () => window.switchTab(b.dataset.tab));
+        });
+
+        /* 설정 서브 탭 */
+        document.querySelectorAll('.stf-subtab[data-sub]').forEach(b => {
+            b.addEventListener('click', () => {
+                const target = b.dataset.sub;
+                document.querySelectorAll('.stf-subtab[data-sub]').forEach(x => {
+                    x.classList.toggle('is-active', x.dataset.sub === target);
+                });
+                document.querySelectorAll('.stf-subpane').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.subpane === target);
+                });
+            });
+        });
+
+        /* 자격증 만료 알림 */
+        window.notifyExpire = function (name) {
+            showToast(`${name}님에게 자격증 갱신 안내 알림이 발송되었습니다. (목업)`);
+        };
+    })();
+    </script>
+</body>
+</html>

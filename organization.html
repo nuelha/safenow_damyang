@@ -3,669 +3,725 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전담조직 관리 - 담양군 중대재해통합관리시스템</title>
+    <title>구성원 목록 - 담양군 중대재해예방통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
     <style>
-        .modal-content.modal-lg { max-width: 720px; }
-        .modal-content.modal-xl { max-width: 960px; }
-        .modal-content.modal-md { max-width: 560px; }
-        .sidebar-logo.damyang { background: linear-gradient(135deg, #047857, #10b981); }
-        .dy-badge {
+        /* ─── ORG02-L 전용 ─── */
+
+        /* 출처 배지 — 4.2 색상 매핑 */
+        .src-chip {
             display: inline-flex; align-items: center; gap: 4px;
-            padding: 2px 8px; border-radius: 999px;
-            font-size: 11px; font-weight: 600;
-            background: #ecfdf5; color: #047857;
-            border: 1px solid #a7f3d0;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .src-chip.sso {
+            background: var(--status-info-bg);
+            border-color: var(--status-info-border);
+            color: var(--status-info-fg);
+        }
+        .src-chip.manual {
+            background: var(--status-neutral-bg);
+            border-color: var(--status-neutral-border);
+            color: var(--status-neutral-fg);
+        }
+        .src-chip.external {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            color: var(--status-warning-fg);
         }
 
-        /* ===== Organization Chart ===== */
-        .org-chart {
-            display: flex; flex-direction: column; align-items: center;
-            padding: 24px 12px;
-            min-width: 1100px;
+        /* 권한 배지 — permission_role 색상 */
+        .role-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
         }
-        .org-row {
-            display: flex; justify-content: center; align-items: stretch;
-            gap: 32px;
-            position: relative;
-            padding-top: 28px;
+        .role-chip.ceo   { background: #1e293b; color: white; border-color: #1e293b; }
+        .role-chip.gm    { background: var(--status-info-bg);    border-color: var(--status-info-border);    color: var(--status-info-fg); }
+        .role-chip.shm   { background: var(--status-success-bg); border-color: var(--status-success-border); color: var(--status-success-fg); }
+        .role-chip.sm    { background: var(--status-purple-bg);  border-color: var(--status-purple-border);  color: var(--status-purple-fg); }
+        .role-chip.wkr   { background: var(--status-neutral-bg); border-color: var(--status-neutral-border); color: var(--status-neutral-fg); }
+        .role-chip.sub,
+        .role-chip.con   { background: var(--status-warning-bg); border-color: var(--status-warning-border); color: var(--status-warning-fg); }
+
+        /* 이름 셀 — 클릭 가능한 링크 */
+        .user-name-cell {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: var(--text-black);
+            font-weight: 600;
         }
-        .org-row.root { padding-top: 0; }
-        /* 위로 올라가는 세로선 */
-        .org-row:not(.root)::before {
-            content: ""; position: absolute; top: 0; left: 50%;
-            width: 2px; height: 14px; background: #cbd5e1;
+        .user-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--main-light), var(--main));
+            color: white;
+            font-size: 12px; font-weight: 700;
+            flex-shrink: 0;
         }
-        .org-node {
-            position: relative;
-            display: flex; flex-direction: column; align-items: center;
+        .user-avatar.manual { background: linear-gradient(135deg, #c5c5c5, #888); }
+        .user-avatar.external { background: linear-gradient(135deg, #ffba7a, #e58a3c); }
+
+        /* 자격증 셀 */
+        .qual-link {
+            display: inline-flex; align-items: center; gap: 4px;
+            color: var(--main);
+            font-weight: 600;
+            text-decoration: none;
         }
-        /* 자식 노드 위 가로선 */
-        .org-node::before {
-            content: ""; position: absolute;
-            top: -14px; left: 50%; width: 2px; height: 14px;
-            background: #cbd5e1;
+        .qual-link:hover { text-decoration: underline; }
+        .qual-zero { color: var(--text-lightgray); font-weight: 500; }
+
+        /* 결과 카운트 + 초기화 줄 */
+        .org-meta-row {
+            display: flex; align-items: center; gap: 12px;
         }
-        .org-row.root .org-node::before { display: none; }
-        /* 형제 사이 가로선 — 행 단위 */
-        .org-row .siblings-line {
-            position: absolute; top: 14px; height: 2px;
-            background: #cbd5e1;
+        .org-meta-count {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+        .org-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 카드 헤더의 액션 영역 */
+        .org-actions {
+            display: flex; align-items: center; gap: 8px;
         }
 
-        .org-card {
-            min-width: 200px; max-width: 240px;
-            background: white; border: 2px solid #e2e8f0;
-            border-radius: 12px; padding: 14px 16px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        /* 모달 (간단한 폼) */
+        .org-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .org-modal-backdrop.is-open { display: flex; }
+        .org-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 560px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .org-modal.lg { max-width: 720px; }
+        .org-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .org-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .org-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .org-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .org-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .org-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 16px;
+        }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin-bottom: 4px;
+        }
+        .form-label .req { color: var(--status-danger-fg); margin-left: 2px; }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-black);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+        }
+        .form-textarea { resize: vertical; min-height: 64px; }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus { border-color: var(--main); box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12); }
+        .form-section-title {
+            font-size: 13px; font-weight: 700;
+            color: var(--main-dark);
+            margin: 4px 0 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .form-section-title::before {
+            content: ""; display: block;
+            width: 3px; height: 14px;
+            background: var(--main); border-radius: 2px;
+        }
+        .form-section + .form-section { margin-top: 18px; }
+
+        .form-hint {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        /* 일괄 등록 모달 — 업로드 박스 */
+        .bulk-upload {
+            border: 2px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 28px 16px;
+            text-align: center;
+            color: var(--text-gray);
+            background: #fafbfb;
+        }
+        .bulk-upload .icon { color: var(--main); margin-bottom: 8px; }
+        .bulk-upload .file-btn {
+            display: inline-block; margin-top: 8px;
+            padding: 8px 16px;
+            font-size: 13px; font-weight: 600;
+            color: white; background: var(--main);
+            border: none; border-radius: var(--radius-button);
             cursor: pointer;
-            transition: all .15s ease;
-            text-align: left;
         }
-        .org-card:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.08); transform: translateY(-1px); }
-        .org-card .dept-name { font-weight: 700; color: #0f172a; font-size: 14px; margin-bottom: 4px; }
-        .org-card .person-name { font-size: 14px; color: #1e293b; margin-bottom: 2px; }
-        .org-card .role { font-size: 12px; color: #64748b; }
-        .org-card .duty { font-size: 11px; color: #94a3b8; margin-top: 6px; line-height: 1.3; }
-        .org-card .headcount {
-            display: inline-flex; align-items: center; gap: 4px;
-            margin-top: 8px; padding: 2px 8px;
-            background: #f1f5f9; color: #475569;
-            border-radius: 999px; font-size: 11px;
+        .bulk-upload .file-btn:hover { background: var(--main-dark); }
+        .bulk-guide {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; color: var(--main-dark);
+            line-height: 1.6;
         }
+        .bulk-guide strong { color: var(--main-dark2); font-weight: 700; }
 
-        /* 카드 색상 */
-        .org-card.ceo { border-color: #1e293b; background: #1e293b; }
-        .org-card.ceo .dept-name, .org-card.ceo .person-name { color: white; }
-        .org-card.ceo .role { color: #cbd5e1; }
-        .org-card.ceo .duty { color: #94a3b8; }
-        .org-card.ceo .headcount { background: #334155; color: #e2e8f0; }
-
-        .org-card.dedicated { border-color: #2563eb; background: #eff6ff; }
-        .org-card.dedicated .dept-name { color: #1d4ed8; }
-
-        .org-card.chief { border-color: #1e40af; background: white; }
-        .org-card.chief .dept-name { color: #1e40af; }
-
-        .org-card.normal { border-color: #e2e8f0; background: white; }
-
-        .org-card .src-badge {
-            display: inline-flex; align-items: center; gap: 2px;
-            margin-left: 6px;
-            padding: 1px 6px; border-radius: 999px;
-            font-size: 10px; font-weight: 500;
+        /* 부서 트리 picker — 모달 안 input 옆 */
+        .dept-picker {
+            display: flex; align-items: center; gap: 4px;
         }
-        .src-badge.synced { background: #dbeafe; color: #1d4ed8; }
-        .src-badge.manual { background: #fef3c7; color: #92400e; }
-        /* 토스트 CSS는 style.css §24 글로벌 정의 사용 */
+        .dept-picker .form-input { flex: 1; background: #fafbfb; cursor: default; }
+        .dept-picker button {
+            padding: 8px 12px;
+            background: var(--gray-100);
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-black);
+            white-space: nowrap;
+        }
+        .dept-picker button:hover { background: var(--card-line); }
     </style>
 </head>
-<body class="bg-gray-50" data-dy-page="organization">
-    <div class="flex h-screen overflow-hidden">
-        <!-- 담양 공통 GNB 사이드바 -->
-        <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html" class="flex items-center gap-3">
-                    <div class="sidebar-logo damyang">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    </div>
-                    <div>
-                        <span class="block text-sm font-bold text-white leading-tight">담양군</span>
-                        <span class="block text-[10px] text-emerald-200">중대재해예방통합관리</span>
-                    </div>
-                </a>
+<body data-dy-page="organization" data-page-title="구성원" data-page-subtitle="직원·외부 사용자 관리">
+    <main>
+
+        <!-- ─── 요약 통계 (출처별) ─── -->
+        <section class="statbox-grid cols-4">
+            <div class="statbox info" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">320</div>
+                <div class="statbox-label">전체 구성원</div>
             </div>
-            <nav class="sidebar-nav">
-                <ul class="space-y-1">
-                    <li><a href="index.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>대시보드</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '관리대상 현황')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>관리대상 현황</a></li>
-                    <li><a href="safety-policy.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>안전보건 목표·경영방침</a></li>
-                    <li><a href="organization.html" class="sidebar-item active"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>전담조직 관리</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '유해·위험요인 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>유해·위험요인 관리</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '인력·예산 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>인력·예산 관리</a></li>
-                    <li><a href="contractor.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>도급·용역·위탁 관리</a></li>
-                    <li><a href="opinion.html" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>종사자 의견청취</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '의무이행 점검')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>의무이행 점검</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '현황 및 통계')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>현황 및 통계</a></li>
-                    <li><a href="#" onclick="showComingSoon(event, '제증명 관리')" class="sidebar-item"><svg class="sidebar-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>제증명 관리</a></li>
-                </ul>
-            </nav>
-            <div class="workspace-selector">
-                <div class="workspace-btn">
-                    <div class="workspace-avatar" style="background:#047857;">담</div>
-                    <div class="workspace-info"><div class="workspace-name">담양군청 · 안전건설과</div><div class="workspace-role">안전관리자 · 박안전</div></div>
-                </div>
+            <div class="statbox info" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">312</div>
+                <div class="statbox-label">SSO 동기화</div>
             </div>
-        </aside>
+            <div class="statbox neutral" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">6</div>
+                <div class="statbox-label">직접 등록</div>
+            </div>
+            <div class="statbox warning" style="flex-direction:column; min-height:88px;">
+                <div class="statbox-num">2</div>
+                <div class="statbox-label">외부 사용자</div>
+            </div>
+        </section>
 
-        <!-- 메인 -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="header">
-                <div class="header-left">
-                    <h1 class="header-title">전담조직 관리</h1>
-                </div>
-                <div class="header-right">
-                    <button class="header-notification"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></button>
-                    <div class="header-user"><div class="header-avatar" style="background:#047857;">박</div><span class="header-username">박안전</span></div>
-                </div>
-            </header>
-
-            <main class="flex-1 overflow-y-auto p-6">
-                <!-- 상단 안내 -->
-                <div class="alert alert-info mb-4">
-                    <svg class="alert-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div class="alert-content">
-                        <p class="alert-title text-blue-800">담양군 행정포털 조직도 연동</p>
-                        <p class="alert-message text-blue-700">행정포털에서 자동 동기화된 부서·인원과 직접 등록한 항목이 통합 표시됩니다. <span class="ml-2 src-badge synced">🔗 연동됨</span> <span class="ml-1 src-badge manual">✏ 직접등록</span></p>
-                    </div>
-                </div>
-
-                <!-- 탭 + 액션 -->
-                <div class="flex items-center justify-between mb-4">
-                    <div class="border-b border-gray-200 flex-1">
-                        <nav class="flex gap-6" data-tab-group="org">
-                            <button class="sub-tab active" data-tab="chart">조직도</button>
-                            <button class="sub-tab" data-tab="list">목록</button>
-                        </nav>
-                    </div>
-                    <div class="ml-4 flex gap-2">
-                        <button class="btn btn-outline" onclick="alert('행정포털 동기화를 실행합니다 (목업).')">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            행정포털 동기화
-                        </button>
-                        <button class="btn btn-primary" onclick="openModal('org-modal')">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            조직 등록
-                        </button>
-                    </div>
-                </div>
-
-                <div data-tab-content="org">
-                    <!-- ============ 조직도 탭 ============ -->
-                    <div class="tab-pane" data-pane="chart">
-                        <!-- 카드 색상 범례 -->
-                        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
-                            <span class="font-medium text-gray-600">조직 구분:</span>
-                            <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm" style="background:#1e293b;"></span> 경영책임자</span>
-                            <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm" style="background:#2563eb;"></span> 전담부서</span>
-                            <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm border border-blue-700"></span> 안전총괄책임자</span>
-                            <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm border border-gray-300 bg-white"></span> 일반부서</span>
-                        </div>
-
-                        <div class="card overflow-x-auto">
-                            <div class="org-chart">
-                                <!-- L1: 군수 (경영책임자) -->
-                                <div class="org-row root">
-                                    <div class="org-node">
-                                        <button class="org-card ceo" onclick="openModal('person-modal')">
-                                            <div class="dept-name">군수실 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">이○○ 군수</div>
-                                            <div class="role">경영책임자</div>
-                                            <div class="duty">담양군 안전보건 최고책임</div>
-                                            <span class="headcount">인원 1명</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- L2: 부군수 (안전총괄책임자) + 안전건설과(전담부서) -->
-                                <div class="org-row" style="position:relative;">
-                                    <div class="org-node">
-                                        <button class="org-card chief" onclick="openModal('person-modal')">
-                                            <div class="dept-name">부군수실 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">김○○ 부군수</div>
-                                            <div class="role">안전총괄책임자</div>
-                                            <div class="duty">전 부서 안전관리 총괄</div>
-                                            <span class="headcount">인원 1명</span>
-                                        </button>
-                                    </div>
-                                    <div class="org-node">
-                                        <button class="org-card dedicated" onclick="openModal('person-modal')">
-                                            <div class="dept-name">안전건설과 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">박○○ 과장</div>
-                                            <div class="role">안전관리자 · 전담부서장</div>
-                                            <div class="duty">중대재해 예방 계획 수립·시행</div>
-                                            <span class="headcount">인원 4명</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- L3: 안전건설과 산하 팀 + 일반부서 -->
-                                <div class="org-row">
-                                    <div class="org-node">
-                                        <button class="org-card normal" onclick="openModal('person-modal')">
-                                            <div class="dept-name">행정지원과 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">정○○ 팀장</div>
-                                            <div class="role">행정안전 담당</div>
-                                            <div class="duty">예방활동 대상</div>
-                                            <span class="headcount">인원 6명</span>
-                                        </button>
-                                    </div>
-                                    <div class="org-node">
-                                        <button class="org-card dedicated" onclick="openModal('person-modal')">
-                                            <div class="dept-name">안전관리팀 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">김○○ 팀장</div>
-                                            <div class="role">안전보건관리자</div>
-                                            <div class="duty">위험성평가·개선조치</div>
-                                            <span class="headcount">인원 2명</span>
-                                        </button>
-                                    </div>
-                                    <div class="org-node">
-                                        <button class="org-card dedicated" onclick="openModal('person-modal')">
-                                            <div class="dept-name">시설관리팀 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">최○○ 팀장</div>
-                                            <div class="role">재난안전 담당</div>
-                                            <div class="duty">시설안전 점검</div>
-                                            <span class="headcount">인원 2명</span>
-                                        </button>
-                                    </div>
-                                    <div class="org-node">
-                                        <button class="org-card normal" onclick="openModal('person-modal')">
-                                            <div class="dept-name">환경위생과 <span class="src-badge synced">🔗</span></div>
-                                            <div class="person-name">한○○ 팀장</div>
-                                            <div class="role">환경안전 담당</div>
-                                            <div class="duty">예방활동 대상</div>
-                                            <span class="headcount">인원 5명</span>
-                                        </button>
-                                    </div>
-                                    <div class="org-node">
-                                        <button class="org-card normal" onclick="openModal('person-modal')">
-                                            <div class="dept-name">읍·면사무소 (8개) <span class="src-badge manual">✏</span></div>
-                                            <div class="person-name">각 읍면장</div>
-                                            <div class="role">지역안전 담당</div>
-                                            <div class="duty">예방활동 대상 (그룹)</div>
-                                            <span class="headcount">8개소</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 통계 카드 -->
-                        <div class="grid grid-cols-4 gap-4 mt-6">
-                            <div class="card stat-card p-5">
-                                <div class="flex items-center justify-between">
-                                    <div><p class="text-sm text-gray-500">총 부서</p><p class="text-2xl font-bold text-gray-900 mt-1">14<span class="text-sm font-normal text-gray-500"> 개</span></p></div>
-                                    <div class="stat-card-icon blue"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="card stat-card p-5">
-                                <div class="flex items-center justify-between">
-                                    <div><p class="text-sm text-gray-500">전담부서</p><p class="text-2xl font-bold text-blue-600 mt-1">3<span class="text-sm font-normal text-gray-500"> 개</span></p></div>
-                                    <div class="stat-card-icon blue"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="card stat-card p-5">
-                                <div class="flex items-center justify-between">
-                                    <div><p class="text-sm text-gray-500">전담인력</p><p class="text-2xl font-bold text-emerald-600 mt-1">9<span class="text-sm font-normal text-gray-500"> 명</span></p></div>
-                                    <div class="stat-card-icon green"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="card stat-card p-5">
-                                <div class="flex items-center justify-between">
-                                    <div><p class="text-sm text-gray-500">행정포털 연동</p><p class="text-2xl font-bold text-blue-600 mt-1">85<span class="text-sm font-normal text-gray-500"> %</span></p></div>
-                                    <div class="stat-card-icon purple"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"></path></svg></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ============ 목록 탭 ============ -->
-                    <div class="tab-pane hidden" data-pane="list">
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>부서명</th>
-                                            <th class="w-32">상위 부서</th>
-                                            <th class="w-28 text-center">구분</th>
-                                            <th>담당자</th>
-                                            <th class="w-24">직위</th>
-                                            <th>주요업무</th>
-                                            <th class="w-20 text-center">출처</th>
-                                            <th class="w-24 text-center">관리</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="font-medium text-gray-900">군수실</td>
-                                            <td class="text-gray-500">-</td>
-                                            <td class="text-center"><span class="badge" style="background:#1e293b;color:white;">경영책임자</span></td>
-                                            <td>이○○</td><td>군수</td>
-                                            <td class="text-gray-600 text-sm">담양군 안전보건 최고책임</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-medium text-gray-900">부군수실</td>
-                                            <td class="text-gray-500">군수실</td>
-                                            <td class="text-center"><span class="badge badge-info">안전총괄책임자</span></td>
-                                            <td>김○○</td><td>부군수</td>
-                                            <td class="text-gray-600 text-sm">전 부서 안전관리 총괄</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr class="bg-blue-50">
-                                            <td class="font-medium text-blue-700">안전건설과</td>
-                                            <td class="text-gray-500">부군수실</td>
-                                            <td class="text-center"><span class="badge badge-info">전담부서</span></td>
-                                            <td>박○○</td><td>과장</td>
-                                            <td class="text-gray-600 text-sm">중대재해 예방계획 수립·시행</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr class="bg-blue-50">
-                                            <td class="font-medium text-blue-700">└ 안전관리팀</td>
-                                            <td class="text-gray-500">안전건설과</td>
-                                            <td class="text-center"><span class="badge badge-info">전담부서</span></td>
-                                            <td>김○○</td><td>팀장</td>
-                                            <td class="text-gray-600 text-sm">위험성평가·개선조치</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr class="bg-blue-50">
-                                            <td class="font-medium text-blue-700">└ 시설관리팀</td>
-                                            <td class="text-gray-500">안전건설과</td>
-                                            <td class="text-center"><span class="badge badge-info">전담부서</span></td>
-                                            <td>최○○</td><td>팀장</td>
-                                            <td class="text-gray-600 text-sm">시설안전 점검</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-medium text-gray-900">행정지원과</td>
-                                            <td class="text-gray-500">부군수실</td>
-                                            <td class="text-center"><span class="badge badge-gray">예방활동 대상</span></td>
-                                            <td>정○○</td><td>팀장</td>
-                                            <td class="text-gray-600 text-sm">행정안전 담당</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-medium text-gray-900">환경위생과</td>
-                                            <td class="text-gray-500">부군수실</td>
-                                            <td class="text-center"><span class="badge badge-gray">예방활동 대상</span></td>
-                                            <td>한○○</td><td>팀장</td>
-                                            <td class="text-gray-600 text-sm">환경안전 담당</td>
-                                            <td class="text-center"><span class="src-badge synced">🔗</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-medium text-gray-900">담양읍사무소</td>
-                                            <td class="text-gray-500">읍·면사무소</td>
-                                            <td class="text-center"><span class="badge badge-gray">예방활동 대상</span></td>
-                                            <td>윤○○</td><td>읍장</td>
-                                            <td class="text-gray-600 text-sm">지역안전 담당</td>
-                                            <td class="text-center"><span class="src-badge manual">✏</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="openModal('person-modal')">상세</button></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+        <!-- ─── 필터 + 검색 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select" id="filter-dept">
+                    <option>전체</option>
+                    <option>군수실</option>
+                    <option>부군수실</option>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>└ 안전관리팀</option>
+                    <option>└ 시설관리팀</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>상수도사업소</option>
+                    <option>보건소</option>
+                    <option>담양읍사무소</option>
+                    <option>문화관광과</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">출처</span>
+                <select class="select" id="filter-source">
+                    <option>전체</option>
+                    <option>SSO (행정포털)</option>
+                    <option>직접 등록</option>
+                    <option>외부 사용자</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">권한</span>
+                <select class="select" id="filter-role">
+                    <option>전체</option>
+                    <option>CEO (군수)</option>
+                    <option>GM (실·과·소장)</option>
+                    <option>SHM (안전보건관리자)</option>
+                    <option>SM (안전관리자)</option>
+                    <option>WKR (근로자)</option>
+                    <option>SUB (수급업체)</option>
+                    <option>CON (협력업체)</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="이름·이메일·부서 검색" id="filter-search">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
         </div>
-    </div>
 
-    <!-- ============================================================== -->
-    <!-- DY-ORG-02 전담조직 등록/수정 모달 -->
-    <!-- ============================================================== -->
-    <div id="org-modal" class="modal hidden">
-        <div class="modal-backdrop" onclick="closeModal('org-modal')"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3 class="modal-title">전담조직 등록</h3>
-                <button class="modal-close" onclick="closeModal('org-modal')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <div class="modal-body" style="max-height:70vh;">
-                <!-- 행정포털 동기화 옵션 -->
-                <div class="p-3 mb-5 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"></path></svg>
-                        <span class="text-sm text-blue-800">담양군 행정포털에서 부서·인원을 자동 불러올 수 있습니다.</span>
-                    </div>
-                    <button class="btn btn-outline btn-sm">행정포털 검색</button>
-                </div>
+        <!-- ─── 결과 카운트 ─── -->
+        <div class="org-meta-row">
+            <span class="org-meta-count">전체 <strong id="result-count">320</strong>명 · 현재 페이지 1–10</span>
+        </div>
 
-                <h4 class="font-semibold text-gray-900 mb-3">조직 정보</h4>
-                <div class="grid grid-cols-2 gap-4 mb-5">
-                    <div><label class="form-label">기관명 <span class="text-red-500">*</span></label><input type="text" class="input w-full bg-gray-100" value="담양군청" readonly></div>
-                    <div><label class="form-label">상위 부서</label>
-                        <select class="select w-full">
-                            <option>(최상위)</option>
-                            <option>군수실</option>
-                            <option>부군수실</option>
-                            <option selected>안전건설과</option>
-                            <option>행정지원과</option>
-                        </select>
-                    </div>
-                    <div><label class="form-label">부서명 <span class="text-red-500">*</span></label><input type="text" class="input w-full" placeholder="예: 안전관리팀"></div>
-                    <div><label class="form-label">부서 구분 <span class="text-red-500">*</span></label>
-                        <select class="select w-full">
-                            <option value="dedicated">전담부서</option>
-                            <option value="prevention_target">예방활동 대상</option>
-                            <option value="etc">기타</option>
-                        </select>
-                    </div>
-                    <div><label class="form-label">인원수 <span class="text-red-500">*</span></label><input type="number" class="input w-full" value="2" min="0"></div>
-                    <div><label class="form-label">관련근거</label>
-                        <select class="select w-full">
-                            <option>중대재해처벌법 제4조</option>
-                            <option>산업안전보건법 제14조</option>
-                            <option>중대재해처벌법 시행령 제4조 제1호</option>
-                        </select>
-                    </div>
-                </div>
-
-                <h4 class="font-semibold text-gray-900 mb-3">담당자 등록</h4>
-                <div class="border border-gray-200 rounded-lg overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50">
-                            <tr class="text-left text-xs">
-                                <th class="px-3 py-2 font-medium text-gray-600">성명</th>
-                                <th class="px-3 py-2 font-medium text-gray-600 w-20">직급</th>
-                                <th class="px-3 py-2 font-medium text-gray-600 w-20">직위</th>
-                                <th class="px-3 py-2 font-medium text-gray-600">주요업무</th>
-                                <th class="px-3 py-2 font-medium text-gray-600 w-32">연락처</th>
-                                <th class="px-3 py-2 font-medium text-gray-600 w-32">역할</th>
-                                <th class="px-3 py-2 font-medium text-gray-600 w-16 text-center">부서장</th>
-                                <th class="px-3 py-2 w-12"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-t border-gray-100">
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="김○○"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="사무관"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="팀장"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="위험성평가·개선조치"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="061-380-0001"></td>
-                                <td class="px-3 py-2">
-                                    <select class="select w-full text-sm">
-                                        <option value="ceo">경영책임자</option>
-                                        <option value="safety_chief">안전총괄책임자</option>
-                                        <option value="safety_manager" selected>안전보건관리자</option>
-                                        <option value="supervisor">관리감독자</option>
-                                        <option value="staff">담당자</option>
-                                    </select>
-                                </td>
-                                <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4" checked></td>
-                                <td class="px-3 py-2 text-center"><button class="text-red-500 text-xs">삭제</button></td>
-                            </tr>
-                            <tr class="border-t border-gray-100">
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="이○○"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="주무관"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="담당"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="시설안전 담당"></td>
-                                <td class="px-3 py-2"><input type="text" class="input w-full text-sm" value="061-380-0002"></td>
-                                <td class="px-3 py-2">
-                                    <select class="select w-full text-sm">
-                                        <option value="ceo">경영책임자</option>
-                                        <option value="safety_chief">안전총괄책임자</option>
-                                        <option value="safety_manager">안전보건관리자</option>
-                                        <option value="supervisor">관리감독자</option>
-                                        <option value="staff" selected>담당자</option>
-                                    </select>
-                                </td>
-                                <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4"></td>
-                                <td class="px-3 py-2 text-center"><button class="text-red-500 text-xs">삭제</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="p-2 bg-gray-50 border-t border-gray-100">
-                        <button class="btn btn-outline btn-sm">+ 담당자 추가</button>
-                    </div>
+        <!-- ─── 목록 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">구성원 목록</h2>
+                <div class="org-actions">
+                    <button class="btn btn-outline" type="button" onclick="window.openBulkModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        일괄 등록
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="window.openCreateModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        직접 등록
+                    </button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('org-modal')">취소</button>
-                <button class="btn btn-primary" onclick="closeModal('org-modal')">저장</button>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:74px;">
+                    <col>
+                    <col style="width:180px;">
+                    <col style="width:100px;">
+                    <col style="width:100px;">
+                    <col style="width:80px;">
+                    <col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>출처</th>
+                        <th>이름</th>
+                        <th>부서</th>
+                        <th>직급</th>
+                        <th>권한</th>
+                        <th style="text-align:center;">자격증</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="org-tbody">
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 이군수')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">이</span> 이군수</span></td>
+                        <td>군수실</td>
+                        <td>군수</td>
+                        <td><span class="role-chip ceo">CEO</span></td>
+                        <td style="text-align:center;"><span class="qual-zero">0</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 김부군수')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">김</span> 김부군수</span></td>
+                        <td>부군수실</td>
+                        <td>부군수</td>
+                        <td><span class="role-chip gm">GM</span></td>
+                        <td style="text-align:center;"><span class="qual-zero">0</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 박○○')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">박</span> 박○○</span></td>
+                        <td>안전건설과</td>
+                        <td>5급 사무관</td>
+                        <td><span class="role-chip shm">SHM</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">3건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 김안전')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">김</span> 김안전</span></td>
+                        <td>안전건설과 안전관리팀</td>
+                        <td>6급 주사</td>
+                        <td><span class="role-chip sm">SM</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">2건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 홍길동')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">홍</span> 홍길동</span></td>
+                        <td>자치행정과</td>
+                        <td>5급 사무관</td>
+                        <td><span class="role-chip gm">GM</span></td>
+                        <td style="text-align:center;"><span class="qual-zero">0</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 이센터장')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">이</span> 이센터장</span></td>
+                        <td>농업기술센터</td>
+                        <td>4급 서기관</td>
+                        <td><span class="role-chip gm">GM</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">1건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 최성호')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">최</span> 최성호</span></td>
+                        <td>안전건설과 시설관리팀</td>
+                        <td>6급 주사</td>
+                        <td><span class="role-chip shm">SHM</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">2건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 정하나')">
+                        <td><span class="src-chip sso">SSO</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar">정</span> 정하나</span></td>
+                        <td>문화관광과</td>
+                        <td>7급 주사보</td>
+                        <td><span class="role-chip wkr">WKR</span></td>
+                        <td style="text-align:center;"><span class="qual-zero">0</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 이건강')">
+                        <td><span class="src-chip manual">직접</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar manual">이</span> 이건강</span></td>
+                        <td>보건소</td>
+                        <td>7급 주사보</td>
+                        <td><span class="role-chip shm">SHM</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">1건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 윤소장')">
+                        <td><span class="src-chip manual">직접</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar manual">윤</span> 윤소장</span></td>
+                        <td>담양읍사무소</td>
+                        <td>5급 사무관</td>
+                        <td><span class="role-chip gm">GM</span></td>
+                        <td style="text-align:center;"><span class="qual-zero">0</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 김도급')">
+                        <td><span class="src-chip external">외부</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar external">김</span> 김도급</span></td>
+                        <td>(주)담양건설 <span class="type-tag">수급업체</span></td>
+                        <td>현장소장</td>
+                        <td><span class="role-chip sub">SUB</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">2건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 박위탁')">
+                        <td><span class="src-chip external">외부</span></td>
+                        <td><span class="user-name-cell"><span class="user-avatar external">박</span> 박위탁</span></td>
+                        <td>(주)호남안전관리 <span class="type-tag">협력업체</span></td>
+                        <td>안전보건관리자</td>
+                        <td><span class="role-chip con">CON</span></td>
+                        <td style="text-align:center;"><a class="qual-link" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - 자격증 영역')">3건</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D)')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 (layout.js가 자동 렌더) -->
+            <div data-pagination data-current="1" data-total="27"></div>
+        </section>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- ORG02-M  직접 등록·수정 모달 -->
+    <!-- ============================================================ -->
+    <div class="org-modal-backdrop" id="create-modal">
+        <div class="org-modal lg" role="dialog" aria-modal="true">
+            <div class="org-modal-header">
+                <div class="org-modal-title" id="create-modal-title">구성원 직접 등록</div>
+                <button type="button" class="org-modal-close" aria-label="닫기" onclick="window.closeCreateModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="org-modal-body">
+                <div class="form-section">
+                    <div class="form-section-title">기본 정보</div>
+                    <div class="form-grid">
+                        <div>
+                            <label class="form-label">이름<span class="req">*</span></label>
+                            <input type="text" class="form-input" placeholder="홍길동">
+                        </div>
+                        <div>
+                            <label class="form-label">이메일<span class="req">*</span></label>
+                            <input type="email" class="form-input" placeholder="user@damyang.go.kr">
+                            <div class="form-hint">시스템 내 중복 불가</div>
+                        </div>
+                        <div class="full">
+                            <label class="form-label">연락처</label>
+                            <input type="tel" class="form-input" placeholder="061-380-0000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">소속·직무</div>
+                    <div class="form-grid">
+                        <div>
+                            <label class="form-label">부서<span class="req">*</span></label>
+                            <div class="dept-picker">
+                                <input type="text" class="form-input" value="안전건설과 안전관리팀" readonly>
+                                <button type="button" onclick="window.DYLayout._soon(event, '부서 트리 selector')">선택</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">직급<span class="req">*</span></label>
+                            <input type="text" class="form-input" placeholder="6급 주사">
+                        </div>
+                        <div class="full">
+                            <label class="form-label">직종</label>
+                            <select class="form-select">
+                                <option>사무직</option>
+                                <option>현장직</option>
+                                <option>관리감독자</option>
+                                <option>안전보건관리자</option>
+                                <option>기타</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">권한</div>
+                    <div class="form-grid">
+                        <div class="full">
+                            <label class="form-label">권한 코드<span class="req">*</span></label>
+                            <select class="form-select">
+                                <option>WKR · 근로자</option>
+                                <option>SM · 안전관리자</option>
+                                <option selected>SHM · 안전보건관리자</option>
+                                <option>GM · 실·과·소장 (CEO/GM만 부여 가능)</option>
+                                <option>CEO · 군수 (CEO/GM만 부여 가능)</option>
+                            </select>
+                            <div class="form-hint">현재 권한: SHM — SM/SHM/WKR까지만 부여 가능</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">기타</div>
+                    <div class="form-grid">
+                        <div class="full">
+                            <label class="form-label">비고</label>
+                            <textarea class="form-textarea" placeholder="임시 계약직, 외부 위임 담당자 등 추가 메모 (500자 이내)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="org-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeCreateModal()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.saveCreate()">저장</button>
             </div>
         </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- DY-ORG-03 담당자 상세 모달 -->
-    <!-- ============================================================== -->
-    <div id="person-modal" class="modal hidden">
-        <div class="modal-backdrop" onclick="closeModal('person-modal')"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3 class="modal-title">담당자 상세</h3>
-                <button class="modal-close" onclick="closeModal('person-modal')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    <!-- ============================================================ -->
+    <!-- ORG02-M2  일괄 등록 모달 -->
+    <!-- ============================================================ -->
+    <div class="org-modal-backdrop" id="bulk-modal">
+        <div class="org-modal" role="dialog" aria-modal="true">
+            <div class="org-modal-header">
+                <div class="org-modal-title">구성원 일괄 등록</div>
+                <button type="button" class="org-modal-close" aria-label="닫기" onclick="window.closeBulkModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
-            <div class="modal-body">
-                <!-- 인물 헤더 -->
-                <div class="flex items-start gap-5 mb-6 pb-5 border-b border-gray-100">
-                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">박</div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <h4 class="text-xl font-bold text-gray-900">박안전</h4>
-                            <span class="src-badge synced">🔗 행정포털 연동</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-1">사무관 · 과장</p>
-                        <p class="text-sm text-gray-600">담양군청 안전건설과</p>
-                        <p class="text-sm text-gray-700 mt-2 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                            061-380-0000
-                        </p>
+            <div class="org-modal-body">
+                <div class="form-section">
+                    <div class="form-section-title">STEP 1 — 양식 다운로드</div>
+                    <p style="font-size:13px; color:var(--text-gray); margin-bottom:10px;">엑셀 양식을 다운로드 받아 작성한 뒤 업로드해 주세요.</p>
+                    <button type="button" class="btn btn-outline" onclick="window.DYLayout._soon(event, '양식 다운로드 (employees_template.xlsx)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        양식 다운로드
+                    </button>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">STEP 2 — 파일 업로드</div>
+                    <div class="bulk-upload">
+                        <svg class="icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <div style="font-size:13px;">엑셀 파일을 끌어다 놓거나 선택하세요</div>
+                        <div style="font-size:11px; color:var(--text-lightgray); margin-top:2px;">xlsx 형식만 허용 · 최대 1000행</div>
+                        <button type="button" class="file-btn" onclick="window.DYLayout._soon(event, '파일 선택')">파일 선택</button>
+                    </div>
+
+                    <div class="bulk-guide">
+                        <strong>양식 작성 가이드</strong><br>
+                        • 이름·이메일·부서명·직급·권한은 필수 항목입니다<br>
+                        • 권한 코드: <code>CEO / GM / SM / SHM / WKR</code><br>
+                        • 직종 코드: 사무직 / 현장직 / 관리감독자 / 안전보건관리자 / 기타<br>
+                        • 부서명은 시스템 내 부서명과 정확히 일치해야 합니다
                     </div>
                 </div>
-
-                <!-- 정보 테이블 -->
-                <div class="border border-gray-200 rounded-lg overflow-hidden mb-5">
-                    <table class="w-full text-sm">
-                        <tbody>
-                            <tr class="border-b border-gray-100">
-                                <td class="bg-gray-50 px-4 py-3 w-32 font-medium text-gray-700">역할</td>
-                                <td class="px-4 py-3 text-gray-900"><span class="badge badge-info">안전보건관리자</span> · <span class="badge badge-success">전담부서장</span></td>
-                            </tr>
-                            <tr class="border-b border-gray-100">
-                                <td class="bg-gray-50 px-4 py-3 font-medium text-gray-700">주요업무</td>
-                                <td class="px-4 py-3 text-gray-900">안전관리 총괄, 중대재해 예방 계획 수립·시행</td>
-                            </tr>
-                            <tr>
-                                <td class="bg-gray-50 px-4 py-3 font-medium text-gray-700">관련 법적 근거</td>
-                                <td class="px-4 py-3 text-gray-900">
-                                    <span class="badge badge-info">중대재해처벌법 제4조</span>
-                                    <span class="badge badge-info ml-1">시행령 제4조 제1호</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 수행 업무 현황 -->
-                <h4 class="font-semibold text-gray-900 mb-3">수행 업무 현황</h4>
-                <div class="border border-gray-200 rounded-lg overflow-hidden">
-                    <table class="w-full text-sm">
-                        <tbody>
-                            <tr class="border-b border-gray-100">
-                                <td class="px-4 py-3 text-gray-700">경영방침 점검</td>
-                                <td class="px-4 py-3 text-gray-600">2026년 상반기 완료</td>
-                                <td class="px-4 py-3 text-right"><a href="safety-policy.html" class="btn btn-outline btn-sm">보기</a></td>
-                            </tr>
-                            <tr class="border-b border-gray-100">
-                                <td class="px-4 py-3 text-gray-700">위험성평가 담당</td>
-                                <td class="px-4 py-3 text-gray-600">2건 진행중</td>
-                                <td class="px-4 py-3 text-right"><button class="btn btn-outline btn-sm">보기</button></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 text-gray-700">관련근거 등록</td>
-                                <td class="px-4 py-3 text-gray-600">5건 등록</td>
-                                <td class="px-4 py-3 text-right"><a href="safety-policy.html" class="btn btn-outline btn-sm">보기</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('person-modal')">닫기</button>
-                <button class="btn btn-primary">정보 수정</button>
+            <div class="org-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeBulkModal()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.startBulkVerify()">검증 시작</button>
             </div>
         </div>
     </div>
 
     <div id="toast" class="toast" role="status"></div>
 
-    <script src="./js/app.js"></script>
+    <script src="./js/layout.js"></script>
     <script>
-        // 담양 페이지: app.js의 GNB 권한 필터링이 추가하는 hidden 클래스 강제 해제
-        (function unlockDamyangGnb() {
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar) return;
-            const unhide = () => sidebar.querySelectorAll('.sidebar-nav > ul > li.hidden')
-                .forEach(li => li.classList.remove('hidden'));
-            unhide();
-            new MutationObserver(unhide).observe(sidebar, {
-                subtree: true, attributes: true, attributeFilter: ['class']
-            });
-        })();
+    (function () {
+        'use strict';
 
-        function showComingSoon(e, label) {
-            if (e) e.preventDefault();
+        function showToast(msg) {
             const t = document.getElementById('toast');
-            t.textContent = (label ? '['+label+'] ' : '') + '준비 중인 기능입니다.';
+            if (!t) { alert(msg); return; }
+            t.textContent = msg;
             t.classList.add('show');
             clearTimeout(window.__toastTimer);
-            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
         }
 
-        document.querySelectorAll('[data-tab-group="org"] .sub-tab').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.dataset.tab;
-                document.querySelectorAll('[data-tab-group="org"] .sub-tab').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('[data-tab-content="org"] .tab-pane').forEach(p => {
-                    p.classList.toggle('hidden', p.dataset.pane !== target);
-                });
+        /* ─── 필터 ─── */
+        const tbody = document.getElementById('org-tbody');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const resultCount = document.getElementById('result-count');
+
+        function applyFilters() {
+            const dept = document.getElementById('filter-dept').value;
+            const src  = document.getElementById('filter-source').value;
+            const role = document.getElementById('filter-role').value;
+            const q    = document.getElementById('filter-search').value.trim().toLowerCase();
+
+            let visible = 0;
+            allRows.forEach(tr => {
+                const tds = tr.children;
+                const srcText  = tds[0].textContent.trim();
+                const nameText = tds[1].textContent.trim();
+                const deptText = tds[2].textContent.trim();
+                const roleText = tds[4].textContent.trim();
+
+                let show = true;
+
+                if (dept !== '전체') {
+                    const d = dept.replace(/^└ ?/, '');
+                    if (deptText.indexOf(d) < 0) show = false;
+                }
+                if (src !== '전체') {
+                    if (src.startsWith('SSO')    && srcText !== 'SSO')  show = false;
+                    if (src.startsWith('직접')   && srcText !== '직접') show = false;
+                    if (src.startsWith('외부')   && srcText !== '외부') show = false;
+                }
+                if (role !== '전체') {
+                    const code = role.split(' ')[0];
+                    if (roleText !== code) show = false;
+                }
+                if (q && (nameText + ' ' + deptText).toLowerCase().indexOf(q) < 0) {
+                    show = false;
+                }
+
+                tr.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            resultCount.textContent = visible;
+        }
+
+        ['filter-dept', 'filter-source', 'filter-role'].forEach(id => {
+            document.getElementById(id).addEventListener('change', applyFilters);
+        });
+        let searchTimer = null;
+        document.getElementById('filter-search').addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyFilters, 300);
+        });
+        document.querySelector('.search-bar .search-submit').addEventListener('click', applyFilters);
+
+        window.clearFilters = function () {
+            document.getElementById('filter-dept').value = '전체';
+            document.getElementById('filter-source').value = '전체';
+            document.getElementById('filter-role').value = '전체';
+            document.getElementById('filter-search').value = '';
+            applyFilters();
+        };
+
+        /* ─── 직접 등록 모달 ─── */
+        window.openCreateModal = function () {
+            document.getElementById('create-modal').classList.add('is-open');
+        };
+        window.closeCreateModal = function () {
+            document.getElementById('create-modal').classList.remove('is-open');
+        };
+        window.saveCreate = function () {
+            window.closeCreateModal();
+            showToast('구성원 1명이 등록되었습니다. (목업)');
+        };
+
+        /* ─── 일괄 등록 모달 ─── */
+        window.openBulkModal = function () {
+            document.getElementById('bulk-modal').classList.add('is-open');
+        };
+        window.closeBulkModal = function () {
+            document.getElementById('bulk-modal').classList.remove('is-open');
+        };
+        window.startBulkVerify = function () {
+            window.closeBulkModal();
+            showToast('파일 검증을 시작합니다. (목업 — STEP 3 검증 결과는 별도 화면)');
+        };
+
+        /* 모달 backdrop 클릭 시 닫기 */
+        document.querySelectorAll('.org-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
             });
         });
-
-        // 형제 노드 사이 가로 연결선 자동 그리기
-        function drawSiblingLines() {
-            document.querySelectorAll('.org-row:not(.root)').forEach(row => {
-                row.querySelectorAll('.siblings-line').forEach(el => el.remove());
-                const nodes = row.querySelectorAll('.org-node');
-                if (nodes.length < 2) return;
-                const rowRect = row.getBoundingClientRect();
-                const first = nodes[0].getBoundingClientRect();
-                const last = nodes[nodes.length - 1].getBoundingClientRect();
-                const left = first.left + first.width / 2 - rowRect.left;
-                const right = last.left + last.width / 2 - rowRect.left;
-                const line = document.createElement('div');
-                line.className = 'siblings-line';
-                line.style.left = left + 'px';
-                line.style.width = (right - left) + 'px';
-                row.appendChild(line);
-            });
-        }
-        window.addEventListener('load', drawSiblingLines);
-        window.addEventListener('resize', drawSiblingLines);
+    })();
     </script>
-    <script src="./js/layout.js"></script>
 </body>
 </html>

@@ -59,20 +59,20 @@
         // 3. 안전보건 경영 — ORG + POL + EVL + STF + BGT + PLN + INS + IMP + DOC
         { id: 'safety', label: '안전보건 경영', icon: 'shield', items: [
             // 전담조직 (ORG / SFR-006)
-            { id: 'org-chart',     label: '조직도',            icon: 'building', soon: '조직도 현황 (ORG01-V)', screen: 'ORG01-V' },
+            { id: 'org-chart',     label: '조직도',            icon: 'building', href: 'org-chart.html',        screen: 'ORG01-V' },
             { id: 'organization',  label: '구성원',            icon: 'users',    href: 'organization.html',     screen: 'ORG02-L' },
-            { id: 'org-dedicated', label: '전담인력',          icon: 'user',     soon: '전담인력 현황 (ORG03-V)', screen: 'ORG03-V' },
-            { id: 'org-sync',      label: '행정포털 동기화',   icon: 'cog',      soon: '동기화 설정 (ORG04-S)', screen: 'ORG04-S' },
+            { id: 'org-dedicated', label: '전담인력',          icon: 'user',     href: 'org-dedicated.html',    screen: 'ORG03-V' },
+            { id: 'org-sync',      label: '행정포털 동기화',   icon: 'cog',      href: 'org-sync.html',         screen: 'ORG04-S' },
             // 안전경영방침 (POL / SFR-005)
             { id: 'safety-policy', label: '안전경영방침',      icon: 'shield',   href: 'safety-policy.html',    screen: 'POL01-L' },
             // 안전점검 (INS / SFR-012)
-            { id: 'ins-status',    label: '안전점검',          icon: 'check',    soon: '점검 현황 (INS01-V)',    screen: 'INS01-V' },
+            { id: 'ins-status',    label: '안전점검',          icon: 'check',    href: 'ins-status.html',       screen: 'INS01-V' },
             // 개선조치 (IMP / SFR-003)
             { id: 'imp-list',      label: '개선조치',          icon: 'check',    href: 'imp-list.html',         screen: 'IMP01-L' },
             // 인력평가 (EVL / SFR-009)
-            { id: 'evl-list',      label: '인력평가',          icon: 'user',     soon: '평가 목록 (EVL01-L)',    screen: 'EVL01-L' },
+            { id: 'evl-list',      label: '인력평가',          icon: 'user',     href: 'evl-list.html',         screen: 'EVL01-V' },
             // 안전관리자 인력 (STF / SFR-010)
-            { id: 'stf-status',    label: '안전관리자 인력',   icon: 'user',     soon: '인력 현황 (STF01-V)',    screen: 'STF01-V' },
+            { id: 'stf-status',    label: '안전관리자 인력',   icon: 'user',     href: 'stf-status.html',       screen: 'STF01-V' },
             // 예산 (BGT / SFR-008)
             { id: 'bgt-status',    label: '예산',              icon: 'coins',    soon: '예산 현황 (BGT01-V)',    screen: 'BGT01-V' },
             // 안전계획 (PLN / SFR-004)

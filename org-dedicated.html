@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전담인력 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── ORG03-V 전용 ─── */
+
+        /* 결과 카운트 */
+        .ded-meta-row { display:flex; align-items:center; gap:12px; }
+        .ded-meta-count { font-size:14px; color:var(--text-gray); }
+        .ded-meta-count strong { color:var(--main); font-weight:700; }
+
+        /* 충족 KPI 그리드 */
+        .ded-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .ded-kpi-cell {
+            padding: 18px 22px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 110px; justify-content: center;
+        }
+        .ded-kpi-cell:last-child { border-right: none; }
+        .ded-kpi-title { font-size:14px; font-weight:600; color:var(--text-black); display:flex; align-items:center; gap:6px;}
+        .ded-kpi-value { font-size:26px; font-weight:800; color:var(--main); line-height:1; letter-spacing:-0.6px; }
+        .ded-kpi-value.danger { color: var(--status-danger-fg); }
+        .ded-kpi-value.warning { color: var(--status-warning-fg); }
+        .ded-kpi-value .small { font-size:14px; font-weight:600; color:var(--text-gray); margin-left:2px; }
+        .ded-kpi-sub { font-size:12px; color: var(--text-gray); }
+
+        /* 부서 섹션 카드 */
+        .ded-dept {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .ded-dept + .ded-dept { margin-top: 16px; }
+        .ded-dept-header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--card-line);
+            background: #fafbfb;
+        }
+        .ded-dept-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 17px; font-weight: 700; color: var(--main-dark2);
+            letter-spacing: -0.3px;
+        }
+        .ded-dept-title .dept-icon {
+            width: 32px; height: 32px;
+            border-radius: 9px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .ded-dept-title .head {
+            font-size: 12px; color: var(--text-gray);
+            font-weight: 500;
+            margin-left: 4px;
+        }
+        .ded-dept-summary {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px;
+        }
+        .ded-status-dot {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .ded-status-dot.full {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .ded-status-dot.short {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            color: var(--status-warning-fg);
+        }
+        .ded-status-dot.danger {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+
+        /* 역할 카드 그리드 */
+        .ded-role-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+        .ded-role {
+            padding: 18px 20px;
+            border-right: 1px solid var(--card-line);
+            display: flex; flex-direction: column; gap: 10px;
+            min-height: 168px;
+            position: relative;
+        }
+        .ded-role:last-child { border-right: none; }
+        .ded-role.unmet { background: #fffaf5; }
+        .ded-role.warning-strip::before {
+            content: ""; position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--status-warning-fg);
+        }
+        .ded-role.danger-strip::before {
+            content: ""; position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--status-danger-fg);
+        }
+
+        .ded-role-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .ded-role-label {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .ded-role-label .legal {
+            font-size: 10px; font-weight: 500;
+            color: var(--text-lightgray);
+        }
+
+        .ded-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .ded-badge.met {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .ded-badge.unmet {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+        .ded-badge.auto {
+            background: var(--status-info-bg);
+            border-color: var(--status-info-border);
+            color: var(--status-info-fg);
+        }
+        .ded-badge.optional {
+            background: var(--status-neutral-bg);
+            border-color: var(--status-neutral-border);
+            color: var(--status-neutral-fg);
+        }
+
+        /* 선임 인원 카운트 */
+        .ded-count {
+            font-size: 13px; color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+        }
+        .ded-count strong {
+            color: var(--text-black);
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 1px;
+        }
+
+        /* 선임자 행 */
+        .ded-person {
+            display: flex; align-items: flex-start; gap: 10px;
+            flex: 1;
+        }
+        .ded-person-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--main-light), var(--main));
+            color: white;
+            font-size: 13px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .ded-person-avatar.auto { background: linear-gradient(135deg, #93c5fd, var(--status-info-fg)); }
+        .ded-person-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .ded-person-name {
+            font-size: 14px; font-weight: 700; color: var(--text-black);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .ded-person-name a {
+            color: var(--text-black);
+            text-decoration: none;
+        }
+        .ded-person-name a:hover { color: var(--main); }
+        .ded-person-pos {
+            font-size: 11px; color: var(--text-gray);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ded-qual {
+            display: inline-flex; align-items: center; gap: 4px;
+            margin-top: 2px;
+            padding: 2px 6px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border: 1px solid var(--status-success-border);
+            white-space: nowrap;
+        }
+        .ded-qual.missing {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+
+        /* 빈 상태 */
+        .ded-empty {
+            flex: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px;
+            color: var(--text-gray);
+            font-size: 12px;
+            padding: 10px 0;
+        }
+        .ded-empty svg { width: 28px; height: 28px; color: var(--text-lightgray); }
+        .ded-empty.warn { color: var(--status-warning-fg); }
+        .ded-empty.warn svg { color: var(--status-warning-fg); }
+
+        /* 카드 액션 */
+        .ded-actions {
+            display: flex; gap: 6px;
+            margin-top: auto;
+        }
+        .ded-btn {
+            flex: 1;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+            padding: 6px 8px;
+            font-size: 12px; font-weight: 600;
+            border-radius: var(--radius-button);
+            border: 1px solid;
+            background: white;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .ded-btn.primary {
+            border-color: var(--main);
+            background: var(--main);
+            color: white;
+        }
+        .ded-btn.primary:hover { background: var(--main-dark); border-color: var(--main-dark); }
+        .ded-btn.outline {
+            border-color: var(--card-line);
+            color: var(--text-black);
+        }
+        .ded-btn.outline:hover { border-color: var(--main); color: var(--main); }
+        .ded-btn.danger {
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+        .ded-btn.danger:hover { background: var(--status-danger-bg); }
+
+        /* 강제선임 경고 배너 */
+        .ded-warning-banner {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 18px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            color: var(--status-warning-fg);
+            font-size: 13px;
+        }
+        .ded-warning-banner .icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .ded-warning-banner .msg { flex: 1; }
+        .ded-warning-banner strong { font-weight: 700; }
+        .ded-warning-banner a {
+            color: var(--status-warning-fg);
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        /* 모달 */
+        .ded-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .ded-modal-backdrop.is-open { display: flex; }
+        .ded-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 540px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .ded-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .ded-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+        }
+        .ded-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .ded-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .ded-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .ded-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        .ded-readonly-row {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 12px;
+            font-size: 13px;
+            padding: 8px 0;
+        }
+        .ded-readonly-row .k { color: var(--text-gray); font-weight: 500; line-height: 22px; }
+        .ded-readonly-row .v { color: var(--text-black); font-weight: 600; line-height: 22px; }
+
+        .ded-form-label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin: 14px 0 6px;
+        }
+        .ded-form-label .req { color: var(--status-danger-fg); margin-left:2px; }
+        .ded-form-input {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-black);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+        }
+        .ded-form-input:focus { border-color: var(--main); box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12); }
+
+        /* 사용자 검색 결과 카드 (모달 내) */
+        .ded-user-pick {
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 10px 14px;
+            display: flex; align-items: center; gap: 12px;
+            background: #fafbfb;
+        }
+        .ded-user-pick.empty {
+            justify-content: center;
+            color: var(--text-gray);
+            font-size: 13px;
+            border-style: dashed;
+            padding: 16px;
+            cursor: pointer;
+        }
+        .ded-user-pick.empty:hover { border-color: var(--main); color: var(--main); }
+
+        @media (max-width: 1023px) {
+            .ded-role-grid { grid-template-columns: repeat(2, 1fr); }
+            .ded-role:nth-child(2n) { border-right: none; }
+            .ded-role:nth-child(-n+2) { border-bottom: 1px solid var(--card-line); }
+            .ded-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body data-dy-page="org-dedicated" data-page-title="전담인력 현황" data-page-subtitle="부서별 안전관리자·보건관리자 선임 현황">
+    <main>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="ded-kpi-grid">
+            <div class="ded-kpi-cell">
+                <span class="ded-kpi-title">전체 부서</span>
+                <div class="ded-kpi-value">9<span class="small">개</span></div>
+                <div class="ded-kpi-sub">법정 전담 대상 부서</div>
+            </div>
+            <div class="ded-kpi-cell">
+                <span class="ded-kpi-title">충족 부서</span>
+                <div class="ded-kpi-value" style="color:var(--status-success-fg);">4<span class="small">/9</span></div>
+                <div class="progress" style="height:6px;">
+                    <div class="progress-bar green" style="width:44%;"></div>
+                </div>
+            </div>
+            <div class="ded-kpi-cell">
+                <span class="ded-kpi-title">미충족 부서</span>
+                <div class="ded-kpi-value danger">5<span class="small">개</span></div>
+                <div class="ded-kpi-sub">보건관리자 4 / 안전관리자 1</div>
+            </div>
+            <div class="ded-kpi-cell">
+                <span class="ded-kpi-title">자격 미보유 강제선임</span>
+                <div class="ded-kpi-value warning">1<span class="small">건</span></div>
+                <div class="ded-kpi-sub">시설관리과 보건관리자</div>
+            </div>
+        </section>
+
+        <!-- ─── 경고 배너 ─── -->
+        <div class="ded-warning-banner">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span class="msg"><strong>전담인력 미충족 5개 부서</strong>가 있습니다. 법정 인원 기준 미달 — 빠른 선임이 필요합니다.</span>
+            <a href="#" onclick="event.preventDefault(); document.getElementById('filter-status').value='미충족만'; window.applyFilters();">미충족만 보기 →</a>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select" id="filter-dept">
+                    <option>전체</option>
+                    <option>자치행정과</option>
+                    <option>안전건설과</option>
+                    <option>농업기술센터</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>보건소</option>
+                    <option>담양읍사무소</option>
+                    <option>상수도사업소</option>
+                    <option>문화관광과</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">충족여부</span>
+                <select class="select" id="filter-status">
+                    <option>전체</option>
+                    <option>충족 부서</option>
+                    <option>미충족만</option>
+                </select>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
+        </div>
+
+        <!-- ─── 부서별 카드 (JS 렌더) ─── -->
+        <div class="ded-meta-row">
+            <span class="ded-meta-count">표시 부서 <strong id="result-count">9</strong>개</span>
+        </div>
+        <div id="dept-list"></div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- ORG03-M  전담인력 선임 모달 -->
+    <!-- ============================================================ -->
+    <div class="ded-modal-backdrop" id="appoint-modal">
+        <div class="ded-modal" role="dialog" aria-modal="true">
+            <div class="ded-modal-header">
+                <div class="ded-modal-title" id="appoint-title">전담인력 선임</div>
+                <button type="button" class="ded-modal-close" aria-label="닫기" onclick="window.closeAppointModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="ded-modal-body">
+                <div class="ded-readonly-row">
+                    <span class="k">대상 부서</span>
+                    <span class="v" id="appoint-dept">-</span>
+                </div>
+                <div class="ded-readonly-row" style="border-bottom: 1px solid var(--card-line); padding-bottom: 14px;">
+                    <span class="k">대상 역할</span>
+                    <span class="v" id="appoint-role">-</span>
+                </div>
+
+                <label class="ded-form-label">선임 대상자<span class="req">*</span></label>
+                <div class="ded-user-pick empty" id="user-pick" onclick="window.pickUser()">
+                    구성원 검색해서 선택
+                </div>
+
+                <label class="ded-form-label">선임일<span class="req">*</span></label>
+                <input type="date" class="ded-form-input" value="2026-05-13">
+
+                <label class="ded-form-label">선임 근거 첨부</label>
+                <input type="file" class="ded-form-input" style="padding:6px 12px;">
+
+                <label class="ded-form-label">비고</label>
+                <textarea class="ded-form-input" rows="3" placeholder="500자 이내"></textarea>
+            </div>
+            <div class="ded-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeAppointModal()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.saveAppoint()">선임</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 해제 확인 모달 -->
+    <div class="ded-modal-backdrop" id="release-modal">
+        <div class="ded-modal" style="max-width:420px;" role="dialog" aria-modal="true">
+            <div class="ded-modal-header">
+                <div class="ded-modal-title">선임 해제 확인</div>
+                <button type="button" class="ded-modal-close" aria-label="닫기" onclick="window.closeReleaseModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="ded-modal-body">
+                <p style="font-size:14px; color:var(--text-black); line-height:1.5;" id="release-msg">
+                    선임을 해제하시겠습니까?
+                </p>
+                <p style="font-size:12px; color:var(--text-gray); margin-top:8px;">
+                    해제 후 해당 역할은 <strong style="color:var(--status-danger-fg);">미충족</strong> 상태로 전환됩니다.
+                </p>
+            </div>
+            <div class="ded-modal-footer">
+                <button class="btn btn-outline" type="button" onclick="window.closeReleaseModal()">취소</button>
+                <button class="btn" style="background:var(--status-danger-fg);color:white;" type="button" onclick="window.confirmRelease()">해제</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) { alert(msg); return; }
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 데이터 (목업) ─── */
+        const ROLES = {
+            safety:     { label: '안전관리자',  legal: '법 §17' },
+            health:     { label: '보건관리자',  legal: '법 §18' },
+            supervisor: { label: '관리감독자',  legal: '법 §16' },
+            doctor:     { label: '산업보건의',  legal: '법 §22' },
+        };
+
+        const DEPTS = [
+            {
+                id: 'jachi', name: '자치행정과', head: '홍길동', headPos: '5급 사무관', count: 15,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '김안전', pos: '6급 주사', qual: '산업안전기사' } },
+                    health:     { status: 'UNMET', need: 1, person: null },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '홍길동', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'safety', name: '안전건설과', head: '박○○', headPos: '5급 사무관', count: 22,
+                roles: {
+                    safety:     { status: 'MET',   need: 2, person: { name: '김안전', pos: '6급 주사', qual: '산업안전기사' }, more: 1 },
+                    health:     { status: 'MET',   need: 1, person: { name: '이건강', pos: '7급 주사보', qual: '산업위생기사' } },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '박○○', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'UNMET', need: 1, person: null },
+                }
+            },
+            {
+                id: 'farm', name: '농업기술센터', head: '이센터장', headPos: '4급 서기관', count: 22,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '정농업', pos: '6급 주사', qual: '산업안전기사' } },
+                    health:     { status: 'MET',   need: 1, person: { name: '윤보건', pos: '6급 주사', qual: '간호사' } },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '이센터장', pos: '4급 서기관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'facility', name: '시설관리과', head: '최성호', headPos: '5급 사무관', count: 18,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '한시설', pos: '6급 주사', qual: '산업안전기사' } },
+                    health:     { status: 'UNMET_FORCED', need: 1, person: { name: '백관리', pos: '7급 주사보', qual: '자격 미보유 — 강제선임 (2026-03-15)', forced: true } },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '최성호', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'env', name: '환경과', head: '윤과장', headPos: '5급 사무관', count: 14,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '오환경', pos: '6급 주사', qual: '산업안전기사' } },
+                    health:     { status: 'UNMET', need: 1, person: null },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '윤과장', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'health', name: '보건소', head: null, headPos: null, count: 22,
+                roles: {
+                    safety:     { status: 'UNMET', need: 1, person: null },
+                    health:     { status: 'MET',   need: 1, person: { name: '강보건', pos: '6급 주사', qual: '간호사' } },
+                    supervisor: { status: 'AUTO',  need: 1, person: null, missing: true },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'eup', name: '담양읍사무소', head: null, headPos: null, count: 18,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '서지역', pos: '7급 주사보', qual: '산업안전산업기사' } },
+                    health:     { status: 'UNMET', need: 1, person: null },
+                    supervisor: { status: 'AUTO',  need: 1, person: null, missing: true },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'water', name: '상수도사업소', head: '정소장', headPos: '5급 사무관', count: 12,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '신상수', pos: '6급 주사', qual: '산업안전기사' } },
+                    health:     { status: 'MET',   need: 1, person: { name: '조보건', pos: '7급 주사보', qual: '간호사' } },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '정소장', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+            {
+                id: 'culture', name: '문화관광과', head: '한과장', headPos: '5급 사무관', count: 16,
+                roles: {
+                    safety:     { status: 'MET',   need: 1, person: { name: '정하나', pos: '7급 주사보', qual: '산업안전산업기사' } },
+                    health:     { status: 'MET',   need: 1, person: { name: '문보건', pos: '7급 주사보', qual: '간호사' } },
+                    supervisor: { status: 'AUTO',  need: 1, person: { name: '한과장', pos: '5급 사무관', note: '부서장 자동 매핑' } },
+                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                }
+            },
+        ];
+
+        /* ─── 부서 충족 판단 ─── */
+        function deptIsFull(d) {
+            const r = d.roles;
+            const reqOk = (x) => x.status === 'MET' || x.status === 'AUTO' || x.status === 'OPTIONAL';
+            return reqOk(r.safety) && reqOk(r.health) && reqOk(r.supervisor) && reqOk(r.doctor);
+        }
+        function deptHasForced(d) {
+            return Object.values(d.roles).some(r => r.status === 'UNMET_FORCED');
+        }
+
+        /* ─── 카드 렌더 ─── */
+        const list$ = document.getElementById('dept-list');
+        const count$ = document.getElementById('result-count');
+
+        function badgeHtml(status) {
+            switch (status) {
+                case 'MET':           return '<span class="ded-badge met">충족</span>';
+                case 'UNMET':         return '<span class="ded-badge unmet">미충족</span>';
+                case 'UNMET_FORCED':  return '<span class="ded-badge unmet">강제선임</span>';
+                case 'AUTO':          return '<span class="ded-badge auto">자동</span>';
+                case 'OPTIONAL':      return '<span class="ded-badge optional">선택</span>';
+            }
+            return '';
+        }
+
+        function roleCard(deptId, roleKey, role) {
+            const meta = ROLES[roleKey];
+            const has = !!role.person;
+            const showHave = has || role.status === 'MET' || role.status === 'UNMET_FORCED';
+
+            // 카드 상단 스트립
+            let cls = 'ded-role';
+            if (role.status === 'UNMET') cls += ' unmet danger-strip';
+            else if (role.status === 'UNMET_FORCED') cls += ' warning-strip';
+
+            // 인원수 표시 (MET의 경우 더 있을 수도)
+            let countText;
+            if (role.status === 'OPTIONAL') countText = '<span class="ded-count">법정 비대상</span>';
+            else {
+                const cur = has ? (role.more ? 1 + role.more : 1) : 0;
+                const need = role.need;
+                countText = `<span class="ded-count"><strong>${cur}</strong>/${need}명</span>`;
+            }
+
+            // 본문
+            let body;
+            if (!has) {
+                if (role.status === 'AUTO' && role.missing) {
+                    body = `<div class="ded-empty warn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        부서장 미지정<br>
+                        <span style="font-size:11px;">SSO 동기화 필요</span>
+                    </div>`;
+                } else if (role.status === 'OPTIONAL') {
+                    body = `<div class="ded-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                        부서 인원 기준상 비대상
+                    </div>`;
+                } else {
+                    body = `<div class="ded-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="11" r="4"/><path d="M22 11h-6"/></svg>
+                        담당자 미지정
+                    </div>`;
+                }
+            } else {
+                const isAuto = role.status === 'AUTO';
+                const qualHtml = role.person.qual
+                    ? `<span class="ded-qual ${role.person.forced ? 'missing' : ''}">${role.person.forced
+                        ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                        : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'} ${role.person.qual}</span>`
+                    : (role.person.note ? `<span style="font-size:11px; color:var(--text-gray);">${role.person.note}</span>` : '');
+                const moreHtml = role.more
+                    ? `<span style="font-size:11px; color:var(--text-gray); margin-top:2px;">+ 외 ${role.more}명</span>`
+                    : '';
+                body = `
+                    <div class="ded-person">
+                        <div class="ded-person-avatar ${isAuto ? 'auto' : ''}">${role.person.name.slice(0,1)}</div>
+                        <div class="ded-person-meta">
+                            <div class="ded-person-name">
+                                <a href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - ${role.person.name}');">${role.person.name}</a>
+                            </div>
+                            <div class="ded-person-pos">${role.person.pos}</div>
+                            ${qualHtml}
+                            ${moreHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 액션 영역
+            let actions = '';
+            if (role.status === 'AUTO') {
+                // 정보 표시 전용 — 액션 없음
+            } else if (role.status === 'OPTIONAL') {
+                // 없음
+            } else if (role.status === 'UNMET') {
+                actions = `<div class="ded-actions">
+                    <button class="ded-btn primary" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}')">+ 선임하기</button>
+                </div>`;
+            } else if (role.status === 'MET' || role.status === 'UNMET_FORCED') {
+                actions = `<div class="ded-actions">
+                    <button class="ded-btn outline" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}', true)">수정</button>
+                    <button class="ded-btn danger" type="button" onclick="window.openRelease('${deptId}', '${roleKey}')">해제</button>
+                </div>`;
+            }
+
+            return `
+                <div class="${cls}" data-role="${roleKey}">
+                    <div class="ded-role-head">
+                        <span class="ded-role-label">${meta.label} <span class="legal">${meta.legal}</span></span>
+                        ${badgeHtml(role.status)}
+                    </div>
+                    ${countText}
+                    ${body}
+                    ${actions}
+                </div>
+            `;
+        }
+
+        function deptCard(d) {
+            const isFull = deptIsFull(d);
+            const hasForced = deptHasForced(d);
+            const headHtml = d.head
+                ? `<span class="head">부서장 ${d.head} (${d.headPos})</span>`
+                : `<span class="head" style="color:var(--status-warning-fg); font-weight:600;">부서장 미지정 ⚠</span>`;
+
+            const summary = isFull
+                ? `<span class="ded-status-dot full"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 전 역할 충족</span>`
+                : `<span class="ded-status-dot ${hasForced ? 'short' : 'danger'}">${hasForced ? '강제선임 포함' : '미충족 포함'}</span>`;
+
+            return `
+                <div class="ded-dept" data-dept-id="${d.id}" data-full="${isFull ? '1' : '0'}">
+                    <div class="ded-dept-header">
+                        <div class="ded-dept-title">
+                            <span class="dept-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M16 10h.01"/></svg>
+                            </span>
+                            ${d.name} <span class="head" style="font-size:12px; color:var(--text-gray); font-weight:500; margin-left:4px;">(${d.count}명)</span>
+                            ${headHtml}
+                        </div>
+                        <div class="ded-dept-summary">${summary}</div>
+                    </div>
+                    <div class="ded-role-grid">
+                        ${roleCard(d.id, 'safety', d.roles.safety)}
+                        ${roleCard(d.id, 'health', d.roles.health)}
+                        ${roleCard(d.id, 'supervisor', d.roles.supervisor)}
+                        ${roleCard(d.id, 'doctor', d.roles.doctor)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const dept = document.getElementById('filter-dept').value;
+            const status = document.getElementById('filter-status').value;
+
+            const filtered = DEPTS.filter(d => {
+                if (dept !== '전체' && d.name !== dept) return false;
+                if (status === '충족 부서' && !deptIsFull(d)) return false;
+                if (status === '미충족만'   &&  deptIsFull(d)) return false;
+                return true;
+            });
+
+            list$.innerHTML = filtered.map(deptCard).join('') || `
+                <div class="card" style="padding: 40px; text-align:center; color: var(--text-gray); font-size: 14px;">
+                    조건에 맞는 부서가 없습니다.
+                </div>`;
+            count$.textContent = filtered.length;
+        }
+
+        ['filter-dept', 'filter-status'].forEach(id => {
+            document.getElementById(id).addEventListener('change', render);
+        });
+
+        window.applyFilters = render;
+        window.clearFilters = function () {
+            document.getElementById('filter-dept').value = '전체';
+            document.getElementById('filter-status').value = '전체';
+            render();
+        };
+
+        /* ─── 선임 모달 ─── */
+        let currentAppoint = null;
+        window.openAppoint = function (deptId, roleKey, isEdit) {
+            const d = DEPTS.find(x => x.id === deptId);
+            if (!d) return;
+            currentAppoint = { deptId, roleKey, isEdit };
+            document.getElementById('appoint-title').textContent = isEdit ? '전담인력 수정' : '전담인력 선임';
+            document.getElementById('appoint-dept').textContent = d.name;
+            document.getElementById('appoint-role').textContent = ROLES[roleKey].label;
+
+            // prefill user pick
+            const pick = document.getElementById('user-pick');
+            if (isEdit && d.roles[roleKey].person) {
+                const p = d.roles[roleKey].person;
+                pick.classList.remove('empty');
+                pick.innerHTML = `
+                    <div class="ded-person-avatar">${p.name.slice(0,1)}</div>
+                    <div class="ded-person-meta" style="flex:1;">
+                        <div class="ded-person-name">${p.name}</div>
+                        <div class="ded-person-pos">${p.pos}</div>
+                        ${p.qual ? `<span class="ded-qual ${p.forced ? 'missing' : ''}">${p.qual}</span>` : ''}
+                    </div>
+                    <button type="button" class="ded-btn outline" style="flex:0 0 auto;" onclick="window.pickUser()">변경</button>
+                `;
+                pick.onclick = null;
+            } else {
+                pick.className = 'ded-user-pick empty';
+                pick.innerHTML = '구성원 검색해서 선택';
+                pick.onclick = window.pickUser;
+            }
+
+            document.getElementById('appoint-modal').classList.add('is-open');
+        };
+        window.closeAppointModal = function () {
+            document.getElementById('appoint-modal').classList.remove('is-open');
+            currentAppoint = null;
+        };
+        window.pickUser = function () {
+            // 실제로는 구성원 검색 모달 호출 (자격증 표시 + 부서 필터)
+            window.DYLayout._soon({preventDefault: () => {}}, '구성원 검색 모달 (자격증 표시)');
+        };
+        window.saveAppoint = function () {
+            const title = currentAppoint && currentAppoint.isEdit ? '수정' : '선임';
+            window.closeAppointModal();
+            showToast(`전담인력 ${title}이 저장되었습니다. (목업)`);
+        };
+
+        /* ─── 해제 모달 ─── */
+        let currentRelease = null;
+        window.openRelease = function (deptId, roleKey) {
+            const d = DEPTS.find(x => x.id === deptId);
+            if (!d) return;
+            currentRelease = { deptId, roleKey };
+            const p = d.roles[roleKey].person;
+            document.getElementById('release-msg').innerHTML =
+                `<strong>${d.name}</strong>의 <strong>${ROLES[roleKey].label}</strong> 선임을 해제하시겠습니까?<br>` +
+                (p ? `<span style="font-size:12px; color:var(--text-gray);">현재 선임자: ${p.name} (${p.pos})</span>` : '');
+            document.getElementById('release-modal').classList.add('is-open');
+        };
+        window.closeReleaseModal = function () {
+            document.getElementById('release-modal').classList.remove('is-open');
+            currentRelease = null;
+        };
+        window.confirmRelease = function () {
+            window.closeReleaseModal();
+            showToast('선임이 해제되었습니다. (목업)');
+        };
+
+        /* 모달 backdrop 클릭 시 닫기 */
+        document.querySelectorAll('.ded-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+
+        /* 초기 렌더 */
+        render();
+    })();
+    </script>
+</body>
+</html>

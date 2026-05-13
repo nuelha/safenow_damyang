@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조직도 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── ORG01-V 전용 ─── */
+
+        /* 상단 동기화 바 */
+        .org-sync-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+        }
+        .org-sync-info {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px; color: var(--text-gray);
+        }
+        .org-sync-info strong {
+            color: var(--text-black);
+            font-weight: 600;
+        }
+        .org-sync-info .icon { color: var(--main); flex-shrink: 0; }
+        .org-sync-bar .btn { white-space: nowrap; }
+
+        /* KPI 4분할 (RSK 패턴 재사용) */
+        .org-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: #ffffff;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .org-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 124px; justify-content: center;
+        }
+        .org-kpi-cell:last-child { border-right: none; }
+        .org-kpi-label {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .org-kpi-title {
+            font-size: 15px; font-weight: 600; color: var(--text-black);
+        }
+        .org-kpi-value {
+            font-size: 26px; font-weight: 800; color: var(--main);
+            letter-spacing: -0.8px; line-height: 1;
+        }
+        .org-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .org-kpi-value.danger { color: var(--status-danger-fg); }
+        .org-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 2-pane 본문 카드 */
+        .org-pane {
+            display: grid;
+            grid-template-columns: 6fr 4fr;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+            min-height: 560px;
+        }
+        .org-pane-left { border-right: 1px solid var(--card-line); display: flex; flex-direction: column; }
+        .org-pane-right { display: flex; flex-direction: column; background: #fafbfb; }
+        .org-pane-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .org-pane-title {
+            font-size: 16px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .org-pane-search input {
+            width: 220px;
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .org-pane-search input:focus { outline: none; border-color: var(--main); }
+        .org-pane-body { padding: 12px 16px; overflow-y: auto; flex: 1; }
+
+        /* ─ 부서 트리 ─ */
+        .org-tree { font-size: 14px; }
+        .org-tree-node { display: flex; flex-direction: column; }
+        .org-tree-row {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background .12s ease;
+        }
+        .org-tree-row:hover { background: var(--brand-100); }
+        .org-tree-row.is-selected {
+            background: var(--brand-100);
+            box-shadow: inset 3px 0 0 var(--main);
+        }
+        .org-tree-toggle {
+            width: 18px; height: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--text-lightgray);
+            flex-shrink: 0;
+            transition: transform .15s ease;
+        }
+        .org-tree-toggle.is-placeholder { visibility: hidden; }
+        .org-tree-node.is-collapsed > .org-tree-row .org-tree-toggle { transform: rotate(-90deg); }
+        .org-tree-icon {
+            width: 18px; height: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--main);
+            flex-shrink: 0;
+        }
+        .org-tree-icon.root { color: var(--main-dark); }
+        .org-tree-name {
+            flex: 1;
+            display: flex; align-items: center; gap: 6px;
+            font-weight: 500; color: var(--text-black);
+            min-width: 0;
+        }
+        .org-tree-name .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .org-tree-head {
+            font-size: 12px; color: var(--text-gray);
+            white-space: nowrap;
+        }
+        .org-tree-head.unassigned {
+            color: var(--status-warning-fg);
+            font-weight: 600;
+        }
+        .org-tree-count {
+            display: inline-flex; align-items: center;
+            min-width: 56px; justify-content: flex-end;
+            font-size: 12px; color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .org-tree-children {
+            display: flex; flex-direction: column;
+            margin-left: 22px;
+            border-left: 1px dashed var(--card-line);
+            padding-left: 4px;
+        }
+        .org-tree-node.is-collapsed > .org-tree-children { display: none; }
+
+        /* 부서 종류 chip */
+        .org-tag {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            margin-left: 2px;
+        }
+        .org-tag.dedicated {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .org-tag.ceo {
+            background: #1e293b; color: white; border-color: #1e293b;
+        }
+
+        /* ─ 우측 상세 패널 ─ */
+        .org-detail-empty {
+            flex: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 8px;
+            color: var(--text-lightgray);
+            font-size: 14px;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .org-detail-empty svg { width: 44px; height: 44px; color: var(--text-lightgray); }
+
+        .org-detail-section {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .org-detail-section:last-child { border-bottom: none; }
+        .org-detail-section h3 {
+            font-size: 13px; font-weight: 700; color: var(--main-dark2);
+            margin-bottom: 12px;
+            letter-spacing: -0.2px;
+        }
+
+        .org-detail-head {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            background: white;
+        }
+        .org-detail-avatar {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--main), var(--main-dark));
+            color: white;
+            font-size: 18px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .org-detail-head-meta { flex: 1; min-width: 0; }
+        .org-detail-name {
+            font-size: 18px; font-weight: 800; color: var(--main-dark2);
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
+        }
+        .org-detail-path {
+            font-size: 12px; color: var(--text-gray);
+        }
+        .org-detail-path svg { width: 12px; height: 12px; display: inline; vertical-align: -1px; margin: 0 2px; }
+
+        /* info table (key-value) */
+        .org-info-table {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            row-gap: 8px; column-gap: 12px;
+            font-size: 13px;
+        }
+        .org-info-table .k {
+            color: var(--text-gray);
+            font-weight: 500;
+            line-height: 20px;
+        }
+        .org-info-table .v {
+            color: var(--text-black);
+            line-height: 20px;
+            font-weight: 500;
+        }
+        .org-info-table .v.warning { color: var(--status-warning-fg); font-weight: 600; }
+        .org-info-table .v .sub {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-left: 4px;
+        }
+
+        /* 충족 row */
+        .org-fulfill-list {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .org-fulfill-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            cursor: pointer;
+            transition: border-color .12s ease;
+        }
+        .org-fulfill-row:hover { border-color: var(--main); }
+        .org-fulfill-row.is-short { border-color: var(--status-warning-border); background: var(--status-warning-bg); }
+        .org-fulfill-label {
+            font-size: 13px; color: var(--text-black);
+            font-weight: 600;
+        }
+        .org-fulfill-meta {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .org-fulfill-meta .count { font-weight: 700; color: var(--text-black); }
+        .org-fulfill-row.is-short .org-fulfill-meta .count { color: var(--status-warning-fg); }
+
+        /* 액션 버튼 영역 */
+        .org-detail-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            padding: 16px 24px;
+        }
+        .org-detail-actions .btn { flex: 1; min-width: 0; }
+
+        /* 동기화 모달 */
+        .sync-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+        }
+        .sync-modal-backdrop.is-open { display: flex; }
+        .sync-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            padding: 28px 32px;
+            width: 100%; max-width: 420px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+        }
+        .sync-modal h3 {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            margin-bottom: 8px;
+        }
+        .sync-modal p { font-size: 14px; color: var(--text-gray); line-height: 1.5; }
+        .sync-modal .progress { margin: 18px 0 6px; }
+        .sync-modal .meta {
+            display: flex; justify-content: space-between;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .sync-modal .actions {
+            display: flex; justify-content: flex-end; gap: 8px;
+            margin-top: 22px;
+        }
+
+        @media (max-width: 1023px) {
+            .org-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .org-pane { grid-template-columns: 1fr; }
+            .org-pane-left { border-right: none; border-bottom: 1px solid var(--card-line); }
+        }
+    </style>
+</head>
+<body data-dy-page="org-chart" data-page-title="조직도 현황" data-page-subtitle="부서·인력 현황 및 권한 매핑">
+    <main>
+        <!-- ─── 상단 동기화 바 ─── -->
+        <div class="org-sync-bar">
+            <div class="org-sync-info">
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>마지막 동기화: <strong>2026-05-11 06:00</strong> <span class="text-muted" style="margin-left:6px;">· 출처: 담양군 행정포털</span></span>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="window.openSyncModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                수동 동기화
+            </button>
+        </div>
+
+        <!-- ─── 요약 KPI ─── -->
+        <section class="org-kpi-grid">
+            <div class="org-kpi-cell">
+                <div class="org-kpi-label">
+                    <span class="org-kpi-title">총 부서</span>
+                </div>
+                <div class="org-kpi-value">14<span class="small">개</span></div>
+                <div class="org-kpi-sub">실·과·소 6 / 팀 8</div>
+            </div>
+            <div class="org-kpi-cell">
+                <div class="org-kpi-label">
+                    <span class="org-kpi-title">총 인원</span>
+                </div>
+                <div class="org-kpi-value">320<span class="small">명</span></div>
+                <div class="org-kpi-sub">SSO 312 / 직접등록 8</div>
+            </div>
+            <div class="org-kpi-cell">
+                <div class="org-kpi-label">
+                    <span class="org-kpi-title">안전·보건 인력 충족</span>
+                </div>
+                <div class="org-kpi-value">10<span class="small">/12 부서</span></div>
+                <div class="progress" style="height:6px; margin-top:4px;">
+                    <div class="progress-bar green" style="width:83%;"></div>
+                </div>
+            </div>
+            <div class="org-kpi-cell">
+                <div class="org-kpi-label">
+                    <span class="org-kpi-title">부서장 미지정</span>
+                </div>
+                <div class="org-kpi-value danger">2<span class="small">개</span></div>
+                <div class="org-kpi-sub">보건소·담양읍사무소</div>
+            </div>
+        </section>
+
+        <!-- ─── 본문: 좌측 트리 + 우측 상세 ─── -->
+        <section class="org-pane">
+            <!-- 좌측: 부서 트리 -->
+            <div class="org-pane-left">
+                <div class="org-pane-header">
+                    <div class="org-pane-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/>
+                            <path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M16 10h.01"/>
+                        </svg>
+                        부서 계층 구조
+                    </div>
+                    <div class="org-pane-search">
+                        <input type="search" id="org-search" placeholder="부서명 검색">
+                    </div>
+                </div>
+                <div class="org-pane-body">
+                    <div id="org-tree" class="org-tree"></div>
+                </div>
+            </div>
+
+            <!-- 우측: 부서 상세 -->
+            <div class="org-pane-right">
+                <div class="org-pane-header">
+                    <div class="org-pane-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        부서 상세
+                    </div>
+                </div>
+                <div id="org-detail" style="display:flex; flex-direction:column; flex:1; overflow-y:auto;">
+                    <!-- JS가 렌더 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 수동 동기화 모달 -->
+    <div class="sync-modal-backdrop" id="sync-modal">
+        <div class="sync-modal" role="dialog" aria-modal="true">
+            <h3 id="sync-modal-title">행정포털 조직도를 동기화하시겠습니까?</h3>
+            <p id="sync-modal-desc">예상 소요 시간 약 1분. 진행 중에는 상세 정보가 잠시 갱신될 수 있습니다.</p>
+
+            <div id="sync-modal-progress" style="display:none;">
+                <div class="progress" style="height:10px;">
+                    <div class="progress-bar green" id="sync-bar" style="width:0%;"></div>
+                </div>
+                <div class="meta">
+                    <span id="sync-step">대기 중</span>
+                    <span id="sync-percent">0%</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-outline" type="button" id="sync-cancel-btn" onclick="window.closeSyncModal()">취소</button>
+                <button class="btn btn-primary" type="button" id="sync-start-btn" onclick="window.startSync()">동기화 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* ─── 부서 데이터 (목업) ─── */
+        const TREE = [{
+            id: 'root',
+            name: '담양군청',
+            head: '이○○ 군수',
+            position: '경영책임자',
+            count: 320,
+            ssoCount: 312,
+            manualCount: 8,
+            targetCount: 0,
+            parentName: null,
+            tag: 'ceo',
+            tagLabel: '경영책임자',
+            children: [
+                {
+                    id: 'jachi', name: '자치행정과',
+                    head: '홍길동', position: '5급 사무관',
+                    count: 15, ssoCount: 14, manualCount: 1, targetCount: 3,
+                    children: [
+                        { id: 'jachi-1', name: '행정지원팀', head: '김팀장', position: '6급 주사', count: 5, ssoCount: 5, manualCount: 0, targetCount: 1 },
+                        { id: 'jachi-2', name: '인사담당팀', head: '박팀장', position: '6급 주사', count: 4, ssoCount: 4, manualCount: 0, targetCount: 0 },
+                    ]
+                },
+                {
+                    id: 'safety', name: '안전건설과',
+                    head: '박○○', position: '5급 사무관',
+                    count: 22, ssoCount: 22, manualCount: 0, targetCount: 8,
+                    tag: 'dedicated', tagLabel: '전담부서',
+                    children: [
+                        { id: 'safety-1', name: '안전관리팀', head: '김안전', position: '6급 주사', count: 6, ssoCount: 6, manualCount: 0, targetCount: 5, tag: 'dedicated', tagLabel: '전담팀' },
+                        { id: 'safety-2', name: '시설관리팀', head: '최성호', position: '6급 주사', count: 9, ssoCount: 9, manualCount: 0, targetCount: 3 },
+                        { id: 'safety-3', name: '건설지원팀', head: '이건설', position: '6급 주사', count: 6, ssoCount: 6, manualCount: 0, targetCount: 0 },
+                    ]
+                },
+                {
+                    id: 'farm', name: '농업기술센터',
+                    head: '이센터장', position: '4급 서기관',
+                    count: 22, ssoCount: 22, manualCount: 0, targetCount: 2,
+                    children: [
+                        { id: 'farm-1', name: '농업지도팀', head: '정지도', position: '6급 주사', count: 8, ssoCount: 8, manualCount: 0, targetCount: 1 },
+                        { id: 'farm-2', name: '농업정책팀', head: '윤정책', position: '6급 주사', count: 6, ssoCount: 6, manualCount: 0, targetCount: 1 },
+                    ]
+                },
+                { id: 'water', name: '상수도사업소', head: '정소장', position: '5급 사무관', count: 12, ssoCount: 12, manualCount: 0, targetCount: 4 },
+                { id: 'env',   name: '환경과',       head: '윤과장', position: '5급 사무관', count: 14, ssoCount: 14, manualCount: 0, targetCount: 3 },
+                { id: 'health',name: '보건소',       head: null,    position: null,        count: 22, ssoCount: 21, manualCount: 1, targetCount: 5 },
+                { id: 'eup',   name: '담양읍사무소', head: null,    position: null,        count: 18, ssoCount: 16, manualCount: 2, targetCount: 2 },
+                { id: 'culture',name:'문화관광과',  head: '한과장', position: '5급 사무관', count: 16, ssoCount: 16, manualCount: 0, targetCount: 4 },
+            ]
+        }];
+
+        /* 부서별 안전·보건 인력 충족 (목업) — 전담부서·관리대상 보유 부서만 */
+        const FULFILL = {
+            root:     { safety: [1,1], health: [1,1], supervisor: [3,3] },
+            jachi:    { safety: [1,1], health: [0,1], supervisor: [1,1] },
+            safety:   { safety: [2,2], health: [1,1], supervisor: [2,2] },
+            'safety-1':{ safety: [1,1], health: [1,1], supervisor: [1,1] },
+            'safety-2':{ safety: [1,1], health: [1,1], supervisor: [1,1] },
+            farm:     { safety: [1,1], health: [1,1], supervisor: [1,1] },
+            water:    { safety: [1,1], health: [1,1], supervisor: [1,1] },
+            env:      { safety: [1,1], health: [0,1], supervisor: [1,1] },
+            health:   { safety: [0,1], health: [1,1], supervisor: [0,1] },
+            eup:      { safety: [1,1], health: [0,1], supervisor: [1,1] },
+            culture:  { safety: [1,1], health: [1,1], supervisor: [1,1] },
+        };
+
+        /* ─── 트리 렌더 ─── */
+        const tree$ = document.getElementById('org-tree');
+        const detail$ = document.getElementById('org-detail');
+
+        let selectedId = 'safety'; // 기본 선택: 안전건설과
+        const collapsed = new Set(); // 접힌 노드 id
+
+        function iconSvg(name) {
+            const ICONS = {
+                building: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M16 10h.01"/></svg>',
+                team:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M1 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>',
+                chev:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+            };
+            return ICONS[name] || '';
+        }
+
+        function findNode(id, list) {
+            list = list || TREE;
+            for (const n of list) {
+                if (n.id === id) return n;
+                if (n.children) {
+                    const r = findNode(id, n.children);
+                    if (r) return r;
+                }
+            }
+            return null;
+        }
+
+        function pathOf(id) {
+            const path = [];
+            function walk(list, trail) {
+                for (const n of list) {
+                    const next = trail.concat([n]);
+                    if (n.id === id) { path.push(...next); return true; }
+                    if (n.children && walk(n.children, next)) return true;
+                }
+                return false;
+            }
+            walk(TREE, []);
+            return path;
+        }
+
+        function renderTree() {
+            tree$.innerHTML = TREE.map(n => renderNode(n, 0)).join('');
+        }
+
+        function renderNode(node, depth) {
+            const hasChildren = node.children && node.children.length;
+            const isCollapsed = collapsed.has(node.id);
+            const isSelected = node.id === selectedId;
+            const iconKey = depth === 0 ? 'building' : (hasChildren ? 'building' : 'team');
+            const headHtml = node.head
+                ? `<span class="org-tree-head">${node.head} · ${node.position || ''}</span>`
+                : `<span class="org-tree-head unassigned">부서장 미지정 ⚠</span>`;
+            const tagHtml = node.tag
+                ? `<span class="org-tag ${node.tag}">${node.tagLabel}</span>`
+                : '';
+            const toggleHtml = hasChildren
+                ? `<span class="org-tree-toggle" data-toggle="${node.id}">${iconSvg('chev')}</span>`
+                : `<span class="org-tree-toggle is-placeholder"></span>`;
+
+            const rowClass = 'org-tree-row' + (isSelected ? ' is-selected' : '');
+            const nodeClass = 'org-tree-node' + (isCollapsed ? ' is-collapsed' : '');
+
+            const childrenHtml = hasChildren
+                ? `<div class="org-tree-children">${node.children.map(c => renderNode(c, depth + 1)).join('')}</div>`
+                : '';
+
+            return `
+                <div class="${nodeClass}" data-node="${node.id}">
+                    <div class="${rowClass}" data-select="${node.id}">
+                        ${toggleHtml}
+                        <span class="org-tree-icon ${depth === 0 ? 'root' : ''}">${iconSvg(iconKey)}</span>
+                        <span class="org-tree-name">
+                            <span class="name">${node.name}</span>
+                            ${tagHtml}
+                        </span>
+                        ${headHtml}
+                        <span class="org-tree-count">${node.count}명</span>
+                    </div>
+                    ${childrenHtml}
+                </div>
+            `;
+        }
+
+        /* ─── 트리 인터랙션 ─── */
+        tree$.addEventListener('click', (e) => {
+            const toggle = e.target.closest('[data-toggle]');
+            if (toggle) {
+                e.stopPropagation();
+                const id = toggle.dataset.toggle;
+                if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
+                renderTree();
+                return;
+            }
+            const row = e.target.closest('[data-select]');
+            if (row) {
+                selectedId = row.dataset.select;
+                renderTree();
+                renderDetail();
+            }
+        });
+
+        /* ─── 검색 ─── */
+        document.getElementById('org-search').addEventListener('input', (e) => {
+            const q = e.target.value.trim();
+            if (!q) {
+                tree$.querySelectorAll('.org-tree-row').forEach(r => r.style.display = '');
+                tree$.querySelectorAll('.org-tree-name .name').forEach(n => n.style.background = '');
+                return;
+            }
+            tree$.querySelectorAll('.org-tree-row').forEach(r => {
+                const id = r.dataset.select;
+                const node = findNode(id);
+                const match = node && node.name.indexOf(q) >= 0;
+                r.style.display = match ? '' : 'none';
+                if (match) {
+                    // 상위 노드도 표시 (펼침)
+                    pathOf(id).forEach(p => {
+                        const pRow = tree$.querySelector(`[data-select="${p.id}"]`);
+                        if (pRow) pRow.style.display = '';
+                        collapsed.delete(p.id);
+                    });
+                }
+            });
+        });
+
+        /* ─── 우측 상세 패널 렌더 ─── */
+        function renderDetail() {
+            const node = findNode(selectedId);
+            if (!node) {
+                detail$.innerHTML = `
+                    <div class="org-detail-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/>
+                        </svg>
+                        <div>좌측에서 부서를 선택하세요</div>
+                    </div>`;
+                return;
+            }
+            const path = pathOf(node.id);
+            const breadcrumb = path.map((p, i) => {
+                if (i === path.length - 1) return `<strong style="color:var(--text-black);">${p.name}</strong>`;
+                return p.name;
+            }).join(' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> ');
+
+            const headHtml = node.head
+                ? `<span class="v">${node.head} <span class="sub">· ${node.position || ''}</span></span>`
+                : `<span class="v warning">미지정 ⚠</span>`;
+
+            const tagBadge = node.tag === 'ceo'
+                ? `<span class="badge" style="background:#1e293b;color:white;border-color:#1e293b;">경영책임자</span>`
+                : node.tag === 'dedicated'
+                    ? `<span class="badge badge-success">${node.tagLabel}</span>`
+                    : `<span class="badge badge-gray">일반부서</span>`;
+
+            const f = FULFILL[node.id];
+            const fulfillRows = f ? [
+                { key: 'safety', label: '안전관리자', data: f.safety },
+                { key: 'health', label: '보건관리자', data: f.health },
+                { key: 'supervisor', label: '관리감독자', data: f.supervisor },
+            ].map(r => {
+                const [cur, need] = r.data;
+                const short = cur < need;
+                return `
+                    <div class="org-fulfill-row ${short ? 'is-short' : ''}" onclick="window.DYLayout._soon(event, '전담인력 ${r.label} (ORG03-V)')">
+                        <span class="org-fulfill-label">${r.label}</span>
+                        <span class="org-fulfill-meta">
+                            <span class="count">${cur}/${need}</span>
+                            <span class="badge ${short ? 'badge-warning' : 'badge-success'}">${short ? '미충족' : '충족'}</span>
+                        </span>
+                    </div>
+                `;
+            }).join('') : '<p style="font-size:13px;color:var(--text-gray);">해당 부서는 충족 기준 산출 대상이 아닙니다.</p>';
+
+            const orgAvatar = node.name.slice(0, 1);
+
+            detail$.innerHTML = `
+                <div class="org-detail-head">
+                    <div class="org-detail-avatar">${orgAvatar}</div>
+                    <div class="org-detail-head-meta">
+                        <div class="org-detail-name">${node.name}</div>
+                        <div class="org-detail-path">${breadcrumb}</div>
+                        <div style="margin-top:6px;">${tagBadge}</div>
+                    </div>
+                </div>
+
+                <div class="org-detail-section">
+                    <h3>기본 정보</h3>
+                    <div class="org-info-table">
+                        <span class="k">부서장</span> ${headHtml}
+                        <span class="k">상위 부서</span> <span class="v">${path.length > 1 ? path[path.length - 2].name : '-'}</span>
+                        <span class="k">인원수</span> <span class="v">${node.count}명 <span class="sub">SSO ${node.ssoCount} / 직접등록 ${node.manualCount}</span></span>
+                        <span class="k">관리대상</span> <span class="v">${node.targetCount}건 ${node.targetCount > 0 ? `<a href="#" style="color:var(--main);font-weight:600;margin-left:4px;" onclick="event.preventDefault(); window.DYLayout._soon(event, '관리대상 목록 (TGT01-V) - ${node.name}');">보기 →</a>` : ''}</span>
+                    </div>
+                </div>
+
+                <div class="org-detail-section">
+                    <h3>안전·보건 인력 충족</h3>
+                    <div class="org-fulfill-list">${fulfillRows}</div>
+                </div>
+
+                <div class="org-detail-actions">
+                    <a class="btn btn-outline" href="organization.html" onclick="event.preventDefault(); window.location.href='organization.html'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M1 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
+                        구성원 보기
+                    </a>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '전담인력 관리 (ORG03-V) - ${node.name}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="11" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
+                        전담인력 관리
+                    </button>
+                </div>
+            `;
+        }
+
+        /* ─── 동기화 모달 ─── */
+        let syncTimer = null;
+        window.openSyncModal = function () {
+            const m = document.getElementById('sync-modal');
+            m.classList.add('is-open');
+            document.getElementById('sync-modal-progress').style.display = 'none';
+            document.getElementById('sync-bar').style.width = '0%';
+            document.getElementById('sync-percent').textContent = '0%';
+            document.getElementById('sync-step').textContent = '대기 중';
+            document.getElementById('sync-modal-title').textContent = '행정포털 조직도를 동기화하시겠습니까?';
+            document.getElementById('sync-modal-desc').textContent = '예상 소요 시간 약 1분. 진행 중에는 상세 정보가 잠시 갱신될 수 있습니다.';
+            document.getElementById('sync-start-btn').textContent = '동기화 시작';
+            document.getElementById('sync-start-btn').disabled = false;
+            document.getElementById('sync-cancel-btn').textContent = '취소';
+        };
+        window.closeSyncModal = function () {
+            if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
+            document.getElementById('sync-modal').classList.remove('is-open');
+        };
+        window.startSync = function () {
+            const startBtn = document.getElementById('sync-start-btn');
+            const cancelBtn = document.getElementById('sync-cancel-btn');
+            const bar = document.getElementById('sync-bar');
+            const pct = document.getElementById('sync-percent');
+            const step = document.getElementById('sync-step');
+
+            document.getElementById('sync-modal-title').textContent = '동기화 진행 중...';
+            document.getElementById('sync-modal-desc').textContent = '행정포털에서 부서·인원을 가져오는 중입니다.';
+            document.getElementById('sync-modal-progress').style.display = 'block';
+            startBtn.disabled = true;
+            startBtn.textContent = '진행 중';
+            cancelBtn.textContent = '백그라운드 실행';
+
+            let p = 0;
+            const steps = [
+                { p: 20,  msg: '부서 마스터 동기화 (12/15)' },
+                { p: 55,  msg: '사용자 동기화 (180/320)' },
+                { p: 80,  msg: '부서장 변경 감지 (~1건)' },
+                { p: 100, msg: '완료' },
+            ];
+            let si = 0;
+            syncTimer = setInterval(() => {
+                p += 3;
+                if (p > 100) p = 100;
+                while (si < steps.length && p >= steps[si].p) {
+                    step.textContent = steps[si].msg;
+                    si++;
+                }
+                bar.style.width = p + '%';
+                pct.textContent = p + '%';
+                if (p >= 100) {
+                    clearInterval(syncTimer); syncTimer = null;
+                    setTimeout(() => {
+                        window.closeSyncModal();
+                        showToast('동기화 완료: 부서 +1, ~3 / 사용자 +5, ~10 / 부서장 변경 ~1건');
+                    }, 350);
+                }
+            }, 90);
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* 초기 렌더 */
+        renderTree();
+        renderDetail();
+    })();
+    </script>
+</body>
+</html>
