@@ -274,8 +274,8 @@
             </button>
         </div>
 
-        <!-- ─── 요약 카드 (시설 분류·종별 풍부) ─── -->
-        <section class="tgt-summary-card">
+        <!-- ─── 요약 카드 (시설 분류·종별 풍부) — 전체 탭에서만 노출 ─── -->
+        <section class="tgt-summary-card" id="tgt-summary">
             <div class="tgt-summary-grid">
                 <!-- 시설 -->
                 <div class="tgt-summary-cell">
@@ -663,6 +663,10 @@
                 if (show) visible++;
             });
             resultCount.textContent = visible;
+
+            // 요약 카드는 전체 탭에서만 노출
+            const summary = document.getElementById('tgt-summary');
+            if (summary) summary.style.display = activeType === 'all' ? '' : 'none';
 
             // 시설 type일 때만 중대재해법·종별 필터 활성화
             const isFacility = activeType === 'facility' || activeType === 'all';

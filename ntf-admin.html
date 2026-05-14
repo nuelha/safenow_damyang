@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>알림 운영 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── NTF03-S 전용 ─── */
+
+        /* 안내 */
+        .ntf-note {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; color: var(--status-warning-fg);
+        }
+        .ntf-note svg { flex-shrink: 0; margin-top: 1px; }
+
+        /* 패널 전환 */
+        .ntf-panel { display: none; }
+        .ntf-panel.is-active { display: block; }
+
+        /* 통계 카드 */
+        .ntf-stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        @media (max-width: 1023px) { .ntf-stat-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .ntf-stat-row { grid-template-columns: 1fr; } }
+        .ntf-stat {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 16px 18px;
+        }
+        .ntf-stat .label { font-size: 12px; font-weight: 600; color: var(--text-gray); letter-spacing: 0.02em; }
+        .ntf-stat .value {
+            font-size: 26px; font-weight: 800;
+            color: var(--main-dark2);
+            margin-top: 6px; line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+        }
+        .ntf-stat .value .unit { font-size: 13px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .ntf-stat .delta { font-size: 12px; color: var(--text-gray); margin-top: 6px; }
+        .ntf-stat.warning .value { color: var(--status-warning-fg); }
+        .ntf-stat.danger .value { color: var(--status-danger-fg); }
+        .ntf-stat.success .value { color: var(--status-success-fg); }
+
+        /* 카드 */
+        .ntf-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            margin-top: 14px;
+        }
+        .ntf-card-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fafbfb;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .ntf-card-head h3 { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .ntf-card-head .desc { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 테이블 */
+        .ntf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ntf-table th {
+            padding: 10px 18px;
+            font-size: 12px; font-weight: 700; color: var(--main-dark2);
+            background: #fafbfb;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .ntf-table th.center { text-align: center; }
+        .ntf-table th.right { text-align: right; }
+        .ntf-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--card-line);
+            color: var(--text-black);
+        }
+        .ntf-table tbody tr:last-child td { border-bottom: none; }
+        .ntf-table .num { font-variant-numeric: tabular-nums; }
+
+        /* 채널 칩 */
+        .channel-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+        .channel-chip.portal { background: var(--brand-100); color: var(--main-dark2); border-color: var(--main-light); }
+        .channel-chip.email  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+
+        /* 카테고리 칩 */
+        .cat-chip {
+            display: inline-flex; align-items: center;
+            padding: 1px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--gray-100); color: var(--text-gray);
+        }
+
+        /* 상태 칩 */
+        .ntf-result {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .ntf-result.success { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .ntf-result.failed  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .ntf-result.retry   { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+
+        /* 미니 버튼 */
+        .ntf-mini-btn {
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid var(--card-line);
+            color: var(--text-black);
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .ntf-mini-btn:hover { border-color: var(--main); color: var(--main); background: var(--brand-50); }
+        .ntf-mini-btn.danger:hover { border-color: var(--status-danger-fg); color: var(--status-danger-fg); background: var(--status-danger-bg); }
+
+        /* 카테고리 차트 (간이 막대) */
+        .ntf-bar-chart { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+        .ntf-bar-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 70px;
+            align-items: center; gap: 12px;
+            font-size: 13px;
+        }
+        .ntf-bar-row .name { color: var(--text-black); font-weight: 600; }
+        .ntf-bar-row .bar-track {
+            height: 12px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .ntf-bar-row .bar-fill {
+            height: 100%;
+            background: var(--main);
+            border-radius: 999px;
+        }
+        .ntf-bar-row .count { text-align: right; color: var(--text-gray); font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body data-dy-page="sys-notif"
+      data-page-title="알림 운영"
+      data-page-subtitle="적재 현황·실패 큐 (NTF03-S v1.1 — 결정사항 #24)">
+    <main>
+
+        <!-- ─── 상단 외부 연동 상태 위젯 (v1.1 — 결정사항 #24)
+                새올·SMTP 연동 설정·이메일 템플릿 관리는 SYS01-S에서 관리. ─── -->
+        <div class="module-int-widget" role="region" aria-label="외부 연동 정보">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="body">
+                <div class="title">외부 연동 정보</div>
+                <div class="row">
+                    <span class="system-name">새올 포틀릿</span>
+                    <span class="status-dot">정상</span>
+                    <span class="meta">실시간 적재 · 24시간 <strong>518</strong>건 성공 / <strong>4</strong>건 실패</span>
+                </div>
+                <div class="row">
+                    <span class="system-name">SMTP</span>
+                    <span class="status-dot">정상</span>
+                    <span class="meta">실시간 발송 · 24시간 <strong>18</strong>건 성공</span>
+                    <a class="deep-link" href="sys-integration.html?tab=saeol">
+                        외부 시스템 연동 보기
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </a>
+                </div>
+                <div class="row">
+                    <span class="meta">새올·SMTP 연동 설정·재시도 정책·이메일 템플릿은 <strong>SYS01-S</strong>에서 관리합니다.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── 안내 ─── -->
+        <div class="ntf-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>CEO·GM·SHM 접근 가능.</strong> 알림 적재·발송 자체의 운영(실패 재시도·무시·이력 조회)만 본 화면에서 수행합니다. 알림 트리거는 각 모듈에서, 채널·템플릿 설정은 SYS01-S에서 관리합니다.</span>
+        </div>
+
+        <!-- ─── 서브 탭 (2개 — 새올/SMTP 설정 탭 제거) ─── -->
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="status">적재 현황</button>
+            <button class="sub-tab" type="button" data-panel="queue">실패 큐 <span class="count">6</span></button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 적재 현황
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="ntf-panel is-active" data-panel="status">
+
+            <!-- 24시간 통계 -->
+            <div class="ntf-stat-row">
+                <div class="ntf-stat success">
+                    <div class="label">24시간 적재 성공</div>
+                    <div class="value num">1,210<span class="unit">건</span></div>
+                    <div class="delta">평균 적재 소요 0.8초</div>
+                </div>
+                <div class="ntf-stat">
+                    <div class="label">24시간 시도</div>
+                    <div class="value num">1,234<span class="unit">건</span></div>
+                    <div class="delta">새올 522 / 이메일 712</div>
+                </div>
+                <div class="ntf-stat warning">
+                    <div class="label">실패·재시도 대기</div>
+                    <div class="value num">10<span class="unit">건</span></div>
+                    <div class="delta">실패 4 / 재시도 6</div>
+                </div>
+                <div class="ntf-stat danger">
+                    <div class="label">최종 FAILED (5회 초과)</div>
+                    <div class="value num">2<span class="unit">건</span></div>
+                    <div class="delta">운영자 수동 처리 필요</div>
+                </div>
+            </div>
+
+            <!-- 카테고리별 발송 통계 -->
+            <div class="ntf-card">
+                <div class="ntf-card-head">
+                    <div>
+                        <h3>카테고리별 발송 통계</h3>
+                        <div class="desc">이번 주 (2026-05-08 ~ 2026-05-14) · notifications GROUP BY category</div>
+                    </div>
+                    <select class="select" style="height:32px; font-size:12px;">
+                        <option>이번 주</option>
+                        <option>지난 주</option>
+                        <option>이번 달</option>
+                    </select>
+                </div>
+                <div class="ntf-bar-chart">
+                    <div class="ntf-bar-row">
+                        <span class="name">결재 요청</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 92%;"></div></div>
+                        <span class="count">1,142건</span>
+                    </div>
+                    <div class="ntf-bar-row">
+                        <span class="name">위험성평가</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 65%;"></div></div>
+                        <span class="count">812건</span>
+                    </div>
+                    <div class="ntf-bar-row">
+                        <span class="name">도급계약</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 48%;"></div></div>
+                        <span class="count">598건</span>
+                    </div>
+                    <div class="ntf-bar-row">
+                        <span class="name">이행관리</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 32%;"></div></div>
+                        <span class="count">402건</span>
+                    </div>
+                    <div class="ntf-bar-row">
+                        <span class="name">개선조치</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 26%;"></div></div>
+                        <span class="count">328건</span>
+                    </div>
+                    <div class="ntf-bar-row">
+                        <span class="name">시스템 (운영자)</span>
+                        <div class="bar-track"><div class="bar-fill" style="width: 8%;"></div></div>
+                        <span class="count">94건</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 채널별 통계 (이번 달) -->
+            <div class="ntf-card">
+                <div class="ntf-card-head">
+                    <div>
+                        <h3>채널별 통계 (이번 달)</h3>
+                        <div class="desc">새올 포틀릿 / 이메일(외부 사용자) 별 적재량과 성공률</div>
+                    </div>
+                </div>
+                <table class="ntf-table">
+                    <colgroup><col style="width:200px;"><col style="width:120px;"><col style="width:120px;"><col><col style="width:120px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>채널</th>
+                            <th class="right">적재량</th>
+                            <th class="right">성공률</th>
+                            <th>평균 적재 소요</th>
+                            <th class="center">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="channel-chip portal">새올 포틀릿</span></td>
+                            <td class="num" style="text-align:right;">12,485</td>
+                            <td class="num" style="text-align:right;"><strong>99.2%</strong></td>
+                            <td>0.8초 (P95 1.4초)</td>
+                            <td class="center"><span class="ntf-result success">정상</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="channel-chip email">이메일 (외부)</span></td>
+                            <td class="num" style="text-align:right;">428</td>
+                            <td class="num" style="text-align:right;"><strong>95.1%</strong></td>
+                            <td>0.6초</td>
+                            <td class="center"><span class="ntf-result success">정상</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 최근 알림 이력 -->
+            <div class="ntf-card">
+                <div class="ntf-card-head">
+                    <div>
+                        <h3>최근 알림 이력</h3>
+                        <div class="desc">최근 100건 · notifications ORDER BY created_at DESC</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <select class="select" style="height:32px; font-size:12px;">
+                            <option>전체 채널</option>
+                            <option>새올 포틀릿</option>
+                            <option>이메일</option>
+                        </select>
+                        <select class="select" style="height:32px; font-size:12px;">
+                            <option>전체 카테고리</option>
+                            <option>결재 요청</option>
+                            <option>위험성평가</option>
+                            <option>도급계약</option>
+                            <option>이행관리</option>
+                            <option>시스템</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드')">엑셀</button>
+                    </div>
+                </div>
+                <table class="ntf-table">
+                    <colgroup><col style="width:140px;"><col style="width:120px;"><col style="width:110px;"><col><col style="width:80px;"><col style="width:100px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>일시</th>
+                            <th>대상자</th>
+                            <th>채널</th>
+                            <th>카테고리 · 제목</th>
+                            <th class="center">상태</th>
+                            <th class="center">액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">14:23:08</td>
+                            <td>홍길동 (안전건설과)</td>
+                            <td><span class="channel-chip portal">새올</span></td>
+                            <td><span class="cat-chip">결재</span> 위험성평가 결재 요청 (RSK-2026-0142)</td>
+                            <td class="center"><span class="ntf-result success">성공</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '알림 상세 — 14:23:08')">보기</button></td>
+                        </tr>
+                        <tr>
+                            <td class="num">14:22:41</td>
+                            <td>김도급 (외부 SUB)</td>
+                            <td><span class="channel-chip email">이메일</span></td>
+                            <td><span class="cat-chip">계약</span> 도급계약 STEP 4 서약서 작성 안내</td>
+                            <td class="center"><span class="ntf-result success">성공</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '알림 상세')">보기</button></td>
+                        </tr>
+                        <tr style="background: var(--status-warning-bg);">
+                            <td class="num">14:20:15</td>
+                            <td>이안전 (도시환경과)</td>
+                            <td><span class="channel-chip portal">새올</span></td>
+                            <td><span class="cat-chip">이행</span> 이행관리 마감일 D-3 알림 · <span style="color:var(--status-warning-fg);">TIMEOUT</span></td>
+                            <td class="center"><span class="ntf-result retry">재시도 3/5</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button></td>
+                        </tr>
+                        <tr>
+                            <td class="num">14:18:02</td>
+                            <td>박관리 (체육시설사업소)</td>
+                            <td><span class="channel-chip portal">새올</span></td>
+                            <td><span class="cat-chip">결재</span> 도급계약 STEP 3 결재 요청 (CON-2026-0083)</td>
+                            <td class="center"><span class="ntf-result success">성공</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '알림 상세')">보기</button></td>
+                        </tr>
+                        <tr style="background: var(--status-danger-bg);">
+                            <td class="num">13:45:33</td>
+                            <td>최담당 (외부 CON)</td>
+                            <td><span class="channel-chip portal">새올</span></td>
+                            <td><span class="cat-chip">개선</span> 개선조치 배정 알림 · <span style="color:var(--status-danger-fg);">404 NOT_FOUND</span></td>
+                            <td class="center"><span class="ntf-result retry">재시도 2/5</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button></td>
+                        </tr>
+                        <tr>
+                            <td class="num">13:30:11</td>
+                            <td>전체 SHM 8명</td>
+                            <td><span class="channel-chip portal">새올</span></td>
+                            <td><span class="cat-chip">시스템</span> 새올 포틀릿 실패 누적 50건/시간 (운영자 알림)</td>
+                            <td class="center"><span class="ntf-result success">성공</span></td>
+                            <td class="center"><button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '알림 상세')">보기</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div data-pagination data-current="1" data-total="5"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 실패 큐
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="ntf-panel" data-panel="queue">
+            <div class="ntf-card">
+                <div class="ntf-card-head">
+                    <div>
+                        <h3>실패 큐 (재시도 대기 6건)</h3>
+                        <div class="desc">notifications WHERE status IN ('FAILED','RETRY') · 재시도 정책은 SYS01-S §6.2 (5단계 백오프) 정의</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <select class="select" style="height:32px; font-size:12px;">
+                            <option>최근 24시간</option>
+                            <option>최근 7일</option>
+                            <option>최근 30일</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.NtfAdmin.confirmIgnoreAll()">전체 무시</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.NtfAdmin.confirmRetryAll()">전체 재시도</button>
+                    </div>
+                </div>
+                <table class="ntf-table">
+                    <colgroup><col style="width:140px;"><col style="width:140px;"><col style="width:100px;"><col><col style="width:90px;"><col style="width:200px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>일시</th>
+                            <th>대상자</th>
+                            <th>카테고리</th>
+                            <th>오류 · 다음 재시도</th>
+                            <th class="center">재시도</th>
+                            <th class="center">액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">14:20:15</td>
+                            <td>이안전 (도시환경과)</td>
+                            <td><span class="cat-chip">이행</span></td>
+                            <td>TIMEOUT · 다음 재시도 <strong>14:35:00</strong></td>
+                            <td class="center num">3/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="num">13:45:33</td>
+                            <td>최담당 (외부 CON)</td>
+                            <td><span class="cat-chip">개선</span></td>
+                            <td>404 NOT_FOUND · 다음 재시도 <strong>14:00:33</strong></td>
+                            <td class="center num">2/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="num">12:08:22</td>
+                            <td>김근로 (안전건설과)</td>
+                            <td><span class="cat-chip">시스템</span></td>
+                            <td>404 NOT_FOUND · external_id 매칭 실패</td>
+                            <td class="center num">2/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="num">11:42:08</td>
+                            <td>박안전 (안전건설과)</td>
+                            <td><span class="cat-chip">결재</span></td>
+                            <td>TIMEOUT · 다음 재시도 <strong>11:47:08</strong></td>
+                            <td class="center num">1/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '즉시 재시도')">재시도</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                        <tr style="background: var(--status-danger-bg);">
+                            <td class="num">08:15:44</td>
+                            <td>유외주 (외부 SUB)</td>
+                            <td><span class="cat-chip">계약</span></td>
+                            <td><strong style="color:var(--status-danger-fg);">FAILED (5회 초과)</strong> · 운영자 수동 처리 필요</td>
+                            <td class="center num">5/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '다른 채널로 발송')">대체 발송</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                        <tr style="background: var(--status-danger-bg);">
+                            <td class="num">07:52:11</td>
+                            <td>한외주 (외부 SUB)</td>
+                            <td><span class="cat-chip">계약</span></td>
+                            <td><strong style="color:var(--status-danger-fg);">FAILED (5회 초과)</strong> · 운영자 수동 처리 필요</td>
+                            <td class="center num">5/5</td>
+                            <td class="center">
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '다른 채널로 발송')">대체 발송</button>
+                                <button class="ntf-mini-btn danger" type="button" onclick="window.DYLayout._soon(event, '무시')">무시</button>
+                                <button class="ntf-mini-btn" type="button" onclick="window.DYLayout._soon(event, '상세 로그')">로그</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="font-size:12px; color:var(--text-gray); padding:14px 4px; line-height:1.6;">
+                ※ 재시도 백오프 정책 (SYS01-S §6.2): 1차 1분 → 2차 5분 → 3차 15분 → 4차 1시간 → 5차 6시간. 5회 초과 시 <code>status='FAILED'</code> 변경되어 운영자 알림 발송.
+                <br>※ [무시] 처리 시 <code>status='IGNORED'</code>로 변경되며 재시도 대상에서 제외됩니다.
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 확인 모달 (전체 재시도 / 전체 무시) -->
+    <div class="con-modal-backdrop" id="confirm-modal" style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;">
+        <div class="con-modal" role="dialog" aria-modal="true" style="background:white; border-radius:var(--radius-card); width:100%; max-width:460px;">
+            <div class="con-modal-header" style="padding:18px 22px; border-bottom:1px solid var(--card-line);">
+                <div class="con-modal-title" id="confirm-title" style="font-size:15px; font-weight:700; color:var(--main-dark2);">확인</div>
+            </div>
+            <div class="con-modal-body" id="confirm-body" style="padding:20px 22px; font-size:13px; color:var(--text-black); line-height:1.6;"></div>
+            <div class="con-modal-footer" style="padding:14px 22px; border-top:1px solid var(--card-line); display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.NtfAdmin.closeConfirm()">취소</button>
+                <button class="btn btn-primary" type="button" id="confirm-ok" onclick="window.NtfAdmin.confirmOk()">실행</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function switchTab(name) {
+            if (!['status','queue'].includes(name)) name = 'status';
+            document.querySelectorAll('.sub-tab[data-panel]').forEach(b => {
+                b.classList.toggle('active', b.dataset.panel === name);
+            });
+            document.querySelectorAll('.ntf-panel[data-panel]').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.panel === name);
+            });
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', name);
+                window.history.replaceState(null, '', url);
+            } catch (_) {}
+        }
+        document.querySelectorAll('.sub-tab[data-panel]').forEach(b => {
+            b.addEventListener('click', () => switchTab(b.dataset.panel));
+        });
+        try {
+            const initial = new URL(window.location.href).searchParams.get('tab');
+            if (initial) switchTab(initial);
+        } catch (_) {}
+
+        // ─── 확인 모달 ───
+        let pendingAction = null;
+        const modal = document.getElementById('confirm-modal');
+
+        function openConfirm(title, body, onOk) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-body').innerHTML = body;
+            pendingAction = onOk;
+            modal.style.display = 'flex';
+        }
+        function closeConfirm() { modal.style.display = 'none'; pendingAction = null; }
+        function confirmOk() {
+            const fn = pendingAction;
+            closeConfirm();
+            if (fn) fn();
+        }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeConfirm(); });
+
+        window.NtfAdmin = {
+            switchTab,
+            closeConfirm,
+            confirmOk,
+            confirmRetryAll() {
+                openConfirm(
+                    '전체 재시도 실행',
+                    '실패·재시도 대기 중인 <strong>6건</strong>을 모두 재시도 큐에 즉시 적재합니다.<br>SYS01-S 비동기 워커가 다음 폴링(1초 이내)에 처리합니다.',
+                    () => showToast('전체 재시도 6건 큐 적재 완료 — 결과는 [적재 현황] 이력에서 확인하세요. (목업)')
+                );
+            },
+            confirmIgnoreAll() {
+                openConfirm(
+                    '전체 무시 처리',
+                    '실패·재시도 대기 중인 <strong>6건</strong>을 모두 IGNORED 상태로 변경합니다.<br>재시도 대상에서 제외되며, 이력은 보존됩니다.',
+                    () => showToast('6건 무시 처리 완료. (목업)')
+                );
+            },
+        };
+    })();
+    </script>
+</body>
+</html>

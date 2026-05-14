@@ -51,9 +51,9 @@
         ]},
 
         // 2. 관리대상 관리 (TGT / SFR-002)
+        //    TGT04-S(FMS 동기화 설정) — 결정사항 #24로 폐기. SYS01-S FMS 탭으로 흡수.
         { id: 'target', label: '관리대상 관리', icon: 'building', items: [
             { id: 'target-status', label: '관리대상 현황', icon: 'building', href: 'target-status.html', screen: 'TGT01-V' },
-            { id: 'target-fms',    label: 'FMS 동기화 설정', icon: 'cog',     soon: 'FMS 동기화 (TGT04-S)', screen: 'TGT04-S' },
         ]},
 
         // 3. 안전보건 경영 — ORG + POL + EVL + STF + BGT + PLN + INS + IMP + DOC
@@ -62,7 +62,7 @@
             { id: 'org-chart',     label: '조직도',            icon: 'building', href: 'org-chart.html',        screen: 'ORG01-V' },
             { id: 'organization',  label: '구성원',            icon: 'users',    href: 'organization.html',     screen: 'ORG02-L' },
             { id: 'org-dedicated', label: '전담인력',          icon: 'user',     href: 'org-dedicated.html',    screen: 'ORG03-V' },
-            { id: 'org-sync',      label: '행정포털 동기화',   icon: 'cog',      href: 'org-sync.html',         screen: 'ORG04-S' },
+            // ORG04-S(행정포털 동기화) — 결정사항 #24로 폐기. SYS01-S 조직도 탭으로 흡수.
             // 안전경영방침 (POL / SFR-005)
             { id: 'safety-policy', label: '안전경영방침',      icon: 'shield',   href: 'safety-policy.html',    screen: 'POL01-L' },
             // 안전점검 (INS / SFR-012)
@@ -105,14 +105,16 @@
             { id: 'cmp-status',    label: '이행관리',           icon: 'check',    soon: '이행 현황 (CMP01-V)',     screen: 'CMP01-V' },
         ]},
 
-        // 6. 시스템관리 — AUTH06-S + NTF03-S + STA + CRT + 마스터 + 감사로그
+        // 6. 시스템관리 — SYS01-S(신규) + AUTH06-S + NTF03-S + STA + CRT + 마스터 + 감사로그
+        //    결정사항 #24: 외부 시스템 연동 단일 진실 공급원(SSoT) = SYS01-S.
         { id: 'system', label: '시스템관리', icon: 'cog', items: [
-            { id: 'sys-ext-users', label: '외부 사용자 관리', icon: 'users', soon: '외부 사용자 (AUTH06-S)', screen: 'AUTH06-S' },
-            { id: 'sys-notif',     label: '알림 운영',        icon: 'bell',  soon: '알림 운영 (NTF03-S)',    screen: 'NTF03-S' },
-            { id: 'sys-stat',      label: '통계·현황',        icon: 'chart', soon: '종합 통계 (STA01-V)',    screen: 'STA01-V' },
-            { id: 'sys-cert',      label: '제증명 관리',      icon: 'file',  soon: '발급 신청 (CRT01-L)',    screen: 'CRT01-L' },
-            { id: 'sys-master',    label: '마스터 데이터',    icon: 'list',  soon: '마스터 데이터' },
-            { id: 'sys-audit',     label: '감사 로그',        icon: 'shield',soon: '감사 로그' },
+            { id: 'sys-integration', label: '외부 시스템 연동', icon: 'cog',   href: 'sys-integration.html',   screen: 'SYS01-S' },
+            { id: 'sys-ext-users',   label: '외부 사용자 관리', icon: 'users', soon: '외부 사용자 (AUTH06-S)', screen: 'AUTH06-S' },
+            { id: 'sys-notif',       label: '알림 운영',        icon: 'bell',  href: 'ntf-admin.html',         screen: 'NTF03-S' },
+            { id: 'sys-stat',        label: '통계·현황',        icon: 'chart', soon: '종합 통계 (STA01-V)',    screen: 'STA01-V' },
+            { id: 'sys-cert',        label: '제증명 관리',      icon: 'file',  soon: '발급 신청 (CRT01-L)',    screen: 'CRT01-L' },
+            { id: 'sys-master',      label: '마스터 데이터',    icon: 'list',  soon: '마스터 데이터' },
+            { id: 'sys-audit',       label: '감사 로그',        icon: 'shield',soon: '감사 로그' },
         ]},
     ];
 

@@ -66,15 +66,35 @@
         .master-filter .search-bar .search-submit { height: 28px; }
     </style>
 </head>
-<body data-dy-page="rsk-settings" data-page-title="위험성평가 설정" data-page-subtitle="평가 주기·기법·위험요인 마스터 및 외부 시스템 연동 운영">
+<body data-dy-page="rsk-settings" data-page-title="위험성평가 설정" data-page-subtitle="평가 주기·평가 기법·위험요인 콘텐츠 마스터 (RSK04-S v1.1 — 결정사항 #24)">
     <main>
 
-        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <!-- ─── 상단 외부 연동 상태 위젯 (v1.1 — 결정사항 #24)
+                e호조 연동 설정·동기화 정책·자동 평가 생성 정책은 SYS01-S에서 관리. ─── -->
+        <div class="module-int-widget" role="region" aria-label="외부 연동 정보">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="body">
+                <div class="title">외부 연동 정보</div>
+                <div class="row">
+                    <span class="system-name">차세대 e호조</span>
+                    <span class="status-dot">정상</span>
+                    <span class="meta">마지막 성공 <strong>2026-05-13 06:00</strong> · 도급공사 자동 위험성평가 생성 <strong>활성화됨</strong></span>
+                    <a class="deep-link" href="sys-integration.html?tab=ehojo">
+                        외부 시스템 연동 보기
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </a>
+                </div>
+                <div class="row">
+                    <span class="meta">자동 평가 생성 정책 (담당자 매핑·마감일 규칙)·동기화 이력은 <strong>SYS01-S</strong>에서 관리합니다.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── 화면 내부 서브 탭 (3개 — e호조 연동 탭 제거) ─── -->
         <div class="sub-tabs" role="tablist">
             <button class="sub-tab active" type="button" data-panel="period" onclick="window.RskSettings.switchTab('period')">평가 주기</button>
             <button class="sub-tab" type="button" data-panel="method" onclick="window.RskSettings.switchTab('method')">평가 기법 마스터</button>
             <button class="sub-tab" type="button" data-panel="factor" onclick="window.RskSettings.switchTab('factor')">위험요인 마스터</button>
-            <button class="sub-tab" type="button" data-panel="ehojo" onclick="window.RskSettings.switchTab('ehojo')">차세대 e호조 연동</button>
         </div>
 
         <!-- ═════════════════════════════════════ -->
@@ -382,155 +402,6 @@
             </section>
         </div>
 
-        <!-- ═════════════════════════════════════ -->
-        <!-- ④ 차세대 e호조 연동 (EHOJO) -->
-        <!-- ═════════════════════════════════════ -->
-        <div class="settings-panel" data-panel="ehojo">
-            <!-- 연동 상태 카드 -->
-            <section class="card">
-                <div class="card-body" style="padding:20px 24px;">
-                    <div class="integration-status">
-                        <div class="integration-status-dot">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </div>
-                        <div class="integration-status-text">
-                            <span class="integration-status-title">연결됨</span>
-                            <span class="integration-status-meta">마지막 동기화: 2026-05-12 06:00 · 다음 동기화: 2026-05-13 06:00 (매일 06:00)</span>
-                        </div>
-                        <div class="integration-status-actions">
-                            <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'API 테스트 호출')">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                테스트
-                            </button>
-                            <button class="btn-mini primary" type="button" onclick="window.DYLayout._soon(event, '수동 전체 동기화')">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                                전체 동기화
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 연동 설정 -->
-            <section class="card">
-                <div class="settings-card-head">
-                    <div class="settings-card-head-main">
-                        <span class="settings-card-title">연동 설정</span>
-                        <span class="settings-card-desc">차세대 e호조 API 연결 정보 및 자동 동기화 정책 (CEO/GM만 수정 가능)</span>
-                    </div>
-                    <button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '연동 설정 수정 모달')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        수정
-                    </button>
-                </div>
-                <div class="settings-row">
-                    <span class="settings-row-label">API 엔드포인트</span>
-                    <span class="settings-row-value">
-                        <code style="font-size:13px; color:var(--text-black);">https://ehojo.gov.kr/api/v1/contracts</code>
-                    </span>
-                </div>
-                <div class="settings-row">
-                    <span class="settings-row-label">인증 토큰</span>
-                    <span class="settings-row-value">
-                        <code style="font-size:13px; color:var(--text-gray);">eyJhbGciOi••••••••••••••••••••••••••••</code>
-                    </span>
-                </div>
-                <div class="settings-row">
-                    <span class="settings-row-label">동기화 주기</span>
-                    <span class="settings-row-value">매일 06:00</span>
-                </div>
-                <div class="settings-row">
-                    <span class="settings-row-label">도급공사 평가 자동 생성</span>
-                    <span class="settings-row-value">
-                        <label class="toggle-switch">
-                            <input type="checkbox" checked>
-                            <span class="toggle-switch-slider"></span>
-                        </label>
-                        <span class="active-chip is-active">활성</span>
-                        <span class="text-muted" style="font-size:12px;">OFF 시 contracts만 INSERT, risk_assessments 생성 안 함</span>
-                    </span>
-                </div>
-            </section>
-
-            <!-- 동기화 이력 -->
-            <section class="card">
-                <div class="settings-card-head">
-                    <div class="settings-card-head-main">
-                        <span class="settings-card-title">동기화 이력</span>
-                        <span class="settings-card-desc">최근 30건 (행 클릭 시 상세 로그)</span>
-                    </div>
-                </div>
-                <table class="sync-log-table">
-                    <thead>
-                        <tr>
-                            <th>일시</th>
-                            <th>결과</th>
-                            <th>신규 계약</th>
-                            <th>변경 계약</th>
-                            <th>자동 생성 평가</th>
-                            <th>소요</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>2026-05-12 06:00</td>
-                            <td><span class="sync-result-chip success">성공</span></td>
-                            <td>+3</td>
-                            <td>~1</td>
-                            <td>+2 (공사 2건)</td>
-                            <td>2.4초</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-11 06:00</td>
-                            <td><span class="sync-result-chip success">성공</span></td>
-                            <td>+0</td>
-                            <td>~2</td>
-                            <td>+0</td>
-                            <td>1.8초</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-10 06:00</td>
-                            <td><span class="sync-result-chip success">성공</span></td>
-                            <td>+1</td>
-                            <td>~0</td>
-                            <td>+1 (공사 1건)</td>
-                            <td>2.1초</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-09 06:00</td>
-                            <td><span class="sync-result-chip fail">실패</span></td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td>timeout</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-08 06:00</td>
-                            <td><span class="sync-result-chip success">성공</span></td>
-                            <td>+0</td>
-                            <td>~3</td>
-                            <td>+0</td>
-                            <td>1.6초</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-07 06:00</td>
-                            <td><span class="sync-result-chip success">성공</span></td>
-                            <td>+2</td>
-                            <td>~1</td>
-                            <td>+1 (공사 1건)</td>
-                            <td>2.3초</td>
-                            <td><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">보기</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-        </div>
     </main>
 
     <div id="toast" class="toast" role="status"></div>
@@ -563,7 +434,7 @@
                 try {
                     const params = new URL(window.location.href).searchParams;
                     const initial = params.get('section');
-                    if (initial && ['period','method','factor','ehojo'].includes(initial)) {
+                    if (initial && ['period','method','factor'].includes(initial)) {
                         switchTab(initial);
                     }
                 } catch (e) {}

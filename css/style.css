@@ -4240,3 +4240,80 @@ body.sidebar-locked {
     padding: 6px 8px;
   }
 }
+
+/* =========================================
+   모듈 설정 화면 — 상단 외부 연동 상태 위젯 (결정사항 #24)
+   RSK04-S / CON10-S / NTF03-S 등 모듈 설정 화면 공통.
+   조회 전용 — 클릭 시 SYS01-S deep-link.
+   ========================================= */
+.module-int-widget {
+  background: white;
+  border: 1px solid var(--card-line);
+  border-left: 4px solid var(--main);
+  border-radius: var(--radius-card);
+  padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.module-int-widget .icon {
+  width: 22px; height: 22px;
+  flex-shrink: 0;
+  color: var(--main);
+  margin-top: 1px;
+}
+.module-int-widget .body { flex: 1; min-width: 0; }
+.module-int-widget .title {
+  font-size: 12px; font-weight: 700;
+  color: var(--main-dark2);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+.module-int-widget .row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-black);
+  line-height: 1.55;
+}
+.module-int-widget .row + .row { margin-top: 4px; }
+.module-int-widget .system-name { font-weight: 700; }
+.module-int-widget .status-dot {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px;
+  font-size: 11px; font-weight: 700;
+  border-radius: 999px;
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  border: 1px solid var(--status-success-border);
+}
+.module-int-widget .status-dot::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--status-success-fg);
+}
+.module-int-widget .status-dot.delayed {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+  border-color: var(--status-warning-border);
+}
+.module-int-widget .status-dot.delayed::before { background: var(--status-warning-fg); }
+.module-int-widget .meta { font-size: 12px; color: var(--text-gray); }
+.module-int-widget .meta strong { color: var(--text-black); font-weight: 600; }
+.module-int-widget .deep-link {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 700;
+  color: var(--main);
+  text-decoration: none;
+  padding: 6px 10px;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius-button);
+  background: white;
+  white-space: nowrap;
+}
+.module-int-widget .deep-link:hover {
+  border-color: var(--main);
+  background: var(--brand-50);
+}
+@media (max-width: 640px) {
+  .module-int-widget .deep-link { margin-left: 0; margin-top: 6px; }
+}

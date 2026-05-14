@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>외부 시스템 연동 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── SYS01-S 전용 (결정사항 #24) ─── */
+
+        /* 안내 (관리 정책 요약) */
+        .sys-note {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; color: var(--status-info-fg);
+        }
+        .sys-note svg { flex-shrink: 0; margin-top: 1px; }
+        .sys-note strong { font-weight: 700; }
+
+        /* 패널 전환 */
+        .sys-panel { display: none; }
+        .sys-panel.is-active { display: block; }
+
+        /* 8개 탭 — 모바일에서 가로 스크롤 가능 */
+        .sub-tabs.sys-tabs { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; }
+        .sub-tabs.sys-tabs .sub-tab { flex-shrink: 0; }
+
+        /* ─── 통합 대시보드 ─── */
+        .sys-stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        @media (max-width: 1023px) { .sys-stat-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .sys-stat-row { grid-template-columns: 1fr; } }
+        .sys-stat {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 16px 18px;
+        }
+        .sys-stat .label { font-size: 12px; font-weight: 600; color: var(--text-gray); letter-spacing: 0.02em; }
+        .sys-stat .value { font-size: 26px; font-weight: 800; color: var(--main-dark2); margin-top: 6px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+        .sys-stat .value .unit { font-size: 13px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .sys-stat .delta { font-size: 12px; color: var(--text-gray); margin-top: 6px; }
+        .sys-stat.danger .value { color: var(--status-danger-fg); }
+        .sys-stat.warning .value { color: var(--status-warning-fg); }
+
+        /* 시스템 상태 매트릭스 (대시보드 탭) */
+        .sys-card {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            margin-top: 14px;
+        }
+        .sys-card-head {
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fafbfb;
+        }
+        .sys-card-head h3 { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .sys-card-head .desc { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        .sys-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .sys-table th {
+            padding: 10px 18px;
+            font-size: 12px; font-weight: 700; color: var(--main-dark2);
+            background: #fafbfb;
+            border-bottom: 1px solid var(--card-line);
+            text-align: left;
+        }
+        .sys-table th.center { text-align: center; }
+        .sys-table th.right { text-align: right; }
+        .sys-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--card-line);
+            color: var(--text-black);
+        }
+        .sys-table tbody tr:last-child td { border-bottom: none; }
+        .sys-table .num { font-variant-numeric: tabular-nums; }
+
+        /* 상태 배지 */
+        .sys-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .sys-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .sys-badge.healthy {
+            background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border);
+        }
+        .sys-badge.delayed {
+            background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border);
+        }
+        .sys-badge.failed {
+            background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border);
+        }
+        .sys-badge.disabled {
+            background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border);
+        }
+        .sys-badge.disabled::before { background: var(--text-lightgray); }
+
+        /* 시스템 행 안의 [설정] 미니버튼 */
+        .sys-mini-btn {
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid var(--card-line);
+            color: var(--text-black);
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sys-mini-btn:hover { border-color: var(--main); color: var(--main); background: var(--brand-50); }
+
+        /* 운영자 주의 이벤트 */
+        .sys-alert-row {
+            padding: 14px 22px;
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 13px; color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+        }
+        .sys-alert-row:last-child { border-bottom: none; }
+        .sys-alert-row .icon { flex-shrink: 0; color: var(--status-warning-fg); margin-top: 1px; }
+        .sys-alert-row.danger .icon { color: var(--status-danger-fg); }
+        .sys-alert-row .body { flex: 1; }
+        .sys-alert-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        /* ─── 시스템별 설정 탭 (SSO, 조직도 등) ─── */
+        .sys-status-banner {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 22px;
+            background: var(--brand-100);
+            border-bottom: 1px solid var(--card-line);
+        }
+        .sys-status-banner.is-delayed { background: var(--status-warning-bg); }
+        .sys-status-banner.is-failed  { background: var(--status-danger-bg); }
+        .sys-status-banner .meta { font-size: 13px; color: var(--text-gray); margin-left: 4px; }
+        .sys-status-banner .meta strong { color: var(--text-black); font-weight: 600; }
+        .sys-status-banner .actions { margin-left: auto; display: flex; gap: 8px; }
+
+        .sys-info-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            row-gap: 12px; column-gap: 16px;
+            font-size: 13px;
+            padding: 18px 22px;
+        }
+        .sys-info-grid .k { color: var(--text-gray); font-weight: 600; line-height: 22px; }
+        .sys-info-grid .v {
+            color: var(--text-black); font-weight: 500; line-height: 22px;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .sys-info-grid .v code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 12px;
+            background: var(--gray-100);
+            padding: 2px 8px;
+            border-radius: 5px;
+            color: var(--text-black);
+        }
+        @media (max-width: 1023px) {
+            .sys-info-grid { grid-template-columns: 1fr; row-gap: 4px; }
+            .sys-info-grid .k { padding-top: 4px; font-size: 12px; }
+        }
+
+        /* 정책 / 매핑 박스 */
+        .sys-policy {
+            padding: 16px 22px;
+            background: #fafbfb;
+            border-top: 1px solid var(--card-line);
+        }
+        .sys-policy h4 { font-size: 13px; font-weight: 700; color: var(--main-dark2); margin-bottom: 10px; }
+        .sys-policy-list { display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 1.5; }
+        .sys-policy-list .item { display: flex; align-items: flex-start; gap: 8px; }
+        .sys-policy-list .item .dot {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--main); color: white; font-size: 10px;
+            flex-shrink: 0; margin-top: 2px;
+        }
+        .sys-policy-list .item.warn .dot { background: var(--status-warning-fg); }
+
+        /* 동기화 이력 결과 칩 */
+        .sync-result {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .sync-result.success { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .sync-result.failed  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .sync-trigger {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--gray-100); color: var(--text-gray);
+        }
+        .sync-trigger.manual { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+    </style>
+</head>
+<body data-dy-page="sys-integration"
+      data-page-title="외부 시스템 연동"
+      data-page-subtitle="6개 시스템 통합 관리 (SYS01-S — 결정사항 #24 단일 진실 공급원)">
+    <main>
+
+        <!-- ─── 안내: 권한 및 SSoT 정책 ─── -->
+        <div class="sys-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>CEO·GM·SHM 열람 / CEO 수정·매핑 편집 / CEO·GM 테스트·수동 동기화.</strong> 본 화면은 SSO·조직도·FMS·차세대 e호조·새올·SMTP 6개 외부 시스템의 연동 설정·동기화 정책·이력의 단일 진실 공급원입니다. 각 모듈 설정(RSK04-S, CON10-S, NTF03-S)은 콘텐츠 마스터만 관리합니다.</span>
+        </div>
+
+        <!-- ─── 8탭 ─── -->
+        <div class="sub-tabs sys-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="dashboard">연동 대시보드</button>
+            <button class="sub-tab" type="button" data-panel="sso">행정포털 SSO</button>
+            <button class="sub-tab" type="button" data-panel="org">행정포털 조직도</button>
+            <button class="sub-tab" type="button" data-panel="fms">FMS</button>
+            <button class="sub-tab" type="button" data-panel="ehojo">차세대 e호조</button>
+            <button class="sub-tab" type="button" data-panel="saeol">새올 포틀릿</button>
+            <button class="sub-tab" type="button" data-panel="smtp">SMTP</button>
+            <button class="sub-tab" type="button" data-panel="history">동기화 이력</button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 연동 대시보드
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel is-active" data-panel="dashboard">
+
+            <!-- 24시간 통합 통계 -->
+            <div class="sys-stat-row">
+                <div class="sys-stat">
+                    <div class="label">정상 시스템</div>
+                    <div class="value">5<span class="unit">/6</span></div>
+                    <div class="delta">FMS 1건 지연 (TIMEOUT)</div>
+                </div>
+                <div class="sys-stat">
+                    <div class="label">24시간 성공 호출</div>
+                    <div class="value num">790<span class="unit">건</span></div>
+                    <div class="delta">SSO 248 · 새올 522 · SMTP 18 · 기타 2</div>
+                </div>
+                <div class="sys-stat warning">
+                    <div class="label">실패·재시도 대기</div>
+                    <div class="value num">10<span class="unit">건</span></div>
+                    <div class="delta">FMS 4 · 새올 6</div>
+                </div>
+                <div class="sys-stat danger">
+                    <div class="label">운영자 주의</div>
+                    <div class="value num">2<span class="unit">건</span></div>
+                    <div class="delta">FMS TIMEOUT · 새올 404 누적</div>
+                </div>
+            </div>
+
+            <!-- 6개 시스템 상태 매트릭스 -->
+            <div class="sys-card">
+                <div class="sys-card-head">
+                    <div>
+                        <h3>통합 연동 상태</h3>
+                        <div class="desc">6개 외부 시스템의 마지막 동기화 결과와 다음 예정 시점</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '전체 재시도 (실패 항목)')">전체 재시도</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.openSyncConfirm()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                            전체 동기화 (CEO)
+                        </button>
+                    </div>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col><col style="width:110px;"><col style="width:200px;"><col style="width:160px;"><col style="width:120px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>시스템</th>
+                            <th class="center">상태</th>
+                            <th>마지막 성공</th>
+                            <th>다음 예정</th>
+                            <th class="center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr onclick="window.SysIntegration.switchTab('sso')" style="cursor:pointer;">
+                            <td><strong>행정포털 SSO</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-001</span></td>
+                            <td class="center"><span class="sys-badge healthy">정상</span></td>
+                            <td>실시간 (연동 중)</td>
+                            <td>—</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('sso')">설정</button></td>
+                        </tr>
+                        <tr onclick="window.SysIntegration.switchTab('org')" style="cursor:pointer;">
+                            <td><strong>행정포털 조직도</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-002 · ORG·AUTH 영향</span></td>
+                            <td class="center"><span class="sys-badge healthy">정상</span></td>
+                            <td>2026-05-13 06:00</td>
+                            <td>06:00 (매일)</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('org')">설정</button></td>
+                        </tr>
+                        <tr onclick="window.SysIntegration.switchTab('fms')" style="cursor:pointer; background: var(--status-warning-bg);">
+                            <td><strong>FMS 시설물관리</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-003 · TGT 영향</span></td>
+                            <td class="center"><span class="sys-badge delayed">지연</span></td>
+                            <td>2026-05-11 06:00 <span style="color:var(--status-warning-fg); font-size:11px;">· 2일 전</span></td>
+                            <td>06:00 (매일)</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('fms')">설정</button></td>
+                        </tr>
+                        <tr onclick="window.SysIntegration.switchTab('ehojo')" style="cursor:pointer;">
+                            <td><strong>차세대 e호조</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-004 · CON·RSK·STF 영향</span></td>
+                            <td class="center"><span class="sys-badge healthy">정상</span></td>
+                            <td>2026-05-13 06:00</td>
+                            <td>06:00 (매일)</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('ehojo')">설정</button></td>
+                        </tr>
+                        <tr onclick="window.SysIntegration.switchTab('saeol')" style="cursor:pointer;">
+                            <td><strong>새올 포틀릿</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-005 · NTF 영향</span></td>
+                            <td class="center"><span class="sys-badge healthy">정상</span></td>
+                            <td>실시간 (적재 중)</td>
+                            <td>—</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('saeol')">설정</button></td>
+                        </tr>
+                        <tr onclick="window.SysIntegration.switchTab('smtp')" style="cursor:pointer;">
+                            <td><strong>SMTP 이메일</strong> <span style="color:var(--text-gray); font-size:12px;">· IF-006 · AUTH·NTF 영향</span></td>
+                            <td class="center"><span class="sys-badge healthy">정상</span></td>
+                            <td>실시간 (발송 중)</td>
+                            <td>—</td>
+                            <td class="center"><button class="sys-mini-btn" type="button" onclick="event.stopPropagation(); window.SysIntegration.switchTab('smtp')">설정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 24시간 통합 통계 (시스템별) -->
+            <div class="sys-card">
+                <div class="sys-card-head">
+                    <div>
+                        <h3>최근 24시간 통합 통계</h3>
+                        <div class="desc">sync_logs · notifications · email_queue 집계</div>
+                    </div>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col><col style="width:90px;"><col style="width:90px;"><col style="width:120px;"><col></colgroup>
+                    <thead>
+                        <tr>
+                            <th>시스템</th>
+                            <th class="right">성공</th>
+                            <th class="right">실패</th>
+                            <th class="right">재시도 대기</th>
+                            <th>마지막 오류</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>SSO</td><td class="num" style="text-align:right;">248</td><td class="num" style="text-align:right;">0</td><td class="num" style="text-align:right;">0</td><td style="color:var(--text-gray);">—</td></tr>
+                        <tr><td>조직도</td><td class="num" style="text-align:right;">1</td><td class="num" style="text-align:right;">0</td><td class="num" style="text-align:right;">0</td><td style="color:var(--text-gray);">—</td></tr>
+                        <tr style="background: var(--status-warning-bg);"><td>FMS</td><td class="num" style="text-align:right;">0</td><td class="num" style="text-align:right; color:var(--status-warning-fg); font-weight:700;">1</td><td class="num" style="text-align:right;">3</td><td style="color:var(--status-warning-fg); font-size:12px;">TIMEOUT (14:23)</td></tr>
+                        <tr><td>e호조</td><td class="num" style="text-align:right;">1</td><td class="num" style="text-align:right;">0</td><td class="num" style="text-align:right;">0</td><td style="color:var(--text-gray);">—</td></tr>
+                        <tr><td>새올 포틀릿</td><td class="num" style="text-align:right;">522</td><td class="num" style="text-align:right; color:var(--status-warning-fg); font-weight:700;">4</td><td class="num" style="text-align:right;">2</td><td style="color:var(--status-warning-fg); font-size:12px;">404 NOT_FOUND (08:15)</td></tr>
+                        <tr><td>SMTP</td><td class="num" style="text-align:right;">18</td><td class="num" style="text-align:right;">0</td><td class="num" style="text-align:right;">0</td><td style="color:var(--text-gray);">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 운영자 주의 이벤트 -->
+            <div class="sys-card">
+                <div class="sys-card-head">
+                    <div>
+                        <h3>운영자 주의 이벤트</h3>
+                        <div class="desc">연속 실패·인증 만료·운영자 알림 누적 등</div>
+                    </div>
+                </div>
+                <div class="sys-alert-row">
+                    <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="body">
+                        <strong>FMS 동기화 1회 실패</strong> · 2026-05-13 14:23 · TIMEOUT (30초)
+                        <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">다음 정기 06:00 재시도 예정. 즉시 처리 시 [재시도] 클릭.</div>
+                    </div>
+                    <div class="actions">
+                        <button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'FMS 재시도')">재시도</button>
+                        <button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '동기화 로그 상세')">상세</button>
+                    </div>
+                </div>
+                <div class="sys-alert-row">
+                    <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="body">
+                        <strong>새올 포틀릿 404 NOT_FOUND 누적 4건</strong> · 2026-05-13 08:15~14:30
+                        <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">대상자 external_id 매칭 실패. 사용자 동기화 확인 권장.</div>
+                    </div>
+                    <div class="actions">
+                        <button class="sys-mini-btn" type="button" onclick="window.SysIntegration.switchTab('saeol')">실패 큐</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ SSO
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="sso">
+            <div class="sys-card">
+                <div class="sys-status-banner">
+                    <span class="sys-badge healthy">정상</span>
+                    <span class="meta">실시간 연동 중 · 24시간 로그인 <strong>248건</strong> 성공 / 0건 실패</span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('SSO')">테스트</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.openEditModal('SSO')">설정 수정 <span class="badge badge-danger" style="font-size:10px; margin-left:6px;">CEO만</span></button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">프로토콜</span>
+                    <span class="v">OAuth 2.0 (Authorization Code) <span class="badge badge-info">표준</span></span>
+
+                    <span class="k">인증 엔드포인트</span>
+                    <span class="v"><code>https://portal.damyang.go.kr/oauth/authorize</code></span>
+
+                    <span class="k">토큰 엔드포인트</span>
+                    <span class="v"><code>https://portal.damyang.go.kr/oauth/token</code></span>
+
+                    <span class="k">콜백 URL</span>
+                    <span class="v"><code>https://safety.damyang.go.kr/sso/callback</code></span>
+
+                    <span class="k">Client ID</span>
+                    <span class="v"><code>dy-safety-prod</code></span>
+
+                    <span class="k">Client Secret</span>
+                    <span class="v">●●●●●●●●●●●●●●●● <span style="color:var(--text-gray); font-size:12px;">· 만료 2027-06-30</span></span>
+
+                    <span class="k">Scope</span>
+                    <span class="v"><code>openid profile email department</code></span>
+                </div>
+                <div class="sys-policy">
+                    <h4>로그인 정책</h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>세션 유효기간 <strong>8시간</strong> · 자동 갱신 활성 · 동시 로그인 <strong>1개</strong> 제한</span></div>
+                        <div class="item"><span class="dot">✓</span><span>SSO 실패 시 AUTH99-V 인증 오류 화면으로 안내 (감사 로그 INSERT)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 조직도
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="org">
+            <div class="sys-card">
+                <div class="sys-status-banner">
+                    <span class="sys-badge healthy">정상</span>
+                    <span class="meta">마지막 성공 <strong>2026-05-13 06:00</strong> · 직원 추가 +3 / 변경 ~12 / 비활성 1</span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('조직도')">테스트</button>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openPreviewModal()">동기화 미리보기</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.startSync('org')">수동 동기화</button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">API 엔드포인트</span>
+                    <span class="v"><code>https://portal.damyang.go.kr/api/dept</code></span>
+                    <span class="k">인증 방식</span>
+                    <span class="v">서비스 계정 토큰 <span style="color:var(--text-gray); font-size:12px;">· 만료 2027-06-30</span></span>
+                    <span class="k">동기화 주기</span>
+                    <span class="v"><strong>매일 06:00</strong> <span class="badge badge-info">자동</span></span>
+                </div>
+                <div class="sys-policy">
+                    <h4>동기화 정책</h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>부서 추가 자동 INSERT · 부서장 변경 시 산하 RESPONSIBLE 자동 갱신</span></div>
+                        <div class="item"><span class="dot">✓</span><span>직원 추가 자동 INSERT · 직원 비활성 시 자동 비활성(DELETE 안 함, 역사 보존)</span></div>
+                        <div class="item"><span class="dot">✓</span><span>직급 → 시스템 권한 매핑은 아래 표 규칙으로 변환</span></div>
+                    </div>
+                </div>
+                <div class="sys-card-head" style="border-top:1px solid var(--card-line);">
+                    <div>
+                        <h3>권한 매핑 규칙</h3>
+                        <div class="desc">행정포털 직급 → 본 시스템 권한 코드 (우선순위 낮음 → 높음 적용)</div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '권한 매핑 규칙 편집')">규칙 편집 <span class="badge badge-danger" style="font-size:10px; margin-left:4px;">CEO만</span></button>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col><col style="width:160px;"><col style="width:100px;"><col style="width:80px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>행정포털 직급</th>
+                            <th>시스템 권한</th>
+                            <th class="center">우선순위</th>
+                            <th class="center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>군수 / 부군수</td><td><strong>CEO</strong></td><td class="center">1</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 군수/CEO')">수정</button></td></tr>
+                        <tr><td>실장 · 과장 · 단장 · 소장</td><td><strong>GM</strong></td><td class="center">2</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 과장/GM')">수정</button></td></tr>
+                        <tr><td>팀장</td><td><strong>SM</strong></td><td class="center">3</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 팀장/SM')">수정</button></td></tr>
+                        <tr><td>안전보건담당자</td><td><strong>SHM</strong></td><td class="center">3</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — SHM')">수정</button></td></tr>
+                        <tr><td>그 외</td><td><strong>WKR</strong></td><td class="center">4</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — WKR')">수정</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ FMS
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="fms">
+            <div class="sys-card">
+                <div class="sys-status-banner is-delayed">
+                    <span class="sys-badge delayed">지연</span>
+                    <span class="meta">마지막 성공 <strong>2026-05-11 06:00</strong> · <strong style="color:var(--status-warning-fg);">1회 실패</strong> (TIMEOUT 30초, 2026-05-13 06:00)</span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('FMS')">테스트</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.startSync('fms')">수동 동기화</button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">API 엔드포인트</span>
+                    <span class="v"><code>https://fms.damyang.go.kr/api/facility</code></span>
+                    <span class="k">인증 방식</span>
+                    <span class="v">API Key</span>
+                    <span class="k">동기화 주기</span>
+                    <span class="v"><strong>매일 06:00</strong> <span class="badge badge-info">자동</span></span>
+                    <span class="k">매칭 키</span>
+                    <span class="v"><code>fms_id</code> (FMS 고유 식별자)</span>
+                </div>
+                <div class="sys-policy">
+                    <h4>동기화 정책</h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>신규 시설 <code>targets INSERT (status='PENDING', target_type='FACILITY')</code></span></div>
+                        <div class="item"><span class="dot">✓</span><span>변경 시설 <code>targets UPDATE</code></span></div>
+                        <div class="item warn"><span class="dot">!</span><span>비활성 시설은 자동 비활성하지 않음 — 운영자 수동 확인 필요</span></div>
+                    </div>
+                </div>
+                <div class="sys-card-head" style="border-top:1px solid var(--card-line);">
+                    <div>
+                        <h3>분류 매핑 규칙</h3>
+                        <div class="desc">FMS 시설 분류 코드 → 본 시스템 중대재해법 분류</div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, 'FMS 매핑 규칙 편집')">규칙 편집 <span class="badge badge-danger" style="font-size:10px; margin-left:4px;">CEO만</span></button>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col style="width:120px;"><col><col style="width:80px;"></colgroup>
+                    <thead>
+                        <tr><th class="center">FMS 코드</th><th>본 시스템 분류</th><th class="center">관리</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="center"><code>A01</code></td><td>공중이용시설 / 1종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>A02</code></td><td>공중이용시설 / 2종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A02 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>B01</code></td><td>원료·제조물 / 1종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'B01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>C01</code></td><td>공중교통수단</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'C01 매핑 수정')">수정</button></td></tr>
+                    </tbody>
+                </table>
+                <div style="padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; font-size:13px; color: var(--text-gray); border-top: 1px solid var(--card-line);">
+                    <span>매칭 실패 항목 <strong style="color:var(--status-warning-fg);">PENDING 1건</strong> · 운영자 수동 매칭 필요</span>
+                    <button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매칭 실패 항목 보기')">매칭 실패 보기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 차세대 e호조 (CON + RSK 통합 정책)
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="ehojo">
+            <div class="sys-card">
+                <div class="sys-status-banner">
+                    <span class="sys-badge healthy">정상</span>
+                    <span class="meta">마지막 성공 <strong>2026-05-13 06:00</strong> · 신규 +2 / 변경 ~5 · 자동 위험성평가 +1건 생성됨</span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('e호조')">테스트</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.startSync('ehojo')">수동 동기화</button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">API 엔드포인트</span>
+                    <span class="v"><code>https://ehojo.gov.kr/api/v1/contracts</code></span>
+                    <span class="k">인증 방식</span>
+                    <span class="v">서비스 계정 토큰 <span style="color:var(--text-gray); font-size:12px;">· 만료 2027-06-30</span></span>
+                    <span class="k">동기화 주기</span>
+                    <span class="v"><strong>매일 06:00</strong> <span class="badge badge-info">자동</span></span>
+                </div>
+                <div class="sys-policy">
+                    <h4>도급계약 자동 import 정책 <span style="font-size:11px; font-weight:600; color:var(--text-gray);">(CON 영향)</span></h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>신규 계약 <code>contracts INSERT (source='EHOJO_AUTO', step=1)</code></span></div>
+                        <div class="item"><span class="dot">✓</span><span>변경 계약 <code>contracts UPDATE</code></span></div>
+                        <div class="item warn"><span class="dot">!</span><span>매칭 실패 (관리대상 미매칭) 운영자 수동 매칭 필요 — 현재 <strong style="color:var(--status-warning-fg);">PENDING 2건</strong></span></div>
+                    </div>
+                </div>
+                <div class="sys-policy" style="border-top: 1px solid var(--card-line);">
+                    <h4>도급공사 자동 위험성평가 생성 정책 <span style="font-size:11px; font-weight:600; color:var(--text-gray);">(RSK 영향)</span></h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>도급공사(CONSTRUCTION) 신규 import 시 <code>risk_assessments</code> 자동 INSERT (<code>source='EHOJO_AUTO', assessment_type='MANDATORY_INITIAL', cycle_stage='PREPARATION'</code>)</span></div>
+                        <div class="item"><span class="dot">✓</span><span>담당자 자동 매핑 — 계약 담당자 → 평가 담당자</span></div>
+                        <div class="item"><span class="dot">✓</span><span>평가 마감일 — 시공 시작일 <strong>−14일</strong> (협의 후 확정)</span></div>
+                        <div class="item warn"><span class="dot">!</span><span>50억 이상 도급공사 안전관리자 미달 시 <code>contracts.status='BLOCKED'</code> (결정사항 #21 / STF 영향) — 현재 <strong style="color:var(--status-danger-fg);">1건 차단 중</strong> (정수장 증축)</span></div>
+                    </div>
+                </div>
+                <div class="sys-card-head" style="border-top:1px solid var(--card-line);">
+                    <div>
+                        <h3>contract_type 매핑 규칙</h3>
+                        <div class="desc">e호조 계약 코드 → 본 시스템 ENUM (CON·RSK·STF 모듈 분기 기준)</div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, 'contract_type 매핑 편집')">규칙 편집 <span class="badge badge-danger" style="font-size:10px; margin-left:4px;">CEO만</span></button>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col style="width:120px;"><col><col style="width:200px;"><col style="width:160px;"><col style="width:80px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th class="center">e호조 코드</th>
+                            <th>설명</th>
+                            <th>본 시스템 ENUM</th>
+                            <th>영향 영역</th>
+                            <th class="center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="center"><code>01</code></td><td>건설공사·도급공사</td><td><strong>CONSTRUCTION</strong></td><td style="font-size:12px; color:var(--text-gray);">CON · RSK · STF</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>02</code></td><td>용역·서비스</td><td><strong>SERVICE</strong></td><td style="font-size:12px; color:var(--text-gray);">CON</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '02 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>03</code></td><td>구매·설치</td><td><strong>PURCHASE_INSTALL</strong></td><td style="font-size:12px; color:var(--text-gray);">CON</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '03 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>04</code></td><td>위탁사업</td><td><strong>CONSIGNMENT</strong></td><td style="font-size:12px; color:var(--text-gray);">CON</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '04 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>기타</code></td><td>분류 불가</td><td><strong>OTHER</strong></td><td style="font-size:12px; color:var(--text-gray);">CON (GENERAL_SAFETY)</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '기타 매핑 수정')">수정</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 새올 포틀릿
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="saeol">
+            <div class="sys-card">
+                <div class="sys-status-banner">
+                    <span class="sys-badge healthy">정상</span>
+                    <span class="meta">실시간 적재 중 · 24시간 시도 <strong>522건</strong> / 성공 <strong>518건</strong> / 실패 <strong style="color:var(--status-warning-fg);">4건</strong></span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('새올')">테스트</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '실패 큐 전체 재시도')">실패 큐 재시도</button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">연동 방식</span>
+                    <span class="v">API 호출 (건별 적재)</span>
+                    <span class="k">API 엔드포인트</span>
+                    <span class="v"><code>https://saeol.damyang.go.kr/api/notice</code></span>
+                    <span class="k">인증 방식</span>
+                    <span class="v">서비스 계정 토큰</span>
+                    <span class="k">매칭 키</span>
+                    <span class="v"><code>users.external_id</code> → 새올 공무원 ID</span>
+                </div>
+                <div class="sys-policy">
+                    <h4>적재 정책 (결정사항 #17)</h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>적재 단위 <strong>건별</strong> — 개별 알림마다 1회 API 호출 (그룹화 없음)</span></div>
+                        <div class="item"><span class="dot">✓</span><span>이벤트 발생 즉시 발송 (비동기 워커, 1초 폴링)</span></div>
+                    </div>
+                </div>
+                <div class="sys-policy" style="border-top: 1px solid var(--card-line);">
+                    <h4>재시도 정책 (5단계 백오프)</h4>
+                    <div class="sys-policy-list">
+                        <div class="item"><span class="dot">✓</span><span>1차 <strong>1분</strong> → 2차 <strong>5분</strong> → 3차 <strong>15분</strong> → 4차 <strong>1시간</strong> → 5차 <strong>6시간</strong></span></div>
+                        <div class="item warn"><span class="dot">!</span><span>5회 초과 시 <code>notifications.status='FAILED'</code> + 운영자 알림 (NTF03-S 실패 큐로 이동)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ SMTP
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="smtp">
+            <div class="sys-card">
+                <div class="sys-status-banner">
+                    <span class="sys-badge healthy">정상</span>
+                    <span class="meta">실시간 발송 중 · 24시간 <strong>18건</strong> 성공 · 평균 발송 <strong>0.6초</strong></span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.openTestModal('SMTP')">테스트 (테스트 메일)</button>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="window.openEditModal('SMTP')">설정 수정 <span class="badge badge-danger" style="font-size:10px; margin-left:6px;">CEO만</span></button>
+                    </div>
+                </div>
+                <div class="sys-info-grid">
+                    <span class="k">SMTP 서버</span>
+                    <span class="v"><code>smtp.damyang.go.kr:587</code> <span class="badge badge-info">TLS</span></span>
+                    <span class="k">발신 이메일</span>
+                    <span class="v"><code>noreply@damyang.go.kr</code></span>
+                    <span class="k">인증 방식</span>
+                    <span class="v">SMTP-AUTH</span>
+                </div>
+                <div class="sys-card-head" style="border-top:1px solid var(--card-line);">
+                    <div>
+                        <h3>이메일 템플릿</h3>
+                        <div class="desc">외부 사용자 시나리오별 발송 템플릿 (각 모듈 트리거)</div>
+                    </div>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col style="width:240px;"><col><col style="width:80px;"></colgroup>
+                    <thead>
+                        <tr><th>템플릿 코드</th><th>용도</th><th class="center">관리</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>invitation_email</code></td><td>외부 사용자(SUB/CON) 계정 초대 (AUTH03-M)</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'invitation_email 편집')">편집</button></td></tr>
+                        <tr><td><code>password_reset</code></td><td>비밀번호 재설정 링크 (AUTH04-F)</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'password_reset 편집')">편집</button></td></tr>
+                        <tr><td><code>contract_assigned</code></td><td>도급계약 배정 안내 (CON07-F)</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'contract_assigned 편집')">편집</button></td></tr>
+                        <tr><td><code>certificate_issued</code></td><td>증명서 발급 안내 (CRT 모듈)</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'certificate_issued 편집')">편집</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ▼ 동기화 이력 (통합 로그)
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="sys-panel" data-panel="history">
+            <div class="sys-card">
+                <div class="sys-card-head">
+                    <div>
+                        <h3>동기화 이력 (통합)</h3>
+                        <div class="desc">sync_logs 통합 조회 · 최근 30건 · 90일 이전은 자동 보존</div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select class="select" style="height:32px; font-size:12px;">
+                            <option>전체 시스템</option>
+                            <option>SSO</option>
+                            <option>조직도</option>
+                            <option>FMS</option>
+                            <option>e호조</option>
+                            <option>새올</option>
+                            <option>SMTP</option>
+                        </select>
+                        <select class="select" style="height:32px; font-size:12px;">
+                            <option>최근 24시간</option>
+                            <option>최근 7일</option>
+                            <option>최근 30일</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드')">엑셀</button>
+                    </div>
+                </div>
+                <table class="sys-table">
+                    <colgroup><col style="width:170px;"><col style="width:130px;"><col><col style="width:90px;"><col style="width:90px;"><col style="width:80px;"></colgroup>
+                    <thead>
+                        <tr>
+                            <th>일시</th>
+                            <th>시스템</th>
+                            <th>작업</th>
+                            <th class="center">결과</th>
+                            <th class="center">트리거</th>
+                            <th class="center">로그</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: var(--status-danger-bg);">
+                            <td class="num">2026-05-13 14:23:08</td>
+                            <td>FMS</td>
+                            <td>자동 동기화 · TIMEOUT (30초)</td>
+                            <td class="center"><span class="sync-result failed">실패</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세 — 2026-05-13 14:23')">보기</a></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2026-05-13 06:00:00</td>
+                            <td>e호조</td>
+                            <td>자동 동기화 · 신규 +2 / 변경 ~5 / 자동평가 +1</td>
+                            <td class="center"><span class="sync-result success">성공</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세')">보기</a></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2026-05-13 06:00:00</td>
+                            <td>조직도</td>
+                            <td>자동 동기화 · 직원 +3 / 변경 ~12 / 비활성 1</td>
+                            <td class="center"><span class="sync-result success">성공</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세')">보기</a></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2026-05-13 06:00:00</td>
+                            <td>FMS</td>
+                            <td>자동 동기화 · 신규 0 / 변경 0 (TIMEOUT 재시도 큐 적재)</td>
+                            <td class="center"><span class="sync-result failed">실패</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세')">보기</a></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2026-05-12 06:00:00</td>
+                            <td>e호조</td>
+                            <td>자동 동기화 · 변경 ~3</td>
+                            <td class="center"><span class="sync-result success">성공</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세')">보기</a></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2026-05-11 06:00:00</td>
+                            <td>FMS</td>
+                            <td>자동 동기화 · 신규 +2 / 변경 ~5 / PENDING 1</td>
+                            <td class="center"><span class="sync-result success">성공</span></td>
+                            <td class="center"><span class="sync-trigger">스케줄</span></td>
+                            <td class="center"><a class="sys-mini-btn" href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '동기화 로그 상세')">보기</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div data-pagination data-current="1" data-total="3"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+         설정 수정 모달 (시스템별)
+    ============================================================ -->
+    <div class="con-modal-backdrop" id="edit-modal" style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;">
+        <div class="con-modal" role="dialog" aria-modal="true" style="background:white; border-radius:var(--radius-card); width:100%; max-width:520px; max-height:90vh; overflow:auto;">
+            <div class="con-modal-header" style="padding:18px 22px; border-bottom:1px solid var(--card-line); display:flex; align-items:center; justify-content:space-between;">
+                <div class="con-modal-title" id="edit-modal-title" style="font-size:15px; font-weight:700; color:var(--main-dark2);">설정 수정 <span class="badge badge-danger" style="margin-left:8px; font-size:10px;">CEO만</span></div>
+                <button type="button" onclick="window.closeEditModal()" aria-label="닫기" style="border:none; background:transparent; cursor:pointer; color:var(--text-gray);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="con-modal-body" style="padding:20px 22px;">
+                <div id="edit-modal-fields"></div>
+                <div style="font-size:12px; color:var(--text-gray); margin-top:12px; padding:10px 12px; background:var(--status-info-bg); border-radius:6px;">
+                    저장 후 자동으로 audit_logs INSERT · API 인증 정보 변경 시 재인증 필요. <strong>[테스트]</strong>로 연결 확인을 권장합니다.
+                </div>
+            </div>
+            <div class="con-modal-footer" style="padding:14px 22px; border-top:1px solid var(--card-line); display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.closeEditModal()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.saveEdit()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 테스트 호출 모달 -->
+    <div class="con-modal-backdrop" id="test-modal" style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;">
+        <div class="con-modal" role="dialog" aria-modal="true" style="background:white; border-radius:var(--radius-card); width:100%; max-width:460px;">
+            <div class="con-modal-header" style="padding:18px 22px; border-bottom:1px solid var(--card-line); display:flex; align-items:center; justify-content:space-between;">
+                <div class="con-modal-title" id="test-modal-title" style="font-size:15px; font-weight:700; color:var(--main-dark2);">API 테스트</div>
+                <button type="button" onclick="window.closeTestModal()" aria-label="닫기" style="border:none; background:transparent; cursor:pointer; color:var(--text-gray);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="con-modal-body" style="padding:20px 22px;">
+                <p id="test-modal-desc" style="font-size:13px; color:var(--text-gray);">선택한 외부 시스템 API를 단순 호출하여 연결 상태를 확인합니다.</p>
+                <div id="test-result" style="margin-top:14px;"></div>
+            </div>
+            <div class="con-modal-footer" style="padding:14px 22px; border-top:1px solid var(--card-line); display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.closeTestModal()">닫기</button>
+                <button class="btn btn-primary" type="button" id="test-run-btn" onclick="window.runTest()">호출 실행</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 동기화 확인 모달 -->
+    <div class="con-modal-backdrop" id="sync-confirm" style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;">
+        <div class="con-modal" role="dialog" aria-modal="true" style="background:white; border-radius:var(--radius-card); width:100%; max-width:480px;">
+            <div class="con-modal-header" style="padding:18px 22px; border-bottom:1px solid var(--card-line);">
+                <div class="con-modal-title" style="font-size:15px; font-weight:700; color:var(--main-dark2);">전체 동기화 실행 <span class="badge badge-danger" style="margin-left:8px; font-size:10px;">운영 부하 주의</span></div>
+            </div>
+            <div class="con-modal-body" style="padding:20px 22px; font-size:13px; color:var(--text-black); line-height:1.6;">
+                6개 외부 시스템을 순차 동기화합니다. (조직도 → FMS → e호조 → 새올 → SMTP 순)<br>
+                <strong>예상 소요</strong> 약 5~8분 · 진행 중에는 재실행이 차단됩니다. 정기 06:00 동기화 외에 즉시 실행이 필요할 때만 사용하세요.
+            </div>
+            <div class="con-modal-footer" style="padding:14px 22px; border-top:1px solid var(--card-line); display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.closeSyncConfirm()">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.runSyncAll()">실행</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        const TAB_ORDER = ['dashboard','sso','org','fms','ehojo','saeol','smtp','history'];
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function switchTab(name) {
+            if (!TAB_ORDER.includes(name)) name = 'dashboard';
+            document.querySelectorAll('.sub-tab[data-panel]').forEach(b => {
+                b.classList.toggle('active', b.dataset.panel === name);
+            });
+            document.querySelectorAll('.sys-panel[data-panel]').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.panel === name);
+            });
+            // URL ?tab= 동기화 (네비게이션 없이)
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', name);
+                window.history.replaceState(null, '', url);
+            } catch (_) {}
+        }
+
+        document.querySelectorAll('.sub-tab[data-panel]').forEach(b => {
+            b.addEventListener('click', () => switchTab(b.dataset.panel));
+        });
+
+        // ?tab= 진입 시 초기 탭 적용 (모듈 설정 화면의 deep-link 대응)
+        try {
+            const initial = new URL(window.location.href).searchParams.get('tab');
+            if (initial && TAB_ORDER.includes(initial)) switchTab(initial);
+        } catch (_) {}
+
+        window.SysIntegration = { switchTab };
+
+        /* ─── 모달 ─── */
+        const SYSTEM_FIELDS = {
+            'SSO': [
+                { label: '인증 엔드포인트', value: 'https://portal.damyang.go.kr/oauth/authorize' },
+                { label: '토큰 엔드포인트', value: 'https://portal.damyang.go.kr/oauth/token' },
+                { label: 'Client ID', value: 'dy-safety-prod' },
+                { label: 'Client Secret', value: '●●●●●●●●●●●●●●●●', type: 'password' },
+            ],
+            'SMTP': [
+                { label: 'SMTP 서버', value: 'smtp.damyang.go.kr' },
+                { label: '포트', value: '587', type: 'number' },
+                { label: '발신 이메일', value: 'noreply@damyang.go.kr' },
+                { label: '인증 ID', value: 'damyang-noreply' },
+                { label: '인증 PW', value: '●●●●●●●●', type: 'password' },
+            ],
+        };
+
+        window.openEditModal = function (system) {
+            const fields = SYSTEM_FIELDS[system] || [{ label: '엔드포인트 URL', value: '' }];
+            document.getElementById('edit-modal-title').innerHTML = system + ' 설정 수정 <span class="badge badge-danger" style="margin-left:8px; font-size:10px;">CEO만</span>';
+            document.getElementById('edit-modal-fields').innerHTML = fields.map(f =>
+                '<div style="margin-bottom:14px;">' +
+                '<label style="display:block; font-size:12px; font-weight:600; color:var(--text-gray); margin-bottom:4px;">' + f.label + '</label>' +
+                '<input type="' + (f.type || 'text') + '" value="' + f.value + '" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--card-line); border-radius:6px;">' +
+                '</div>'
+            ).join('');
+            document.getElementById('edit-modal').style.display = 'flex';
+        };
+        window.closeEditModal = function () { document.getElementById('edit-modal').style.display = 'none'; };
+        window.saveEdit = function () {
+            window.closeEditModal();
+            showToast('설정이 저장되었습니다. audit_logs에 변경 이력이 기록됩니다. (목업)');
+        };
+
+        window.openTestModal = function (system) {
+            document.getElementById('test-modal-title').textContent = system + ' API 테스트 호출';
+            document.getElementById('test-modal-desc').textContent = system + ' 시스템 API를 단순 호출하여 연결 상태·인증·응답 시간을 확인합니다.';
+            document.getElementById('test-result').innerHTML = '';
+            document.getElementById('test-run-btn').disabled = false;
+            document.getElementById('test-run-btn').textContent = '호출 실행';
+            document.getElementById('test-modal').style.display = 'flex';
+        };
+        window.closeTestModal = function () { document.getElementById('test-modal').style.display = 'none'; };
+        window.runTest = function () {
+            const btn = document.getElementById('test-run-btn');
+            btn.disabled = true;
+            btn.textContent = '호출 중…';
+            const r = document.getElementById('test-result');
+            r.innerHTML = '<div style="padding:14px; background:var(--status-info-bg); border-radius:6px; font-size:13px; color:var(--status-info-fg);">호출 중…</div>';
+            setTimeout(() => {
+                r.innerHTML =
+                    '<div style="padding:14px 16px; background:var(--status-success-bg); border:1px solid var(--status-success-border); border-radius:6px;">' +
+                      '<div style="display:flex; gap:10px; font-size:13px; padding:2px 0;"><span style="color:var(--text-gray); width:90px;">HTTP 상태</span><strong style="color:var(--status-success-fg);">200 OK</strong></div>' +
+                      '<div style="display:flex; gap:10px; font-size:13px; padding:2px 0;"><span style="color:var(--text-gray); width:90px;">응답 시간</span><strong>216 ms</strong></div>' +
+                      '<div style="display:flex; gap:10px; font-size:13px; padding:2px 0;"><span style="color:var(--text-gray); width:90px;">인증</span><strong>유효</strong></div>' +
+                    '</div>';
+                btn.disabled = false;
+                btn.textContent = '재호출';
+            }, 800);
+        };
+
+        window.openSyncConfirm = function () { document.getElementById('sync-confirm').style.display = 'flex'; };
+        window.closeSyncConfirm = function () { document.getElementById('sync-confirm').style.display = 'none'; };
+        window.runSyncAll = function () {
+            window.closeSyncConfirm();
+            showToast('전체 동기화를 시작했습니다. 진행 상황은 [동기화 이력] 탭에서 확인하세요. (목업)');
+        };
+
+        window.startSync = function (system) {
+            showToast(system.toUpperCase() + ' 수동 동기화를 시작했습니다. 결과는 [동기화 이력] 탭에서 확인하세요. (목업)');
+        };
+
+        window.openPreviewModal = function () {
+            showToast('동기화 미리보기 — 변경 사항만 표시되는 별도 화면 (구현 예정)');
+        };
+
+        document.querySelectorAll('.con-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => { if (e.target === bd) bd.style.display = 'none'; });
+        });
+    })();
+    </script>
+</body>
+</html>
