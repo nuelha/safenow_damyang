@@ -495,10 +495,10 @@ body {
 }
 
 .card-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--main-dark2);
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
 }
 
 .card-body {
@@ -2045,9 +2045,9 @@ body.sidebar-locked {
   position: relative;
   display: inline-flex;
   align-items: center;
-  padding: 8px 18px;
+  padding: 7px 16px;
   border-radius: 999px;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 500;
   color: #ffffff;
   text-decoration: none;
@@ -2098,11 +2098,11 @@ body.sidebar-locked {
   gap: 24px;
 }
 .dy-sidebar-title {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--main);
   line-height: 1;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
 }
 .dy-sidebar-nav {
   display: flex;
@@ -2113,15 +2113,15 @@ body.sidebar-locked {
   display: flex;
   align-items: center;
   gap: 7px;
-  min-height: 41px;
-  padding: 7px 13px;
+  min-height: 36px;
+  padding: 6px 12px;
   border-radius: var(--radius-button);
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-black);
   text-decoration: none;
   cursor: pointer;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
   transition:
     background 0.12s,
     color 0.12s;
@@ -4143,8 +4143,8 @@ body.sidebar-locked {
     gap: 8px;
   }
   .dy-gnb-item {
-    font-size: 16px;
-    padding: 6px 14px;
+    font-size: 14px;
+    padding: 6px 13px;
   }
   .dy-main {
     padding: 24px;
@@ -4167,8 +4167,8 @@ body.sidebar-locked {
   }
   .dy-gnb-item {
     white-space: nowrap;
-    font-size: 15px;
-    padding: 6px 12px;
+    font-size: 13px;
+    padding: 5px 11px;
   }
   .dy-body {
     grid-template-columns: 1fr;
@@ -4219,8 +4219,8 @@ body.sidebar-locked {
     gap: 6px;
   }
   .dy-gnb-item {
-    font-size: 14px;
-    padding: 5px 10px;
+    font-size: 12px;
+    padding: 5px 9px;
   }
   .dy-main {
     padding: 16px;

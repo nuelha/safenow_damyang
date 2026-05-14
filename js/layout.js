@@ -52,7 +52,7 @@
 
         // 2. 관리대상 관리 (TGT / SFR-002)
         { id: 'target', label: '관리대상 관리', icon: 'building', items: [
-            { id: 'target-status', label: '관리대상 현황', icon: 'building', soon: '관리대상 현황 (TGT01-V)', screen: 'TGT01-V' },
+            { id: 'target-status', label: '관리대상 현황', icon: 'building', href: 'target-status.html', screen: 'TGT01-V' },
             { id: 'target-fms',    label: 'FMS 동기화 설정', icon: 'cog',     soon: 'FMS 동기화 (TGT04-S)', screen: 'TGT04-S' },
         ]},
 
@@ -96,8 +96,8 @@
             { id: 'contractor',    label: '도급계약',           icon: 'building', href: 'contractor.html',  screen: 'CON01-L' },
             { id: 'con-sub',       label: '수급업체',           icon: 'users',    href: 'con-sub.html',           screen: 'CON02-L' },
             { id: 'con-council',   label: '협의체',             icon: 'list',     href: 'con-council.html',       screen: 'CON03-L' },
-            { id: 'con-tbm',       label: 'TBM',                icon: 'check',    soon: 'TBM (CON09-L)',           screen: 'CON09-L' },
-            { id: 'con-settings',  label: '도급관리 설정',      icon: 'cog',      soon: '도급 설정 (CON10-S)',     screen: 'CON10-S' },
+            { id: 'con-tbm',       label: 'TBM',                icon: 'check',    href: 'con-tbm.html',           screen: 'CON09-L' },
+            { id: 'con-settings',  label: '도급관리 설정',      icon: 'cog',      href: 'con-settings.html',      screen: 'CON10-S' },
             // 의견청취 (OPN / SFR-011·019)
             { id: 'opinion',       label: '의견청취',           icon: 'bell',     href: 'opinion.html',            screen: 'OPN01-L' },
             { id: 'opn-committee', label: '산업안전보건위원회', icon: 'list',     soon: '산안위 (OPN02-L)',        screen: 'OPN02-L' },

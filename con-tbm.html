@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBM 목록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── CON09-L 전용 ─── */
+
+        /* 사양 안내 배너 */
+        .tbm-info {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 16px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            font-size: 13px; color: var(--main-dark2);
+            line-height: 1.5;
+        }
+        .tbm-info svg { color: var(--main-dark); flex-shrink: 0; margin-top: 1px; }
+        .tbm-info strong { font-weight: 700; }
+        .tbm-info .note { display: block; font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* KPI 4분할 */
+        .tbm-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .tbm-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 118px; justify-content: center;
+        }
+        .tbm-kpi-cell:last-child { border-right: none; }
+        .tbm-kpi-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .tbm-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .tbm-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .tbm-kpi-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .tbm-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .tbm-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .tbm-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .tbm-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .tbm-kpi-value.info { color: var(--status-info-fg); }
+        .tbm-kpi-value.warning { color: var(--status-warning-fg); }
+        .tbm-kpi-value.success { color: var(--status-success-fg); }
+        .tbm-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .tbm-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 계약 chip */
+        .contract-chip {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            margin-right: 4px;
+        }
+
+        /* 작성자/참석자 카운트 */
+        .tbm-count-cell {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--text-black);
+            text-align: center;
+        }
+        .tbm-count-cell .unit {
+            font-size: 11px; font-weight: 500; color: var(--text-gray);
+            margin-left: 1px;
+        }
+        .tbm-count-cell.few { color: var(--status-warning-fg); }
+
+        /* 위험요인 chip */
+        .tbm-hazard-chip {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        /* 첨부 아이콘 */
+        .tbm-attach-cell {
+            display: flex; align-items: center; gap: 4px;
+            justify-content: center;
+            color: var(--main-dark);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .tbm-attach-cell svg { color: var(--main); }
+        .tbm-attach-cell.zero { color: var(--text-lightgray); }
+
+        /* 결과 카운트 */
+        .tbm-meta-row { display: flex; align-items: center; gap: 12px; }
+        .tbm-meta-count { font-size: 14px; color: var(--text-gray); }
+        .tbm-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 모달 공통 */
+        .tbm-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .tbm-modal-backdrop.is-open { display: flex; }
+        .tbm-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 720px;
+            max-height: 92vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .tbm-modal.lg { max-width: 800px; }
+        .tbm-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .tbm-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tbm-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .tbm-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .tbm-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .tbm-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+
+        /* 상세 모달 배너 */
+        .tbm-detail-banner {
+            padding: 16px 22px;
+            background: linear-gradient(135deg, #e58a3c 0%, #c47a07 100%);
+            border-bottom: 1px solid var(--card-line);
+            color: white;
+        }
+        .tbm-detail-banner .meta {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: rgba(255,255,255,0.85);
+            margin-bottom: 4px;
+        }
+        .tbm-detail-banner h3 {
+            font-size: 18px; font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+            letter-spacing: -0.4px;
+        }
+        .tbm-detail-banner .sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tbm-detail-banner .sub .dot {
+            display: inline-block;
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+        }
+        .tbm-detail-banner .sub strong { color: white; font-weight: 700; }
+
+        .tbm-section + .tbm-section { margin-top: 20px; }
+        .tbm-section h4 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tbm-section h4::before {
+            content: ""; display: block;
+            width: 4px; height: 16px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .tbm-section h4 .count-pill {
+            font-size: 11px; font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+
+        /* 참석자 */
+        .tbm-pp-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .tbm-pp {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .tbm-pp .avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--main) 0%, var(--main-dark) 100%);
+        }
+        .tbm-pp.external .avatar {
+            background: linear-gradient(135deg, #e58a3c 0%, #c47a07 100%);
+        }
+        .tbm-pp .body { flex: 1; min-width: 0; }
+        .tbm-pp .name {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .tbm-pp .name .badge {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .tbm-pp.external .name .badge {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+        }
+        .tbm-pp .role { font-size: 11px; color: var(--text-gray); }
+
+        /* 위험요인+안전조치 */
+        .tbm-hazard-list {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .tbm-hazard-row {
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            overflow: hidden;
+        }
+        .tbm-hazard-row .head {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 14px;
+            background: var(--status-danger-bg);
+            border-bottom: 1px solid var(--status-danger-border);
+        }
+        .tbm-hazard-row .num {
+            width: 24px; height: 24px;
+            border-radius: 6px;
+            background: var(--status-danger-fg);
+            color: white;
+            font-size: 12px; font-weight: 800;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .tbm-hazard-row .head-body { flex: 1; }
+        .tbm-hazard-row .h-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--status-danger-fg);
+        }
+        .tbm-hazard-row .src {
+            display: inline-flex; align-items: center;
+            margin-top: 4px;
+            padding: 1px 8px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            background: white;
+            color: var(--status-danger-fg);
+            border: 1px solid var(--status-danger-border);
+        }
+        .tbm-hazard-row .src.added {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .tbm-hazard-row .action-body {
+            padding: 12px 14px;
+            display: flex; gap: 10px; align-items: flex-start;
+            font-size: 13px;
+            color: var(--text-black);
+        }
+        .tbm-hazard-row .action-body .icon {
+            color: var(--main);
+            flex-shrink: 0; margin-top: 2px;
+        }
+        .tbm-hazard-row .action-body .text {
+            flex: 1;
+            line-height: 1.6;
+        }
+        .tbm-hazard-row .action-body .text strong { color: var(--main-dark); font-weight: 700; }
+
+        /* 첨부 */
+        .tbm-attach-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .tbm-attach-card {
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            cursor: pointer;
+            background: white;
+            transition: border-color .12s ease;
+        }
+        .tbm-attach-card:hover { border-color: var(--main); }
+        .tbm-attach-card .thumb {
+            height: 100px;
+            background: linear-gradient(135deg, #fafbfb, #e3e3e3);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-lightgray);
+        }
+        .tbm-attach-card .thumb.photo { background: linear-gradient(135deg, var(--brand-100), var(--main-light)); color: white; }
+        .tbm-attach-card .thumb.sign { background: linear-gradient(135deg, #fff4e6, #f9c2ab); color: #c47a07; }
+        .tbm-attach-card .meta {
+            padding: 8px 10px;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+        .tbm-attach-card .meta .name {
+            color: var(--text-black);
+            font-weight: 600;
+            display: block;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* 등록 폼 */
+        .tbm-form-row { margin-bottom: 14px; }
+        .tbm-form-row .label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-black);
+            margin-bottom: 6px;
+        }
+        .tbm-form-row .label .req { color: var(--status-danger-fg); margin-left: 2px; }
+        .tbm-form-row input,
+        .tbm-form-row select,
+        .tbm-form-row textarea {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            outline: none;
+            font-family: inherit;
+        }
+        .tbm-form-row textarea { min-height: 64px; resize: vertical; }
+        .tbm-form-row input:focus,
+        .tbm-form-row select:focus,
+        .tbm-form-row textarea:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .tbm-form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .tbm-form-hint {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        /* 참석자 입력 (협의체 패턴 재사용) */
+        .tbm-pp-tabs {
+            display: inline-flex;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: white;
+            margin-bottom: 8px;
+        }
+        .tbm-pp-tab {
+            padding: 6px 14px;
+            font-size: 12px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: none;
+            border-right: 1px solid var(--card-line);
+            cursor: pointer;
+        }
+        .tbm-pp-tab:last-child { border-right: none; }
+        .tbm-pp-tab.is-active { background: var(--main); color: white; }
+        .tbm-pp-search {
+            display: flex; gap: 6px;
+            margin-bottom: 8px;
+        }
+        .tbm-pp-search input { flex: 1; }
+        .tbm-pp-search button {
+            padding: 8px 14px;
+            background: var(--main);
+            color: white;
+            border: none;
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            font-size: 12px; font-weight: 600;
+            white-space: nowrap;
+        }
+        .tbm-pp-list {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            min-height: 40px;
+            padding: 8px;
+            background: #fafbfb;
+            border: 1px dashed var(--card-line);
+            border-radius: var(--radius-button);
+        }
+        .tbm-pp-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 999px;
+            font-size: 12px; color: var(--text-black);
+            font-weight: 600;
+        }
+        .tbm-pp-chip.external { border-color: var(--status-warning-border); background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .tbm-pp-chip .remove {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px;
+            background: none; border: none; cursor: pointer;
+            color: inherit;
+        }
+
+        /* 위험요인 입력 — RSK 자동 + 추가 */
+        .tbm-hz-builder {
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+            background: #fafbfb;
+        }
+        .tbm-hz-builder-head {
+            padding: 10px 14px;
+            background: white;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .tbm-hz-builder-head .title {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+        }
+        .tbm-hz-builder-head .actions { display: flex; gap: 6px; }
+        .tbm-hz-mini-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 12px;
+            font-size: 12px; font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid;
+        }
+        .tbm-hz-mini-btn.rsk {
+            background: white;
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+        .tbm-hz-mini-btn.rsk:hover {
+            background: var(--status-danger-bg);
+        }
+        .tbm-hz-mini-btn.add {
+            background: var(--main);
+            border-color: var(--main);
+            color: white;
+        }
+        .tbm-hz-mini-btn.add:hover { background: var(--main-dark); }
+
+        .tbm-hz-rows {
+            display: flex; flex-direction: column;
+        }
+        .tbm-hz-form-row {
+            display: grid;
+            grid-template-columns: 32px 1fr 1fr 32px;
+            gap: 8px;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--card-line);
+            align-items: center;
+            background: white;
+        }
+        .tbm-hz-form-row:last-child { border-bottom: none; }
+        .tbm-hz-form-row .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px;
+            border-radius: 6px;
+            background: var(--status-danger-fg);
+            color: white;
+            font-size: 11px; font-weight: 800;
+        }
+        .tbm-hz-form-row input {
+            padding: 6px 8px;
+            font-size: 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 5px;
+            outline: none;
+        }
+        .tbm-hz-form-row input.haz { border-left: 3px solid var(--status-danger-fg); }
+        .tbm-hz-form-row input.act { border-left: 3px solid var(--main); }
+        .tbm-hz-form-row input:focus {
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px rgba(32, 159, 132, 0.12);
+        }
+        .tbm-hz-form-row .remove-btn {
+            width: 28px; height: 28px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--status-danger-fg);
+            border-radius: 5px;
+        }
+        .tbm-hz-form-row .remove-btn:hover { background: var(--status-danger-bg); }
+
+        @media (max-width: 1023px) {
+            .tbm-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .tbm-pp-grid { grid-template-columns: 1fr; }
+            .tbm-attach-grid { grid-template-columns: repeat(2, 1fr); }
+            .tbm-form-grid-2 { grid-template-columns: 1fr; }
+            .tbm-hz-form-row { grid-template-columns: 32px 1fr 32px; }
+            .tbm-hz-form-row input.act { grid-column: 2 / 3; }
+        }
+    </style>
+</head>
+<body data-dy-page="con-tbm" data-page-title="TBM (Tool Box Meeting)" data-page-subtitle="도급공사 작업 전 안전미팅 작성 · 위험요인 공유 (산안법 §29-3)">
+    <main>
+
+        <!-- ─── 안내 ─── -->
+        <div class="tbm-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>
+                <strong>TBM은 도급공사(CONSTRUCTION) 계약에만 작성합니다</strong> (결정사항 #9). 일반 관리대상(시설/업무/사업)에는 적용되지 않습니다.
+                <span class="note">※ 위험요인은 해당 공사의 위험성평가에서 자동 불러올 수 있으며, 현장에서 추가도 가능합니다.</span>
+            </span>
+        </div>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="tbm-kpi-grid">
+            <div class="tbm-kpi-cell">
+                <div class="tbm-kpi-head">
+                    <span class="tbm-kpi-title">올해 TBM</span>
+                    <span class="tbm-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </span>
+                </div>
+                <div class="tbm-kpi-value">86<span class="small">건</span></div>
+                <div class="tbm-kpi-sub">2026년 누적 · 진행 공사 <strong>5</strong>건</div>
+            </div>
+            <div class="tbm-kpi-cell">
+                <div class="tbm-kpi-head">
+                    <span class="tbm-kpi-title">이번 주</span>
+                    <span class="tbm-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="tbm-kpi-value info">14<span class="small">건</span></div>
+                <div class="tbm-kpi-sub">월~금 평균 <strong>2.8</strong>건/일</div>
+            </div>
+            <div class="tbm-kpi-cell">
+                <div class="tbm-kpi-head">
+                    <span class="tbm-kpi-title">평균 참석자</span>
+                    <span class="tbm-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </span>
+                </div>
+                <div class="tbm-kpi-value success">7.2<span class="small">명</span></div>
+                <div class="tbm-kpi-sub">최소 4 / 최대 12명</div>
+            </div>
+            <div class="tbm-kpi-cell">
+                <div class="tbm-kpi-head">
+                    <span class="tbm-kpi-title">미실시 공사</span>
+                    <span class="tbm-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                </div>
+                <div class="tbm-kpi-value warning">1<span class="small">건</span></div>
+                <div class="tbm-kpi-sub">최근 5일 TBM 기록 없음 (정수장)</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 등록 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">계약</span>
+                <select class="select" id="filter-contract">
+                    <option>전체</option>
+                    <option>청사 시설 보수공사 (담양건설)</option>
+                    <option>도로 확장공사 1단계 (해인건설)</option>
+                    <option>정수장 증축 (전남시설)</option>
+                    <option>군민체육관 리모델링 (해인건설)</option>
+                    <option>농촌도로 포장공사 (담양건설)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">수급업체</span>
+                <select class="select" id="filter-sub">
+                    <option>전체</option>
+                    <option>(주)담양건설</option>
+                    <option>(주)해인건설</option>
+                    <option>(주)전남시설</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select" id="filter-period">
+                    <option>전체</option>
+                    <option>오늘</option>
+                    <option>이번 주</option>
+                    <option>이번 달</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="공정·작업명 검색" id="filter-search">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.clearFilters()">초기화</button>
+        </div>
+
+        <div class="tbm-meta-row">
+            <span class="tbm-meta-count">전체 <strong id="result-count">12</strong>건 표시 중</span>
+        </div>
+
+        <!-- ─── TBM 목록 테이블 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">TBM 기록</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.openCreateModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    TBM 작성
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:110px;"><col><col style="width:140px;"><col style="width:90px;"><col style="width:70px;"><col style="width:100px;"><col style="width:70px;"><col style="width:70px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>일자</th>
+                        <th>계약 · 공정/작업명</th>
+                        <th>수급업체</th>
+                        <th>작성자</th>
+                        <th style="text-align:center;">참석</th>
+                        <th style="text-align:center;">위험요인</th>
+                        <th style="text-align:center;">첨부</th>
+                        <th style="text-align:center;">상세</th>
+                    </tr>
+                </thead>
+                <tbody id="tbm-tbody">
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-13-cheongsa')">
+                        <td>2026-05-13<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">08:00 · 현장 사무실</div></td>
+                        <td>
+                            <span class="contract-chip">청사 보수</span>
+                            <strong>외벽 도장 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>박현장</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">8<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 4건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                3
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-13-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-13-doro')">
+                        <td>2026-05-13<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">07:30 · 현장 사무실</div></td>
+                        <td>
+                            <span class="contract-chip">도로 확장</span>
+                            <strong>아스팔트 포장 · 차로 통제</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">도로 확장공사 1단계 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>윤도로</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">12<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 6건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                5
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-13-doro')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-12-cheongsa')">
+                        <td>2026-05-12<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">08:00 · 현장 사무실</div></td>
+                        <td>
+                            <span class="contract-chip">청사 보수</span>
+                            <strong>지하 배관 보수</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>이주임</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">6<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 5건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                4
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-12-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-12-bdaehoe')">
+                        <td>2026-05-12<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">09:00 · 체육관 사무실</div></td>
+                        <td>
+                            <span class="contract-chip">체육관 리모델링</span>
+                            <strong>천장 철거 · 폐기물 반출</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군민체육관 리모델링 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>한안전</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">9<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 7건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                6
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-12-bdaehoe')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-12-nonchon')">
+                        <td>2026-05-12<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">07:00 · 현장 컨테이너</div></td>
+                        <td>
+                            <span class="contract-chip">농촌도로</span>
+                            <strong>노반 정리 · 배수로 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">농촌도로 포장공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>박현장</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">5<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 3건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                2
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-12-nonchon')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-11-cheongsa')">
+                        <td>2026-05-11<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">08:00</div></td>
+                        <td>
+                            <span class="contract-chip">청사 보수</span>
+                            <strong>외벽 도장 · 비계 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>김안전관리</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">7<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 5건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                4
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-11-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-11-doro')">
+                        <td>2026-05-11<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">07:30</div></td>
+                        <td>
+                            <span class="contract-chip">도로 확장</span>
+                            <strong>중장비 진입 · 토공 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">도로 확장공사 1단계 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>윤도로</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">11<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 6건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                5
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-11-doro')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-10-bdaehoe')">
+                        <td>2026-05-10<div style="font-size:11px; color:var(--text-gray); margin-top:2px;">09:00</div></td>
+                        <td>
+                            <span class="contract-chip">체육관 리모델링</span>
+                            <strong>외벽 단열재 시공</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군민체육관 리모델링 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>한안전</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">8<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 4건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                3
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-10-bdaehoe')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-10-cheongsa')">
+                        <td>2026-05-10</td>
+                        <td>
+                            <span class="contract-chip">청사 보수</span>
+                            <strong>지하 배관 보수 · 용접 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>이주임</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">6<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 5건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                4
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-10-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-09-cheongsa')">
+                        <td>2026-05-09</td>
+                        <td>
+                            <span class="contract-chip">청사 보수</span>
+                            <strong>옥상 방수 작업</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">청사 시설 보수공사 (담양건설)</div>
+                        </td>
+                        <td>(주)담양건설</td>
+                        <td>박현장</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">7<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 4건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                3
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-09-cheongsa')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-09-doro')">
+                        <td>2026-05-09</td>
+                        <td>
+                            <span class="contract-chip">도로 확장</span>
+                            <strong>경계석 시공 · 도로 표시</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">도로 확장공사 1단계 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>윤도로</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">10<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 5건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                4
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-09-doro')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openDetail('t-2026-05-08-bdaehoe')">
+                        <td>2026-05-08</td>
+                        <td>
+                            <span class="contract-chip">체육관 리모델링</span>
+                            <strong>내부 철거 마무리</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">군민체육관 리모델링 (해인건설)</div>
+                        </td>
+                        <td>(주)해인건설</td>
+                        <td>한안전</td>
+                        <td style="text-align:center;"><span class="tbm-count-cell">8<span class="unit">명</span></span></td>
+                        <td style="text-align:center;"><span class="tbm-hazard-chip">위험 4건</span></td>
+                        <td>
+                            <div class="tbm-attach-cell zero">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                0
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('t-2026-05-08-bdaehoe')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="8"></div>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         CON09-D TBM 상세 모달
+    ============================================================ -->
+    <div class="tbm-modal-backdrop" id="detail-modal">
+        <div class="tbm-modal lg" role="dialog" aria-modal="true">
+            <div class="tbm-modal-header">
+                <div class="tbm-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e58a3c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    TBM 상세
+                </div>
+                <button type="button" class="tbm-modal-close" onclick="window.closeDetail()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="tbm-detail-banner" id="detail-banner"></div>
+            <div class="tbm-modal-body" id="detail-body"></div>
+            <div class="tbm-modal-footer">
+                <button class="btn" style="background:var(--status-danger-fg); color:white; border-color:var(--status-danger-fg);" type="button" onclick="window.DYLayout._soon(event, 'TBM 삭제 확인 (CEO/GM/작성자)')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                    삭제
+                </button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PDF
+                    </button>
+                    <button class="btn btn-outline" type="button" onclick="window.closeDetail()">닫기</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, 'TBM 수정 (CON09-F)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        수정
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CON09-F TBM 작성 모달
+    ============================================================ -->
+    <div class="tbm-modal-backdrop" id="create-modal">
+        <div class="tbm-modal" role="dialog" aria-modal="true">
+            <div class="tbm-modal-header">
+                <div class="tbm-modal-title">TBM 작성</div>
+                <button type="button" class="tbm-modal-close" onclick="window.closeCreateModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="tbm-modal-body">
+                <div class="tbm-form-grid-2">
+                    <div class="tbm-form-row">
+                        <label class="label">계약<span class="req">*</span></label>
+                        <select onchange="window.onContractChange(this)">
+                            <option>청사 시설 보수공사 (담양건설) · 진행중</option>
+                            <option>도로 확장공사 1단계 (해인건설) · 진행중</option>
+                            <option>군민체육관 리모델링 (해인건설) · 진행중</option>
+                            <option>농촌도로 포장공사 (담양건설) · 진행중</option>
+                            <option>정수장 증축 (전남시설) · 결재 차단</option>
+                        </select>
+                        <div class="tbm-form-hint">⚠ 도급공사(CONSTRUCTION)만 표시됩니다 (결정사항 #9)</div>
+                    </div>
+                    <div class="tbm-form-row">
+                        <label class="label">수급업체</label>
+                        <select>
+                            <option>(주)담양건설</option>
+                            <option>전체 협력사 합동</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="tbm-form-grid-2">
+                    <div class="tbm-form-row">
+                        <label class="label">공정/작업명<span class="req">*</span></label>
+                        <input type="text" placeholder="예: 외벽 도장 · 비계 작업" value="외벽 도장 작업">
+                        <div class="tbm-form-hint">자유 텍스트 (PRC 폐기 — 결정사항 #8)</div>
+                    </div>
+                    <div class="tbm-form-row">
+                        <label class="label">작업일자<span class="req">*</span></label>
+                        <input type="date" value="2026-05-13">
+                    </div>
+                </div>
+
+                <div class="tbm-form-row">
+                    <label class="label">참석자<span class="req">*</span> (1명 이상)</label>
+                    <div class="tbm-pp-tabs">
+                        <button type="button" class="tbm-pp-tab is-active" data-pp="internal">내부 직원</button>
+                        <button type="button" class="tbm-pp-tab" data-pp="external">외부 SUB</button>
+                    </div>
+                    <div class="tbm-pp-search" data-pp-area="internal">
+                        <input type="text" placeholder="구성원 이름·부서 검색">
+                        <button type="button" onclick="window.addParticipant('internal')">+ 추가</button>
+                    </div>
+                    <div class="tbm-pp-search" data-pp-area="external" style="display:none;">
+                        <input type="text" placeholder="회사명·이름·직위 (예: 담양건설 박관리 안전관리자)">
+                        <button type="button" onclick="window.addParticipant('external')">+ 추가</button>
+                    </div>
+                    <div class="tbm-pp-list" id="pp-list">
+                        <span class="tbm-pp-chip">박안전 (안전건설과 SHM) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                        <span class="tbm-pp-chip external">담양건설 박현장 (현장소장) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                        <span class="tbm-pp-chip external">담양건설 김안전관리 (안전관리자) <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+                    </div>
+                </div>
+
+                <div class="tbm-form-row">
+                    <label class="label">위험요인 + 안전조치<span class="req">*</span> (각각 1건 이상)</label>
+                    <div class="tbm-hz-builder">
+                        <div class="tbm-hz-builder-head">
+                            <span class="title">위험요인별로 안전조치를 함께 입력</span>
+                            <div class="actions">
+                                <button class="tbm-hz-mini-btn rsk" type="button" onclick="window.importFromRSK()">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                                    위험성평가에서 불러오기
+                                </button>
+                                <button class="tbm-hz-mini-btn add" type="button" onclick="window.addHazard()">+ 위험요인 추가</button>
+                            </div>
+                        </div>
+                        <div class="tbm-hz-rows" id="hz-rows">
+                            <div class="tbm-hz-form-row">
+                                <span class="num">1</span>
+                                <input class="haz" type="text" value="고소 작업 추락 위험 (5m 이상)">
+                                <input class="act" type="text" value="안전대 + 추락방지망 의무 설치">
+                                <button class="remove-btn" type="button" onclick="this.parentElement.remove()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                                </button>
+                            </div>
+                            <div class="tbm-hz-form-row">
+                                <span class="num">2</span>
+                                <input class="haz" type="text" value="도장재 유해성 (휘발성 유기화합물)">
+                                <input class="act" type="text" value="방진·방독 마스크 착용 · 작업장 환기 30분 간격">
+                                <button class="remove-btn" type="button" onclick="this.parentElement.remove()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                                </button>
+                            </div>
+                            <div class="tbm-hz-form-row">
+                                <span class="num">3</span>
+                                <input class="haz" type="text" value="비계 위 자재 낙하">
+                                <input class="act" type="text" value="안전대 결박 + 작업 구역 통제 (출입 금지 펜스)">
+                                <button class="remove-btn" type="button" onclick="this.parentElement.remove()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                                </button>
+                            </div>
+                            <div class="tbm-hz-form-row">
+                                <span class="num">4</span>
+                                <input class="haz" type="text" value="기상 (강풍·강우 시 작업 중지)">
+                                <input class="act" type="text" value="풍속 10m/s 이상 · 강수 시 즉시 중단 · 비계 점검 후 재개">
+                                <button class="remove-btn" type="button" onclick="this.parentElement.remove()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tbm-form-hint">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12.01" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+                        <span style="vertical-align:middle;">위험성평가에서 4개 항목 자동 불러옴 · 현장에서 추가 입력도 가능</span>
+                    </div>
+                </div>
+
+                <div class="tbm-form-row">
+                    <label class="label">첨부 (사진·서명)</label>
+                    <input type="file" accept="image/*,.pdf" multiple style="padding:6px 12px;">
+                    <div class="tbm-form-hint">현장 사진·참석자 서명 이미지 등 (다중 첨부 가능)</div>
+                </div>
+            </div>
+            <div class="tbm-modal-footer">
+                <div></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.closeCreateModal()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.saveTBM()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 필터 ─── */
+        const tbody = document.getElementById('tbm-tbody');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const resultCount = document.getElementById('result-count');
+        function applyFilters() {
+            const c = document.getElementById('filter-contract').value;
+            const s = document.getElementById('filter-sub').value;
+            const p = document.getElementById('filter-period').value;
+            const q = document.getElementById('filter-search').value.trim().toLowerCase();
+            let visible = 0;
+            allRows.forEach(tr => {
+                const text = tr.textContent.toLowerCase();
+                let show = true;
+                if (c !== '전체') {
+                    const key = c.split('(')[0].trim().toLowerCase();
+                    if (!text.includes(key)) show = false;
+                }
+                if (s !== '전체' && !text.includes(s.toLowerCase())) show = false;
+                if (p !== '전체') {
+                    const dateCell = tr.children[0].textContent;
+                    if (p === '오늘' && !dateCell.includes('2026-05-13')) show = false;
+                    else if (p === '이번 주' && !dateCell.match(/2026-05-(0[8-9]|1[0-4])/)) show = false;
+                }
+                if (q && !text.includes(q)) show = false;
+                tr.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            resultCount.textContent = visible;
+        }
+        ['filter-contract', 'filter-sub', 'filter-period'].forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+        let searchTimer = null;
+        document.getElementById('filter-search').addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyFilters, 300);
+        });
+        document.querySelector('.search-bar .search-submit').addEventListener('click', applyFilters);
+        window.clearFilters = function () {
+            document.getElementById('filter-contract').value = '전체';
+            document.getElementById('filter-sub').value = '전체';
+            document.getElementById('filter-period').value = '전체';
+            document.getElementById('filter-search').value = '';
+            applyFilters();
+        };
+
+        /* ─── TBM 데이터 ─── */
+        const TBMS = {
+            't-2026-05-13-cheongsa': {
+                date: '2026-05-13 08:00 ~ 08:30', location: '청사 보수공사 현장 사무실',
+                contract: '청사 시설 보수공사', sub: '(주)담양건설', author: '박현장 (현장소장)',
+                workName: '외벽 도장 작업',
+                participants: [
+                    { type: 'internal', name: '박안전', role: 'SHM · 안전건설과' },
+                    { type: 'external', company: '담양건설', name: '박현장', role: '현장소장' },
+                    { type: 'external', company: '담양건설', name: '김안전관리', role: '안전관리자' },
+                    { type: 'external', company: '담양건설', name: '이도장', role: '도장반장' },
+                    { type: 'external', company: '담양건설', name: '최작업', role: '작업자' },
+                    { type: 'external', company: '담양건설', name: '윤작업', role: '작업자' },
+                    { type: 'external', company: '담양건설', name: '한작업', role: '작업자' },
+                    { type: 'external', company: '담양건설', name: '서작업', role: '작업자' },
+                ],
+                hazards: [
+                    { title: '고소 작업 추락 위험 (5m 이상)', action: '안전대 + 추락방지망 의무 설치 · 작업 전 비계 강도 점검', source: 'rsk' },
+                    { title: '도장재 유해성 (휘발성 유기화합물)', action: '방진·방독 마스크 착용 · 작업장 환기 30분 간격 · MSDS 게시 확인', source: 'rsk' },
+                    { title: '비계 위 자재 낙하', action: '안전대 결박 + 작업 구역 출입 통제 펜스 설치 · 신호수 배치', source: 'rsk' },
+                    { title: '기상 (강풍·강우 시)', action: '풍속 10m/s 이상 또는 강수 시 즉시 중단 · 비계 점검 후 재개', source: 'added' },
+                ],
+                attach: [
+                    { type: 'photo', name: '현장_시작전.jpg', size: '2.1MB' },
+                    { type: 'sign', name: '참석자_서명.png', size: '420KB' },
+                    { type: 'photo', name: '안전장비_점검.jpg', size: '1.8MB' },
+                ]
+            },
+            't-2026-05-13-doro': {
+                date: '2026-05-13 07:30 ~ 08:00', location: '도로 확장공사 현장 사무실',
+                contract: '도로 확장공사 1단계', sub: '(주)해인건설', author: '윤도로 (현장소장)',
+                workName: '아스팔트 포장 · 차로 통제',
+                participants: [
+                    { type: 'internal', name: '이건설', role: '담당 · 건설지원팀' },
+                    { type: 'external', company: '해인건설', name: '윤도로', role: '현장소장' },
+                    { type: 'external', company: '해인건설', name: '한안전', role: '안전관리자' },
+                    { type: 'external', company: '해인건설', name: '서장비', role: '장비반장' },
+                    { type: 'external', company: '해인건설', name: '오신호', role: '신호수 1' },
+                    { type: 'external', company: '해인건설', name: '임신호', role: '신호수 2' },
+                    { type: 'external', company: '해인건설', name: '박작업', role: '작업자' },
+                    { type: 'external', company: '해인건설', name: '최작업', role: '작업자' },
+                    { type: 'external', company: '해인건설', name: '윤작업', role: '작업자' },
+                    { type: 'external', company: '해인건설', name: '한작업', role: '작업자' },
+                    { type: 'external', company: '해인건설', name: '서작업', role: '작업자' },
+                    { type: 'external', company: '해인건설', name: '김작업', role: '작업자' },
+                ],
+                hazards: [
+                    { title: '중장비(굴착기·덤프) 작업 시 충돌', action: '신호수 2명 배치 · 무전기 통신 의무화 · 비상정지 절차 확인', source: 'rsk' },
+                    { title: '아스팔트 고온 화상 (180℃)', action: '내열 장갑·안전화 의무 · 비상 응급킷 비치 · 화상 응급조치 절차 공유', source: 'rsk' },
+                    { title: '교통 우회 시 일반 차량 진입', action: '신호수 통제 · 진입 차단 펜스 + LED 경광등 · 반사 표지 추가', source: 'rsk' },
+                    { title: '소음·진동 작업자 보호', action: '귀마개 의무 착용 · 작업 시간 분산 (오전·오후 50분 / 휴식 10분)', source: 'rsk' },
+                    { title: '야간 작업 시 시야 확보', action: '이동식 조명탑 4대 배치 · 반사 조끼 의무', source: 'added' },
+                    { title: '아차사고 발생 시 즉시 보고', action: '현장소장 보고 → SHM 30분 이내 보고 · 작업 중지 권한 안내', source: 'added' },
+                ],
+                attach: [
+                    { type: 'photo', name: '신호수_배치.jpg', size: '1.9MB' },
+                    { type: 'photo', name: '장비_안전점검.jpg', size: '2.4MB' },
+                    { type: 'sign', name: '참석자_서명.png', size: '510KB' },
+                    { type: 'photo', name: '교통_통제.jpg', size: '2.0MB' },
+                    { type: 'photo', name: 'TBM_종료.jpg', size: '1.6MB' },
+                ]
+            },
+        };
+
+        const DEFAULT_TBM = {
+            date: '-', location: '-',
+            contract: '-', sub: '-', author: '-',
+            workName: 'TBM 기록',
+            participants: [], hazards: [], attach: []
+        };
+
+        /* ─── 상세 모달 ─── */
+        window.openDetail = function (id) {
+            const t = TBMS[id] || { ...DEFAULT_TBM, workName: id.includes('cheongsa') ? '청사 보수공사 TBM' : id.includes('doro') ? '도로 확장공사 TBM' : id.includes('bdaehoe') ? '체육관 리모델링 TBM' : 'TBM' };
+
+            // 배너
+            document.getElementById('detail-banner').innerHTML = `
+                <div class="meta">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span>${t.date}</span>
+                    <span style="display:inline-block; width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,0.4);"></span>
+                    <span>${t.location}</span>
+                </div>
+                <h3>${t.workName}</h3>
+                <div class="sub">
+                    <strong>${t.contract}</strong>
+                    <span class="dot"></span>
+                    <span>${t.sub}</span>
+                    <span class="dot"></span>
+                    <span>작성 ${t.author}</span>
+                </div>
+            `;
+
+            // 본문
+            const internal = t.participants.filter(p => p.type === 'internal');
+            const external = t.participants.filter(p => p.type === 'external');
+            const ppHtml = t.participants.length
+                ? t.participants.map(p => {
+                    const initial = (p.name || '').slice(0, 1);
+                    const isExt = p.type === 'external';
+                    return `
+                        <div class="tbm-pp ${isExt ? 'external' : ''}">
+                            <span class="avatar">${initial}</span>
+                            <div class="body">
+                                <div class="name">${p.name} <span class="badge">${isExt ? '외부' : '내부'}</span></div>
+                                <div class="role">${isExt ? (p.company + ' · ' + p.role) : p.role}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">참석자 정보가 없습니다.</p>';
+
+            const hzHtml = t.hazards.length
+                ? t.hazards.map((h, i) => `
+                    <div class="tbm-hazard-row">
+                        <div class="head">
+                            <span class="num">${i + 1}</span>
+                            <div class="head-body">
+                                <div class="h-title">${h.title}</div>
+                                <span class="src ${h.source === 'added' ? 'added' : ''}">${h.source === 'added' ? '현장 추가' : '위험성평가 자동'}</span>
+                            </div>
+                        </div>
+                        <div class="action-body">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                            </span>
+                            <div class="text"><strong>안전조치:</strong> ${h.action}</div>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); padding:8px 0;">위험요인 정보가 없습니다.</p>';
+
+            const attachHtml = t.attach.length
+                ? t.attach.map(a => `
+                    <div class="tbm-attach-card" onclick="window.DYLayout._soon(event, '${a.name} 다운로드')">
+                        <div class="thumb ${a.type}">
+                            ${a.type === 'photo'
+                                ? '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+                                : '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'}
+                        </div>
+                        <div class="meta">
+                            <span class="name">${a.name}</span>
+                            ${a.size}
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="font-size:13px; color:var(--text-gray); grid-column:1 / -1; padding:8px 0;">첨부된 파일이 없습니다.</p>';
+
+            document.getElementById('detail-body').innerHTML = `
+                <div class="tbm-section">
+                    <h4>참석자 <span class="count-pill">${t.participants.length}명 · 내부 ${internal.length} / 외부 ${external.length}</span></h4>
+                    <div class="tbm-pp-grid">${ppHtml}</div>
+                </div>
+
+                <div class="tbm-section">
+                    <h4>위험요인 + 안전조치 <span class="count-pill">${t.hazards.length}건</span></h4>
+                    <div class="tbm-hazard-list">${hzHtml}</div>
+                </div>
+
+                <div class="tbm-section">
+                    <h4>첨부 (사진·서명) <span class="count-pill">${t.attach.length}건</span></h4>
+                    <div class="tbm-attach-grid">${attachHtml}</div>
+                </div>
+            `;
+
+            document.getElementById('detail-modal').classList.add('is-open');
+        };
+        window.closeDetail = function () { document.getElementById('detail-modal').classList.remove('is-open'); };
+
+        /* ─── 작성 모달 ─── */
+        window.openCreateModal = function () {
+            document.getElementById('create-modal').classList.add('is-open');
+        };
+        window.closeCreateModal = function () { document.getElementById('create-modal').classList.remove('is-open'); };
+        window.onContractChange = function (sel) {
+            // 계약 변경 시 위험성평가 자동 불러오기 옵션
+            showToast(`${sel.value.split('(')[0].trim()} 위험성평가에서 위험요인 4건을 자동 불러올 수 있습니다.`);
+        };
+        window.importFromRSK = function () {
+            showToast('위험성평가에서 4건의 위험요인을 불러왔습니다. 필요 시 안전조치를 수정하세요.');
+        };
+        window.addHazard = function () {
+            const container = document.getElementById('hz-rows');
+            const num = container.children.length + 1;
+            const row = document.createElement('div');
+            row.className = 'tbm-hz-form-row';
+            row.innerHTML = `
+                <span class="num">${num}</span>
+                <input class="haz" type="text" placeholder="위험요인">
+                <input class="act" type="text" placeholder="안전조치">
+                <button class="remove-btn" type="button" onclick="this.parentElement.remove()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                </button>`;
+            container.appendChild(row);
+        };
+        window.saveTBM = function () {
+            window.closeCreateModal();
+            showToast('TBM이 등록되었습니다. 계약 담당자 + SHM+에게 새올 알림 발송됨. (목업)');
+        };
+
+        /* 참석자 입력 탭 */
+        document.querySelectorAll('.tbm-pp-tab').forEach(b => {
+            b.addEventListener('click', () => {
+                const t = b.dataset.pp;
+                document.querySelectorAll('.tbm-pp-tab').forEach(x => x.classList.toggle('is-active', x.dataset.pp === t));
+                document.querySelectorAll('[data-pp-area]').forEach(x => {
+                    x.style.display = x.dataset.ppArea === t ? 'flex' : 'none';
+                });
+            });
+        });
+        window.addParticipant = function (type) {
+            const area = document.querySelector(`[data-pp-area="${type}"]`);
+            const input = area.querySelector('input');
+            const v = input.value.trim();
+            if (!v) return;
+            const list = document.getElementById('pp-list');
+            const chip = document.createElement('span');
+            chip.className = 'tbm-pp-chip' + (type === 'external' ? ' external' : '');
+            chip.innerHTML = `${v} <button type="button" class="remove" onclick="this.parentElement.remove()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+            list.appendChild(chip);
+            input.value = '';
+        };
+
+        document.querySelectorAll('.tbm-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('is-open'); });
+        });
+    })();
+    </script>
+</body>
+</html>
