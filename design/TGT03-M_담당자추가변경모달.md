@@ -65,7 +65,7 @@
 ## 5. 자격증 보유 검증
 
 ```
-대상자 선택 시 즉시 자격증 검증 (ORG03-M §5와 동일 로직):
+대상자 선택 시 즉시 자격증 검증 (STF04-M §5와 동일 로직):
   SAFETY_MGR / HEALTH_MGR / HEALTH_DOCTOR 역할은 자격증 검증 수행
   SUPERVISOR / WORKER 역할은 자격증 검증 생략
 

@@ -443,7 +443,7 @@
             </span>
             <span class="msg">
                 <strong>안전관리자 미할당 시설 3건</strong>이 있습니다.
-                <span class="sub">보건소 청사 외 2건 — TGT02-D 상세에서 담당자 추가 또는 ORG03-V 전담인력 화면에서 선임</span>
+                <span class="sub">보건소 청사 외 2건 — TGT02-D 상세에서 담당자 추가 또는 STF04-V 부서별 전담인력 화면에서 선임</span>
             </span>
             <button class="btn btn-primary btn-sm" type="button" onclick="window.applyUnassigned()">
                 미할당만 보기 →
@@ -458,7 +458,7 @@
         <section class="card">
             <div class="card-header">
                 <h2 class="card-title">관리대상 목록</h2>
-                <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '관리대상 등록 (TGT02-F)')">
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.location.href='target-form.html'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     관리대상 등록
                 </button>
@@ -479,140 +479,140 @@
                     </tr>
                 </thead>
                 <tbody id="tgt-tbody">
-                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="1종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 (TGT02-D) - 군청 청사')">
+                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="1종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>군청 청사</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양군 담양읍 중앙로 99 · 연면적 5,800㎡</div></td>
                         <td>자치행정과</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g1">1종</span></td>
                         <td><span class="tgt-assignee-cell">홍길동 (5급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="원료·제조물" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 상수도사업소 본관')">
+                    <tr class="row-link" data-type="facility" data-cdpa="원료·제조물" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>상수도사업소 본관 (정수장)</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 정수장길 12 · 일일 정수량 18,000톤</div></td>
                         <td>상수도사업소</td>
                         <td><span class="cdpa-chip raw_material">원료</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell">정소장 (5급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 군민체육관')">
+                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>군민체육관</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 체육로 5 · 수용 2,400명</div></td>
                         <td>문화관광과</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell">정하나 (7급) <span class="source-chip manual">MANUAL</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중이용시설" data-grade="1종" data-status="활성" data-assigned="0" onclick="window.DYLayout._soon(event, '관리대상 상세 - 보건소 청사')">
+                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중이용시설" data-grade="1종" data-status="활성" data-assigned="0" onclick="window.location.href='target-detail-missing.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>보건소 청사</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 보건로 22 · 일일 방문 350명</div></td>
                         <td>보건소</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g1">1종</span></td>
                         <td><span class="tgt-assignee-cell missing">⚠ 미할당</span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-missing.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 죽녹원')">
+                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>죽녹원</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 죽녹원로 119 · 연간 방문 100만명</div></td>
                         <td>문화관광과</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell">신예지 (7급) <span class="source-chip manual">MANUAL</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 농기계 임대사업소')">
+                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>농기계 임대사업소</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">봉산면 산업로 33 · 농기계 88대</div></td>
                         <td>농업기술센터</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell">정농업 (6급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="3종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 담양읍 행정복지센터')">
+                    <tr class="row-link" data-type="facility" data-cdpa="공중이용시설" data-grade="3종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>담양읍 행정복지센터</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 객사길 5</div></td>
                         <td>담양읍사무소</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g3">3종</span></td>
                         <td><span class="tgt-assignee-cell">서지역 (7급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="facility" data-cdpa="원료·제조물" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 환경자원시설')">
+                    <tr class="row-link" data-type="facility" data-cdpa="원료·제조물" data-grade="2종" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>환경자원시설 (소각장·하수처리)</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">금성면 환경로 71 · 일일 처리 4,000톤</div></td>
                         <td>환경과</td>
                         <td><span class="cdpa-chip raw_material">원료</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell">윤과장 (5급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중교통수단" data-grade="2종" data-status="활성" data-assigned="0" onclick="window.DYLayout._soon(event, '관리대상 상세 - 농어촌 버스')">
+                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중교통수단" data-grade="2종" data-status="활성" data-assigned="0" onclick="window.location.href='target-detail-missing.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>농어촌 공영버스 (12대)</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 차고지 · 12개 노선</div></td>
                         <td>자치행정과</td>
                         <td><span class="cdpa-chip transport">공중교통</span><span class="grade-chip g2">2종</span></td>
                         <td><span class="tgt-assignee-cell missing">⚠ 미할당</span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-missing.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="task" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 화학물질 취급 업무')">
+                    <tr class="row-link" data-type="task" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail-task.html'">
                         <td style="text-align:center;"><span class="target-type-chip task">업무</span></td>
                         <td><strong>환경자원시설 화학물질 취급 업무</strong> <span class="tgt-src-chip manual">✏ 직접</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">유해화학물질 12종 취급 · 일일 8명 작업</div></td>
                         <td>환경과</td>
                         <td style="color:var(--text-lightgray);">—</td>
                         <td><span class="tgt-assignee-cell">오환경 (6급) <span class="source-chip manual">MANUAL</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-task.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="task" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 고소작업')">
+                    <tr class="row-link" data-type="task" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail-task.html'">
                         <td style="text-align:center;"><span class="target-type-chip task">업무</span></td>
                         <td><strong>청사 외벽 고소작업</strong> <span class="tgt-src-chip manual">✏ 직접</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">5m 이상 외벽 도장·청소</div></td>
                         <td>시설관리과</td>
                         <td style="color:var(--text-lightgray);">—</td>
                         <td><span class="tgt-assignee-cell">한시설 (6급) <span class="source-chip manual">MANUAL</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-task.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 도로 확장공사')">
+                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail-business.html'">
                         <td style="text-align:center;"><span class="target-type-chip business">사업</span></td>
                         <td><strong>도로 확장공사 1단계</strong> <span class="tgt-src-chip fms">🔗 e호조</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">예산 50억 · 2026-05-01 ~ 11-30 · 해인건설</div></td>
                         <td>안전건설과</td>
                         <td style="color:var(--text-lightgray);">—</td>
                         <td><span class="tgt-assignee-cell">이건설 (6급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-business.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 정수장 증축')">
+                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="활성" data-assigned="1" onclick="window.location.href='target-detail-business.html'">
                         <td style="text-align:center;"><span class="target-type-chip business">사업</span></td>
                         <td><strong>정수장 증축 사업</strong> <span class="tgt-src-chip fms">🔗 e호조</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">예산 120억 · 2026-06-01 ~ 2027-05-31 · 전남시설</div></td>
                         <td>상수도사업소</td>
                         <td style="color:var(--text-lightgray);">—</td>
                         <td><span class="tgt-assignee-cell">신상수 (6급) <span class="source-chip auto">AUTO</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip pending">등록대기</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-business.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중이용시설" data-grade="3종" data-status="활성" data-assigned="0" onclick="window.DYLayout._soon(event, '관리대상 상세 - 한옥체험관')">
+                    <tr class="row-link row-highlight-danger" data-type="facility" data-cdpa="공중이용시설" data-grade="3종" data-status="활성" data-assigned="0" onclick="window.location.href='target-detail-missing.html'">
                         <td style="text-align:center;"><span class="target-type-chip facility">시설</span></td>
                         <td><strong>한옥체험관</strong> <span class="tgt-src-chip fms">🔗 FMS</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">담양읍 한옥마을길 8 · 수용 80명</div></td>
                         <td>문화관광과</td>
                         <td><span class="cdpa-chip public_use">공중이용</span><span class="grade-chip g3">3종</span></td>
                         <td><span class="tgt-assignee-cell missing">⚠ 미할당</span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip active">활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-missing.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
-                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="비활성" data-assigned="1" onclick="window.DYLayout._soon(event, '관리대상 상세 - 한옥체험관 리모델링 (종료)')">
+                    <tr class="row-link" data-type="business" data-cdpa="" data-grade="" data-status="비활성" data-assigned="1" onclick="window.location.href='target-detail-business.html'">
                         <td style="text-align:center;"><span class="target-type-chip business">사업</span></td>
                         <td><strong style="color:var(--text-lightgray);">한옥체험관 리모델링 (종료)</strong> <span class="tgt-src-chip manual">✏ 직접</span><div style="font-size:11px; color:var(--text-gray); margin-top:2px;">2025-03 ~ 2025-09 · 담양건설</div></td>
                         <td>문화관광과</td>
                         <td style="color:var(--text-lightgray);">—</td>
                         <td><span class="tgt-assignee-cell">정하나 (7급) <span class="source-chip manual">MANUAL</span></span></td>
                         <td style="text-align:center;"><span class="tgt-status-chip inactive">비활성</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'TGT02-D')">상세</a></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="target-detail-business.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
                 </tbody>
             </table>

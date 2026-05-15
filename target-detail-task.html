@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리대상 상세 (업무) - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── TGT02-D 전용 (업무형) — target-detail.html 과 동일 ─── */
+        .tgt-d-tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--card-line); overflow-x: auto; scrollbar-width: none; }
+        .tgt-d-tabs::-webkit-scrollbar { display: none; }
+        .tgt-d-tab { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--text-gray); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; white-space: nowrap; transition: all .15s ease; }
+        .tgt-d-tab:hover { color: var(--main-dark); }
+        .tgt-d-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+        .tgt-d-tab .badge-count { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--gray-100); color: var(--text-gray); font-variant-numeric: tabular-nums; }
+        .tgt-d-tab.is-active .badge-count { background: var(--main); color: white; }
+        .tgt-d-pane { display: none; }
+        .tgt-d-pane.is-active { display: flex; flex-direction: column; gap: 16px; }
+
+        .tgt-d-actions { display: inline-flex; gap: 8px; flex-shrink: 0; }
+
+        .target-type-chip { display: inline-flex; align-items: center; padding: 2px 8px; font-size: 11px; font-weight: 700; border-radius: 5px; border: 1px solid transparent; white-space: nowrap; }
+        .target-type-chip.task { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+
+        .tgt-d-chip-link { cursor: pointer; transition: filter .12s, transform .12s; }
+        .tgt-d-chip-link:hover { filter: brightness(0.96); transform: translateY(-1px); }
+
+        /* TASK 유형은 FMS 연동 없음 — 직접 등록 메타 표기 */
+        .tgt-d-source-meta {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 8px; padding: 8px 12px;
+            background: var(--gray-100);
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .tgt-d-source-meta strong { font-weight: 700; color: var(--text-black); }
+
+        .assignee-list { display: flex; flex-direction: column; gap: 10px; }
+        .assignee-card { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: white; border: 1px solid var(--card-line); border-radius: var(--radius-button); }
+        .assignee-card.missing { background: var(--status-warning-bg); border-color: var(--status-warning-border); }
+        .assignee-role-col { min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
+        .assignee-role-name { font-size: 14px; font-weight: 700; color: var(--main-dark2); letter-spacing: -0.2px; }
+        .assignee-role-code { font-size: 11px; font-weight: 500; color: var(--text-gray); font-variant-numeric: tabular-nums; }
+        .assignee-count-chip { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 700; border-radius: 999px; background: var(--gray-100); color: var(--text-gray); }
+        .assignee-count-chip.has { background: var(--brand-100); color: var(--main-dark); }
+        .assignee-count-chip.zero { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .assignee-user-col { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--text-black); }
+        .assignee-user-link { color: var(--text-black); font-weight: 600; text-decoration: none; }
+        .assignee-user-link:hover { color: var(--main); text-decoration: underline; }
+        .assignee-user-meta { font-size: 12px; color: var(--text-gray); }
+        .assignee-user-empty { font-size: 13px; color: var(--status-warning-fg); font-weight: 600; }
+        .assignee-source-chip { display: inline-flex; align-items: center; padding: 1px 6px; font-size: 10px; font-weight: 700; border-radius: 4px; }
+        .assignee-source-chip.auto   { background: var(--brand-100); color: var(--main-dark); }
+        .assignee-source-chip.manual { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .assignee-actions { display: inline-flex; gap: 6px; flex-shrink: 0; }
+        .assignee-mini-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; background: white; border: 1px solid var(--card-line); border-radius: 6px; color: var(--text-black); cursor: pointer; transition: all .12s; }
+        .assignee-mini-btn:hover { border-color: var(--main); color: var(--main); }
+        .assignee-mini-btn.primary { background: var(--main); border-color: var(--main); color: white; }
+        .assignee-mini-btn.danger:hover { background: var(--status-danger-bg); border-color: var(--status-danger-border); color: var(--status-danger-fg); }
+        .assignee-mini-btn.disabled { opacity: .5; cursor: not-allowed; }
+        .assignee-workers-summary { font-size: 13px; color: var(--text-black); line-height: 1.6; }
+        .assignee-workers-summary .name { display: inline-block; margin-right: 6px; }
+
+        .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .widget-grid { grid-template-columns: 1fr; } }
+
+        .latest-rsk-card { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; background: var(--brand-50); border: 1px solid var(--status-success-border); border-radius: var(--radius-button); }
+        .latest-rsk-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .latest-rsk-title { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .latest-rsk-meta { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-black); }
+        .latest-rsk-meta .row { display: flex; gap: 8px; }
+        .latest-rsk-meta .row .lbl { color: var(--text-gray); min-width: 64px; }
+
+        .rsk-factor-dist { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; background: white; border: 1px solid var(--card-line); border-radius: var(--radius-button); }
+        .rsk-factor-dist-title { font-size: 13px; font-weight: 700; color: var(--main-dark2); }
+        .factor-row { display: grid; grid-template-columns: 80px 1fr 36px; gap: 8px; align-items: center; font-size: 12px; }
+        .factor-row .label { color: var(--text-gray); }
+        .factor-row .bar { height: 6px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
+        .factor-row .bar > div { height: 100%; border-radius: 999px; }
+        .factor-row .bar > div.high { background: var(--status-danger-fg); }
+        .factor-row .bar > div.mid  { background: var(--status-warning-fg); }
+        .factor-row .bar > div.low  { background: var(--status-success-fg); }
+        .factor-row .val { text-align: right; font-weight: 700; color: var(--text-black); font-variant-numeric: tabular-nums; }
+
+        .dday-list { display: flex; flex-direction: column; gap: 8px; }
+        .dday-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid var(--card-line); border-radius: var(--radius-button); font-size: 13px; }
+        .dday-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; padding: 5px 10px; font-size: 13px; font-weight: 800; border-radius: 999px; font-variant-numeric: tabular-nums; letter-spacing: -0.4px; }
+        .dday-pill.over { background: var(--status-danger-fg); color: white; }
+        .dday-pill.near { background: var(--status-warning-fg); color: white; }
+        .dday-pill.normal { background: var(--status-info-fg); color: white; }
+        .dday-item-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .dday-item-content .title { font-weight: 600; color: var(--text-black); }
+        .dday-item-content .meta { font-size: 12px; color: var(--text-gray); }
+
+        .imp-mini-list { border-top: 1px solid var(--card-line); }
+        .imp-mini-row { display: grid; grid-template-columns: 1fr 100px 90px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-line); font-size: 13px; }
+        .imp-mini-row:last-child { border-bottom: none; }
+        .imp-mini-row .imp-title { font-weight: 600; color: var(--text-black); }
+        .imp-mini-row .imp-due   { color: var(--text-gray); font-variant-numeric: tabular-nums; }
+        .imp-mini-row .imp-due.over { color: var(--status-danger-fg); font-weight: 700; }
+
+        .doc-cat-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .doc-cat-btn { padding: 5px 12px; font-size: 12px; font-weight: 600; background: var(--gray-100); color: var(--text-gray); border: 1px solid transparent; border-radius: 999px; cursor: pointer; }
+        .doc-cat-btn.is-active { background: var(--main); color: white; }
+        .doc-list { border-top: 1px solid var(--card-line); }
+        .doc-row { display: grid; grid-template-columns: 24px 1fr 110px 110px 60px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-line); font-size: 13px; }
+        .doc-row:last-child { border-bottom: none; }
+        .doc-row .doc-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; background: var(--gray-100); color: var(--text-gray); }
+        .doc-row .doc-name { font-weight: 600; color: var(--text-black); }
+        .doc-row .doc-cat { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; background: var(--brand-100); color: var(--main-dark); }
+        .doc-row .doc-date { color: var(--text-gray); font-variant-numeric: tabular-nums; }
+
+        .tgt-status-chip { display: inline-flex; align-items: center; padding: 4px 12px; font-size: 12px; font-weight: 700; border-radius: 999px; border: 1px solid transparent; }
+        .tgt-status-chip.active   { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .tgt-status-chip.inactive { background: var(--gray-100); color: var(--text-gray); border-color: var(--text-lightgray); }
+        .info-grid-value .inline-action { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: var(--text-gray); background: white; border: 1px solid var(--card-line); border-radius: 4px; cursor: pointer; }
+        .info-grid-value .inline-action:hover { border-color: var(--main); color: var(--main); }
+
+        /* 업무형 강조 라벨 — 위험 화학물질 안내 banner */
+        .task-hazard-banner {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 13px; color: var(--status-warning-fg);
+        }
+        .task-hazard-banner svg { flex-shrink: 0; }
+        .task-hazard-banner strong { font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="target-status"
+      data-back-href="target-status.html"
+      data-back-label="관리대상 현황">
+    <main>
+
+        <!-- ─── 페이지 헤더 (업무형: type chip만 노출, cdpa·grade 없음) ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <h1>환경자원시설 화학물질 취급 업무</h1>
+                    <span class="target-type-chip task tgt-d-chip-link"
+                          onclick="window.location.href='target-status.html'">업무</span>
+                </div>
+                <div class="detail-header-subtitle">
+                    환경과 · 유해화학물질 12종 취급 · 일일 평균 8명 작업
+                </div>
+            </div>
+            <div class="tgt-d-actions">
+                <span class="tgt-status-chip active">활성</span>
+                <button class="btn btn-secondary" type="button"
+                        onclick="window.location.href='target-form.html?mode=edit&id=task-1'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    수정
+                </button>
+                <button class="btn btn-secondary" type="button" onclick="window.tgtD.toggleStatus()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    비활성화
+                </button>
+            </div>
+        </section>
+
+        <!-- ─── 업무형 강조 안내 ─── -->
+        <div class="task-hazard-banner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>유해화학물질 취급 업무</strong> — 산안법상 작업환경측정 의무, MSDS 게시 의무, 보호구 지급·착용 의무 적용 대상</span>
+        </div>
+
+        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <div class="tgt-d-tabs" role="tablist">
+            <button class="tgt-d-tab is-active" type="button" data-pane="info">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                기본정보
+            </button>
+            <button class="tgt-d-tab" type="button" data-pane="assignee">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                담당자
+                <span class="badge-count">12</span>
+            </button>
+            <button class="tgt-d-tab" type="button" data-pane="risk">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                위험성평가
+                <span class="badge-count">1</span>
+            </button>
+            <button class="tgt-d-tab" type="button" data-pane="check">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                점검·이행
+                <span class="badge-count">3</span>
+            </button>
+            <button class="tgt-d-tab" type="button" data-pane="imp">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 11.08 22 12 12 12"/><path d="M22 4 12 14.01l-3-3"/><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                개선조치
+                <span class="badge-count">3</span>
+            </button>
+            <button class="tgt-d-tab" type="button" data-pane="doc">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                업무문서
+                <span class="badge-count">4</span>
+            </button>
+        </div>
+
+        <!-- ============================================================
+             ▼ 기본정보 영역 (업무형 — cdpa/grade/FMS/주소 없음)
+        ============================================================ -->
+        <div class="tgt-d-pane is-active" data-pane="info">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">기본정보</h2>
+                    <span class="text-gray" style="font-size:13px;">최근 수정 2026-04-22 · 오환경</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">관리대상명</span>
+                        <span class="info-grid-value">환경자원시설 화학물질 취급 업무</span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">유형 (type)</span>
+                        <span class="info-grid-value">
+                            <span class="target-type-chip task">업무</span>
+                            <span class="text-gray">TASK</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">담당부서</span>
+                        <span class="info-grid-value">
+                            환경과
+                            <button class="inline-action" type="button"
+                                    onclick="window.tgtD.openDeptMove()">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                                부서 이동
+                            </button>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">관련 시설</span>
+                        <span class="info-grid-value">
+                            <a href="target-detail.html" class="text-primary" style="color:var(--main); text-decoration:underline; font-weight:600;">환경자원시설 (소각장·하수처리)</a>
+                            <span class="text-gray">— 본 업무가 수행되는 모(母) 시설</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">취급 화학물질 수</span>
+                        <span class="info-grid-value">
+                            <strong style="color:var(--status-danger-fg);">12종</strong>
+                            <span class="text-gray">황산·염산·가성소다·차아염소산나트륨 등</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">일일 작업 인원</span>
+                        <span class="info-grid-value">8명 <span class="text-gray">(2조 4교대)</span></span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">상태</span>
+                        <span class="info-grid-value">
+                            <span class="tgt-status-chip active">활성</span>
+                            <span class="text-gray">2024-03-15 등록</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">등록 출처</span>
+                        <span class="info-grid-value">
+                            <span class="assignee-source-chip manual">MANUAL</span>
+                            <span class="text-gray">직접 등록 — TASK는 FMS 동기화 대상 아님</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row span-2 last-row">
+                        <span class="info-grid-label">설명</span>
+                        <span class="info-grid-value" style="display:block; line-height:1.7;">
+                            환경자원시설(소각장 및 하수처리장)에서 일일 운영 중 발생하는 유해화학물질 12종(황산·염산·가성소다·차아염소산나트륨 등)을 취급하는 정기 업무.
+                            보호구 착용·MSDS 게시·작업환경측정이 의무화되어 있으며, 보일러 가동 시 황산 주입 등 위험 공정이 포함됨.
+                            2조 4교대로 운영되며 일일 평균 8명, 동시 작업 인원은 최대 4명까지.
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:12px 24px 18px;">
+                    <div class="tgt-d-source-meta">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span><strong>업무(TASK) 유형은 외부 시스템 동기화 대상이 아닙니다.</strong> 모든 변경은 본 시스템에서 직접 관리되며, 관련 시설(환경자원시설)이 비활성화되어도 본 업무는 별도 상태로 유지됩니다.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 담당자 영역 (업무형 — 보건관리자 필수)
+        ============================================================ -->
+        <div class="tgt-d-pane" data-pane="assignee">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">담당자 <span class="text-muted" style="font-size:14px; font-weight:500;">(역할별)</span></h2>
+                    <button class="btn-register" type="button"
+                            onclick="window.tgtD.openAssignee(null)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        담당자 추가
+                    </button>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+                    <div class="assignee-list">
+                        <div class="assignee-card">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">관리책임자</span>
+                                <span class="assignee-role-code">RESPONSIBLE</span>
+                            </div>
+                            <span class="assignee-count-chip has">1명</span>
+                            <div class="assignee-user-col">
+                                <a class="assignee-user-link" href="#"
+                                   onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) — 윤과장')">윤과장</a>
+                                <span class="assignee-user-meta">환경과 부서장 · 5급</span>
+                                <span class="assignee-source-chip auto">AUTO</span>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn disabled" type="button"
+                                        title="부서장 자동 매핑은 직접 해제할 수 없습니다"
+                                        onclick="window.DYLayout._soon(event, 'AUTO 담당자 해제 차단')">해제 불가</button>
+                            </div>
+                        </div>
+
+                        <div class="assignee-card">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">안전관리자</span>
+                                <span class="assignee-role-code">SAFETY_MGR</span>
+                            </div>
+                            <span class="assignee-count-chip has">1명</span>
+                            <div class="assignee-user-col">
+                                <a class="assignee-user-link" href="#"
+                                   onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) — 오환경')">오환경</a>
+                                <span class="assignee-user-meta">환경과 · 6급 · 화공안전기사</span>
+                                <span class="assignee-source-chip manual">MANUAL</span>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn danger" type="button"
+                                        onclick="window.DYLayout._soon(event, '담당자 해제 확인 모달')">해제</button>
+                            </div>
+                        </div>
+
+                        <!-- 보건관리자 — 화학물질 취급 업무라서 지정됨 -->
+                        <div class="assignee-card">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">보건관리자</span>
+                                <span class="assignee-role-code">HEALTH_MGR</span>
+                            </div>
+                            <span class="assignee-count-chip has">1명</span>
+                            <div class="assignee-user-col">
+                                <a class="assignee-user-link" href="#"
+                                   onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) — 박보건')">박보건</a>
+                                <span class="assignee-user-meta">보건소 · 6급 · 산업보건지도사</span>
+                                <span class="assignee-source-chip manual">MANUAL</span>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn danger" type="button"
+                                        onclick="window.DYLayout._soon(event, '담당자 해제 확인 모달')">해제</button>
+                            </div>
+                        </div>
+
+                        <div class="assignee-card missing">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">보건의사</span>
+                                <span class="assignee-role-code">HEALTH_DOCTOR</span>
+                            </div>
+                            <span class="assignee-count-chip zero">0명</span>
+                            <div class="assignee-user-col">
+                                <span class="assignee-user-empty">⚠ 미지정 — 화학물질 취급 업무는 외부 산업의학 자문 권장</span>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn primary" type="button"
+                                        onclick="window.tgtD.openAssignee('HEALTH_DOCTOR')">지정</button>
+                            </div>
+                        </div>
+
+                        <div class="assignee-card">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">관리감독자</span>
+                                <span class="assignee-role-code">SUPERVISOR</span>
+                            </div>
+                            <span class="assignee-count-chip has">1명</span>
+                            <div class="assignee-user-col">
+                                <a class="assignee-user-link" href="#"
+                                   onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) — 정주임')">정주임</a>
+                                <span class="assignee-user-meta">환경과 · 7급 · 현장 작업조 조장</span>
+                                <span class="assignee-source-chip manual">MANUAL</span>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn danger" type="button"
+                                        onclick="window.DYLayout._soon(event, '담당자 해제 확인 모달')">해제</button>
+                            </div>
+                        </div>
+
+                        <div class="assignee-card">
+                            <div class="assignee-role-col">
+                                <span class="assignee-role-name">종사자</span>
+                                <span class="assignee-role-code">WORKER</span>
+                            </div>
+                            <span class="assignee-count-chip has">8명</span>
+                            <div class="assignee-user-col">
+                                <div class="assignee-workers-summary">
+                                    <span class="name">이태리</span><span class="name">김도윤</span><span class="name">강민우</span><span class="name">조현수</span>
+                                    <span class="more">외 4명</span>
+                                </div>
+                            </div>
+                            <div class="assignee-actions">
+                                <button class="assignee-mini-btn" type="button"
+                                        onclick="window.DYLayout._soon(event, '종사자 전체 목록 모달')">목록 보기</button>
+                                <button class="assignee-mini-btn primary" type="button"
+                                        onclick="window.tgtD.openAssignee('WORKER')">추가</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 위험성평가 영역
+        ============================================================ -->
+        <div class="tgt-d-pane" data-pane="risk">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">위험성평가</h2>
+                    <div style="display:flex; gap:8px;">
+                        <a class="text-muted" href="risk-list.html?target_id=task-1" style="font-size:14px; align-self:center;">전체 평가 보기 →</a>
+                        <button class="btn-register" type="button"
+                                onclick="window.DYLayout._soon(event, '평가 등록 (RSK02-F ?target_id=task-1)')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            평가 등록
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+                    <div class="widget-grid">
+                        <div class="latest-rsk-card">
+                            <div class="latest-rsk-title-row">
+                                <span class="chip-cat cat-regular">정기</span>
+                                <span class="chip-status warning" style="padding:3px 12px; font-size:12px;">진행중</span>
+                            </div>
+                            <a class="latest-rsk-title" href="risk-detail.html" style="text-decoration:none;">
+                                화학물질 취급 위험성평가 2026 ↗
+                            </a>
+                            <div class="latest-rsk-meta">
+                                <div class="row"><span class="lbl">평가기법</span><span>KRAS / 화학물질 위험성평가</span></div>
+                                <div class="row"><span class="lbl">기간</span><span>2026-04-15 ~ 2026-05-31 <span class="text-gray">(D-19)</span></span></div>
+                                <div class="row"><span class="lbl">담당자</span><span>오환경 (환경과 · 화공안전기사)</span></div>
+                                <div class="row"><span class="lbl">참여자</span><span>박보건, 정주임, 작업자 대표 2명</span></div>
+                            </div>
+                        </div>
+
+                        <div class="rsk-factor-dist">
+                            <div class="rsk-factor-dist-title">위험요인 등급별 분포 <span class="text-gray" style="font-weight:500;">· 총 5건</span></div>
+                            <div class="factor-row">
+                                <span class="label">상 (≥12)</span>
+                                <div class="bar"><div class="high" style="width:40%;"></div></div>
+                                <span class="val">2</span>
+                            </div>
+                            <div class="factor-row">
+                                <span class="label">중 (6~11)</span>
+                                <div class="bar"><div class="mid" style="width:60%;"></div></div>
+                                <span class="val">3</span>
+                            </div>
+                            <div class="factor-row">
+                                <span class="label">하 (≤5)</span>
+                                <div class="bar"><div class="low" style="width:0%;"></div></div>
+                                <span class="val">0</span>
+                            </div>
+                            <div class="factor-row">
+                                <span class="label">미판정</span>
+                                <div class="bar"><div style="width:0%; background:var(--text-lightgray);"></div></div>
+                                <span class="val">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 점검·이행 영역
+        ============================================================ -->
+        <div class="tgt-d-pane" data-pane="check">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">점검·이행 <span class="text-muted" style="font-size:14px; font-weight:500;">(진행 중 3건)</span></h2>
+                    <a class="text-muted" href="#"
+                       onclick="event.preventDefault(); window.DYLayout._soon(event, '이행관리 전체 (CMP02-L ?target_id=task-1)')"
+                       style="font-size:14px;">이행관리 전체 보기 →</a>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+                    <div class="dday-list">
+                        <div class="dday-item">
+                            <span class="dday-pill near">D-2</span>
+                            <div class="dday-item-content">
+                                <span class="title">MSDS 게시본 점검 (분기)</span>
+                                <span class="meta">기한 2026-05-17 · 오환경 · 12종 전체 게시 여부 확인</span>
+                            </div>
+                            <a class="assignee-mini-btn" href="#"
+                               onclick="event.preventDefault(); window.DYLayout._soon(event, '이행 항목 상세')">상세</a>
+                        </div>
+                        <div class="dday-item">
+                            <span class="dday-pill normal">D-15</span>
+                            <div class="dday-item-content">
+                                <span class="title">개인보호구 적합성·노후 점검 (반기)</span>
+                                <span class="meta">기한 2026-05-30 · 정주임 · 방독마스크·내산복·고무장갑</span>
+                            </div>
+                            <a class="assignee-mini-btn" href="#"
+                               onclick="event.preventDefault(); window.DYLayout._soon(event, '이행 항목 상세')">상세</a>
+                        </div>
+                        <div class="dday-item">
+                            <span class="dday-pill normal">D-30</span>
+                            <div class="dday-item-content">
+                                <span class="title">작업환경측정 (반기)</span>
+                                <span class="meta">기한 2026-06-14 · 박보건 · 외주 (한국산업보건협회)</span>
+                            </div>
+                            <a class="assignee-mini-btn" href="#"
+                               onclick="event.preventDefault(); window.DYLayout._soon(event, '이행 항목 상세')">상세</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 개선조치 영역
+        ============================================================ -->
+        <div class="tgt-d-pane" data-pane="imp">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">개선조치</h2>
+                    <a class="text-muted" href="imp-list.html?target_id=task-1" style="font-size:14px;">개선조치 전체 보기 →</a>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+                    <div class="statbox-grid cols-3" style="margin-bottom:16px;">
+                        <div class="statbox warning">
+                            <div class="statbox-num">1</div>
+                            <div class="statbox-label">진행 중</div>
+                        </div>
+                        <div class="statbox danger">
+                            <div class="statbox-num">0</div>
+                            <div class="statbox-label">기한초과</div>
+                        </div>
+                        <div class="statbox success">
+                            <div class="statbox-num">2</div>
+                            <div class="statbox-label">완료 (최근 90일)</div>
+                        </div>
+                    </div>
+
+                    <div class="imp-mini-list">
+                        <div class="imp-mini-row">
+                            <span class="imp-title">
+                                <a href="imp-detail.html" style="color:inherit; text-decoration:none;">작업장 국소배기장치 풍량 30% 증설</a>
+                            </span>
+                            <span class="imp-due">D-12</span>
+                            <span class="chip-status info" style="padding:3px 10px; font-size:11px;">진행중</span>
+                        </div>
+                        <div class="imp-mini-row">
+                            <span class="imp-title">화학물질 보관실 잠금장치 보강 + 입출고 대장 디지털화</span>
+                            <span class="imp-due">2026-03-30</span>
+                            <span class="chip-status success" style="padding:3px 10px; font-size:11px;">완료</span>
+                        </div>
+                        <div class="imp-mini-row">
+                            <span class="imp-title">방독마스크 필터 교체 주기 단축 (6개월 → 3개월)</span>
+                            <span class="imp-due">2026-02-15</span>
+                            <span class="chip-status success" style="padding:3px 10px; font-size:11px;">완료</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 업무문서 영역
+        ============================================================ -->
+        <div class="tgt-d-pane" data-pane="doc">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">업무문서 <span class="text-muted" style="font-size:14px; font-weight:500;">(4건)</span></h2>
+                    <button class="btn-register" type="button"
+                            onclick="window.DYLayout._soon(event, '문서 등록 (DOC02-F ?target_id=task-1) — Phase 3')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        문서 등록
+                    </button>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+                    <div class="doc-cat-filter" data-doc-filter>
+                        <button class="doc-cat-btn is-active" type="button" data-cat="all">전체 4</button>
+                        <button class="doc-cat-btn" type="button" data-cat="manual">매뉴얼 1</button>
+                        <button class="doc-cat-btn" type="button" data-cat="procedure">절차서 1</button>
+                        <button class="doc-cat-btn" type="button" data-cat="checklist">점검표 1</button>
+                        <button class="doc-cat-btn" type="button" data-cat="evidence">증빙 1</button>
+                    </div>
+
+                    <div class="doc-list">
+                        <div class="doc-row" data-cat="manual">
+                            <span class="doc-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </span>
+                            <span class="doc-name">MSDS 종합 게시본 (12종)</span>
+                            <span class="doc-cat">매뉴얼</span>
+                            <span class="doc-date">2026-04-10</span>
+                            <a href="#" class="assignee-mini-btn" onclick="event.preventDefault(); window.DYLayout._soon(event, '문서 미리보기')">열기</a>
+                        </div>
+                        <div class="doc-row" data-cat="procedure">
+                            <span class="doc-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </span>
+                            <span class="doc-name">화학물질 취급 표준 작업 절차서 (SOP)</span>
+                            <span class="doc-cat">절차서</span>
+                            <span class="doc-date">2026-03-22</span>
+                            <a href="#" class="assignee-mini-btn" onclick="event.preventDefault(); window.DYLayout._soon(event, '문서 미리보기')">열기</a>
+                        </div>
+                        <div class="doc-row" data-cat="checklist">
+                            <span class="doc-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </span>
+                            <span class="doc-name">일일 작업 전 점검표 (보호구·MSDS·환기)</span>
+                            <span class="doc-cat">점검표</span>
+                            <span class="doc-date">2026-01-05</span>
+                            <a href="#" class="assignee-mini-btn" onclick="event.preventDefault(); window.DYLayout._soon(event, '문서 미리보기')">열기</a>
+                        </div>
+                        <div class="doc-row" data-cat="evidence">
+                            <span class="doc-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </span>
+                            <span class="doc-name">2025년 하반기 작업환경측정 결과 보고서</span>
+                            <span class="doc-cat">증빙</span>
+                            <span class="doc-date">2025-12-10</span>
+                            <a href="#" class="assignee-mini-btn" onclick="event.preventDefault(); window.DYLayout._soon(event, '문서 미리보기')">열기</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/pickers.js"></script>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        const TARGET_NAME = '환경자원시설 화학물질 취급 업무';
+        const CURRENT_DEPT = '환경과';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function switchPane(target) {
+            document.querySelectorAll('.tgt-d-tab[data-pane]').forEach(b => {
+                b.classList.toggle('is-active', b.dataset.pane === target);
+            });
+            document.querySelectorAll('.tgt-d-pane').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.pane === target);
+            });
+        }
+        document.querySelectorAll('.tgt-d-tab[data-pane]').forEach(b => {
+            b.addEventListener('click', () => switchPane(b.dataset.pane));
+        });
+
+        document.querySelectorAll('[data-doc-filter] .doc-cat-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                const cat = b.dataset.cat;
+                document.querySelectorAll('[data-doc-filter] .doc-cat-btn').forEach(x => x.classList.toggle('is-active', x === b));
+                document.querySelectorAll('.doc-row').forEach(r => {
+                    r.style.display = (cat === 'all' || r.dataset.cat === cat) ? '' : 'none';
+                });
+            });
+        });
+
+        window.tgtD = {
+            toggleStatus: function () {
+                const chip = document.querySelector('.detail-header .tgt-status-chip');
+                const btn = document.querySelector('.tgt-d-actions .btn-secondary:last-child');
+                if (!chip || !btn) return;
+                const isActive = chip.classList.contains('active');
+                if (isActive) {
+                    if (!confirm("관리대상 '환경자원시설 화학물질 취급 업무'을 비활성화 처리하시겠습니까?\n진행 중인 위험성평가·이행관리 등은 유지되며 통계에서만 제외됩니다.")) return;
+                    chip.classList.remove('active'); chip.classList.add('inactive'); chip.textContent = '비활성';
+                    btn.innerHTML = btn.innerHTML.replace('비활성화', '활성화');
+                    showToast('비활성화 처리되었습니다');
+                } else {
+                    chip.classList.remove('inactive'); chip.classList.add('active'); chip.textContent = '활성';
+                    btn.innerHTML = btn.innerHTML.replace('활성화', '비활성화');
+                    showToast('활성화 처리되었습니다');
+                }
+            },
+
+            /* ─── 담당자 추가/지정 (DYPicker 공통 컴포넌트) ─── */
+            openAssignee: function (roleCode) {
+                if (!window.DYPicker) { showToast('Picker 모듈 로드 실패'); return; }
+                const cfg = DYPicker.ROLE_DEFAULTS[roleCode] || { label: '담당자' };
+                DYPicker.openMember({
+                    title: TARGET_NAME + ' — ' + cfg.label + ' 지정',
+                    roleCode: roleCode || null,
+                    multi: roleCode === 'WORKER',
+                    prefilterDept: CURRENT_DEPT,
+                    onSelect: function (chosen, meta) {
+                        const arr = Array.isArray(chosen) ? chosen : [chosen];
+                        const names = arr.map(m => m.name).join(', ');
+                        showToast(names + ' → ' + cfg.label + ' 지정 완료' + (meta && meta.forced ? ' (자격 미보유 강제 지정)' : '') + ' · 새로고침 후 반영 (목업)');
+                    }
+                });
+            },
+            openDeptMove: function () {
+                if (!window.DYPicker) { showToast('Picker 모듈 로드 실패'); return; }
+                DYPicker.openDept({
+                    title: TARGET_NAME + ' — 담당부서 이동',
+                    subtitle: '부서 이동',
+                    currentName: CURRENT_DEPT,
+                    onSelect: function (dept) {
+                        if (!confirm("기존 관리책임자가 새 부서장으로 자동 변경됩니다.\n진행하시겠습니까?\n\n변경: " + CURRENT_DEPT + " → " + dept.name + "\n새 관리책임자(AUTO): " + (dept.head || '미지정'))) return;
+                        showToast('부서 이동 완료 — ' + dept.name + ' / 새 RESPONSIBLE ' + (dept.head || '미지정') + ' (목업)');
+                    }
+                });
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

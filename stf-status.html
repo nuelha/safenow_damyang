@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>안전관리자 인력 - 담양군 중대재해예방통합관리시스템</title>
+    <title>전체 인력 현황 (STF01-V · 안전보건 인력) - 담양군 중대재해예방통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
@@ -417,7 +417,7 @@
         }
     </style>
 </head>
-<body data-dy-page="stf-status" data-page-title="안전관리자 인력" data-page-subtitle="법정 인원 충족·공사별 선임·자격증 검증">
+<body data-dy-page="stf-status" data-page-title="전체 인력 현황" data-page-subtitle="군 전체 안전보건 인력 종합 — 법정 인원 충족·공사별 선임·자격증 만료 모니터링 (STF01-V)">
     <main>
 
         <!-- ─── 서브 탭 ─── -->
@@ -566,7 +566,7 @@
             <section class="card">
                 <div class="card-header">
                     <h2 class="card-title">부서별 충족 현황</h2>
-                    <span class="text-muted" style="font-size:13px;">전체 9개 부서 · 부서 행 클릭 시 ORG03-V 이동</span>
+                    <span class="text-muted" style="font-size:13px;">전체 9개 부서 · 부서 행 클릭 시 STF04-V (부서별 전담인력) 이동</span>
                 </div>
                 <table class="table-figma">
                     <colgroup>
@@ -583,7 +583,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 자치행정과')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-jachi'">
                             <td><strong>자치행정과</strong> <span style="color:var(--text-gray); font-size:12px;">(15명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
@@ -591,7 +591,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 안전건설과')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-safety'">
                             <td><strong>안전건설과</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 2/2</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
@@ -599,7 +599,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 농업기술센터')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-farm'">
                             <td><strong>농업기술센터</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
@@ -607,7 +607,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 시설관리과')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-facility'">
                             <td><strong>시설관리과</strong> <span style="color:var(--text-gray); font-size:12px;">(18명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
@@ -615,7 +615,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 환경과')">
+                        <tr class="row-link row-highlight-danger" onclick="window.location.href='org-dedicated.html#dept-env'">
                             <td><strong>환경과</strong> <span style="color:var(--text-gray); font-size:12px;">(14명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell unmet"><span class="unmet-icon">⚠</span> 0/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
@@ -623,7 +623,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip unmet">미충족</span></td>
                         </tr>
-                        <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 보건소')">
+                        <tr class="row-link row-highlight-danger" onclick="window.location.href='org-dedicated.html#dept-health'">
                             <td><strong>보건소</strong> <span style="color:var(--text-gray); font-size:12px;">(22명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell unmet"><span class="unmet-icon">⚠</span> 0/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 2/2</span></td>
@@ -631,7 +631,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip unmet">미충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 담양읍사무소')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-eup'">
                             <td><strong>담양읍사무소</strong> <span style="color:var(--text-gray); font-size:12px;">(18명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
@@ -639,7 +639,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 상수도사업소')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-water'">
                             <td><strong>상수도사업소</strong> <span style="color:var(--text-gray); font-size:12px;">(12명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
@@ -647,7 +647,7 @@
                             <td style="text-align:center;"><span class="stf-dept-cell zero">—</span></td>
                             <td style="text-align:center;"><span class="stf-status-chip met">충족</span></td>
                         </tr>
-                        <tr class="row-link" onclick="window.DYLayout._soon(event, '전담인력 (ORG03-V) - 문화관광과')">
+                        <tr class="row-link" onclick="window.location.href='org-dedicated.html#dept-culture'">
                             <td><strong>문화관광과</strong> <span style="color:var(--text-gray); font-size:12px;">(16명)</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell"><span class="met-icon">✓</span> 1/1</span></td>
                             <td style="text-align:center;"><span class="stf-dept-cell zero">0/0</span></td>
@@ -750,7 +750,7 @@
             <section class="card">
                 <div class="card-header">
                     <h2 class="card-title">진행 중·결재 진행 공사</h2>
-                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '공사 선택 + 안전관리자 선임 (ORG03-M)')">
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '공사 선택 + 안전관리자 선임 (STF04-M)')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         안전관리자 선임
                     </button>
@@ -808,7 +808,7 @@
                             <td style="text-align:center; color:var(--status-danger-fg); font-weight:700;">1명</td>
                             <td style="text-align:center;"><span class="stf-status-chip unmet">미달</span></td>
                             <td style="text-align:center;"><span class="stf-contract-status blocked">차단</span></td>
-                            <td style="text-align:center;"><button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '안전관리자 선임 (ORG03-M) - 정수장 증축')">선임</button></td>
+                            <td style="text-align:center;"><button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); window.DYLayout._soon(event, '안전관리자 선임 (STF04-M) - 정수장 증축')">선임</button></td>
                         </tr>
                         <tr class="row-link" onclick="window.DYLayout._soon(event, '도급계약 상세 (CON01-D) - 군민체육관 리모델링')">
                             <td>
@@ -911,7 +911,7 @@
 
             <div class="stf-settings-note">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-                <span><strong>CEO·GM만 편집 가능.</strong> 마스터 변경 시 ORG03-V·STF01-V·CON 모듈에 일괄 영향이 있습니다.</span>
+                <span><strong>CEO·GM만 편집 가능.</strong> 마스터 변경 시 STF04-V·STF01-V·CON 모듈에 일괄 영향이 있습니다.</span>
             </div>
 
             <div class="stf-subtabs" role="tablist">

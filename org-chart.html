@@ -674,7 +674,7 @@
                 const [cur, need] = r.data;
                 const short = cur < need;
                 return `
-                    <div class="org-fulfill-row ${short ? 'is-short' : ''}" onclick="window.DYLayout._soon(event, '전담인력 ${r.label} (ORG03-V)')">
+                    <div class="org-fulfill-row ${short ? 'is-short' : ''}" onclick="window.location.href='org-dedicated.html'">
                         <span class="org-fulfill-label">${r.label}</span>
                         <span class="org-fulfill-meta">
                             <span class="count">${cur}/${need}</span>
@@ -702,7 +702,7 @@
                         <span class="k">부서장</span> ${headHtml}
                         <span class="k">상위 부서</span> <span class="v">${path.length > 1 ? path[path.length - 2].name : '-'}</span>
                         <span class="k">인원수</span> <span class="v">${node.count}명 <span class="sub">SSO ${node.ssoCount} / 직접등록 ${node.manualCount}</span></span>
-                        <span class="k">관리대상</span> <span class="v">${node.targetCount}건 ${node.targetCount > 0 ? `<a href="#" style="color:var(--main);font-weight:600;margin-left:4px;" onclick="event.preventDefault(); window.DYLayout._soon(event, '관리대상 목록 (TGT01-V) - ${node.name}');">보기 →</a>` : ''}</span>
+                        <span class="k">관리대상</span> <span class="v">${node.targetCount}건 ${node.targetCount > 0 ? `<a href="target-status.html" style="color:var(--main);font-weight:600;margin-left:4px;">보기 →</a>` : ''}</span>
                     </div>
                 </div>
 
@@ -716,9 +716,9 @@
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M1 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
                         구성원 보기
                     </a>
-                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '전담인력 관리 (ORG03-V) - ${node.name}')">
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='org-dedicated.html'">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="11" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg>
-                        전담인력 관리
+                        부서별 전담인력 관리
                     </button>
                 </div>
             `;

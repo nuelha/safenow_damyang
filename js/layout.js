@@ -44,77 +44,112 @@
      *     soon  — 미구현 모듈의 "준비 중" 토스트 라벨 (화면 ID 포함)
      *     screen— 메뉴구조도의 화면 ID (참고용)
      */
+    /* ─── PRD-DAMYANG-002 GNB 그룹핑 통합 v1.0 (IA v1.4) ────────────────
+     *   18개 GNB → 8개 업무 성격별 그룹 + 홈
+     *   순서: 사용 빈도 기준 (위험성평가→시스템 관리)
+     *   화면 ID·URL·DB·SFR 매핑은 변동 없음 — IA 레벨 그룹핑만
+     */
     const NAV = [
-        // 1. 대시보드 (DSH / SFR-020)
-        { id: 'dashboard', label: '대시보드', icon: 'grid', items: [
+        // 홈 — 대시보드 (DSH / SFR-020)
+        { id: 'dashboard', label: '홈', icon: 'grid', items: [
             { id: 'index', label: '통합 대시보드', icon: 'grid', href: 'index.html', screen: 'DSH01-V' },
         ]},
 
-        // 2. 관리대상 관리 (TGT / SFR-002)
-        //    TGT04-S(FMS 동기화 설정) — 결정사항 #24로 폐기. SYS01-S FMS 탭으로 흡수.
-        { id: 'target', label: '관리대상 관리', icon: 'building', items: [
-            { id: 'target-status', label: '관리대상 현황', icon: 'building', href: 'target-status.html', screen: 'TGT01-V' },
-        ]},
-
-        // 3. 안전보건 경영 — ORG + POL + EVL + STF + BGT + PLN + INS + IMP + DOC
-        { id: 'safety', label: '안전보건 경영', icon: 'shield', items: [
-            // 전담조직 (ORG / SFR-006)
-            { id: 'org-chart',     label: '조직도',            icon: 'building', href: 'org-chart.html',        screen: 'ORG01-V' },
-            { id: 'organization',  label: '구성원',            icon: 'users',    href: 'organization.html',     screen: 'ORG02-L' },
-            { id: 'org-dedicated', label: '전담인력',          icon: 'user',     href: 'org-dedicated.html',    screen: 'ORG03-V' },
-            // ORG04-S(행정포털 동기화) — 결정사항 #24로 폐기. SYS01-S 조직도 탭으로 흡수.
-            // 안전경영방침 (POL / SFR-005)
-            { id: 'safety-policy', label: '안전경영방침',      icon: 'shield',   href: 'safety-policy.html',    screen: 'POL01-L' },
-            // 안전점검 (INS / SFR-012)
-            { id: 'ins-status',    label: '안전점검',          icon: 'check',    href: 'ins-status.html',       screen: 'INS01-V' },
-            // 개선조치 (IMP / SFR-003)
-            { id: 'imp-list',      label: '개선조치',          icon: 'check',    href: 'imp-status.html',       screen: 'IMP01-V' },
-            // 인력평가 (EVL / SFR-009)
-            { id: 'evl-list',      label: '인력평가',          icon: 'user',     href: 'evl-list.html',         screen: 'EVL01-V' },
-            // 안전관리자 인력 (STF / SFR-010)
-            { id: 'stf-status',    label: '안전관리자 인력',   icon: 'user',     href: 'stf-status.html',       screen: 'STF01-V' },
-            // 예산 (BGT / SFR-008)
-            { id: 'bgt-status',    label: '예산',              icon: 'coins',    href: 'bgt-status.html',       screen: 'BGT01-V' },
-            // 안전계획 (PLN / SFR-004)
-            { id: 'pln-list',      label: '안전계획',          icon: 'calendar', href: 'pln-status.html',       screen: 'PLN01-V' },
-            // 업무문서 (DOC / SFR-012)
-            { id: 'doc-manual',    label: '업무문서',          icon: 'file',     href: 'doc-manual.html',       screen: 'DOC01-L' },
-        ]},
-
-        // 4. 위험성평가 (RSK / SFR-007)
-        //    개선조치 통합 정책(2026-05-12): RSK03-L 폐지 → 위험성평가 출처 개선조치는
-        //    IMP01-L에서 ?source=risk_assessment 필터로 조회.
+        // GNB 1. 위험성평가 (RSK / SFR-007) — 가장 자주 진입
+        //    개선조치 통합 정책: RSK03-L 폐지 → IMP01-L?source=risk_assessment로 조회
         { id: 'risk', label: '위험성평가', icon: 'alert', items: [
-            { id: 'rsk-status',   label: '위험성평가 현황', icon: 'chart', href: 'risk-assessment.html', screen: 'RSK01-V' },
-            { id: 'rsk-list',     label: '평가 목록',       icon: 'list',  href: 'risk-list.html', screen: 'RSK02-L' },
-            { id: 'rsk-settings', label: '위험성평가 설정', icon: 'cog',   href: 'risk-settings.html', screen: 'RSK04-S' },
+            { id: 'rsk-status',   label: '현황',                 icon: 'chart', href: 'risk-assessment.html', screen: 'RSK01-V' },
+            { id: 'rsk-list',     label: '평가 목록',            icon: 'list',  href: 'risk-list.html',        screen: 'RSK02-L' },
+            { id: 'rsk-improve',  label: '개선조치 (위험성평가)', icon: 'check', href: 'imp-status.html?source=risk_assessment', screen: 'RSK03-L' },
+            { id: 'rsk-settings', label: '설정',                 icon: 'cog',   href: 'risk-settings.html',    screen: 'RSK04-S' },
         ]},
 
-        // 5. 의무이행 관리 — CON + OPN + CMP
-        { id: 'duty', label: '의무이행 관리', icon: 'check', items: [
-            // 도급관리 (CON / SFR-013)
-            { id: 'contractor',    label: '도급계약',           icon: 'building', href: 'contractor.html',  screen: 'CON01-L' },
-            { id: 'con-sub',       label: '수급업체',           icon: 'users',    href: 'con-sub.html',           screen: 'CON02-L' },
-            { id: 'con-council',   label: '협의체',             icon: 'list',     href: 'con-council.html',       screen: 'CON03-L' },
-            { id: 'con-tbm',       label: 'TBM',                icon: 'check',    href: 'con-tbm.html',           screen: 'CON09-L' },
-            { id: 'con-settings',  label: '도급관리 설정',      icon: 'cog',      href: 'con-settings.html',      screen: 'CON10-S' },
-            // 의견청취 (OPN / SFR-011·019)
-            { id: 'opinion',       label: '의견청취',           icon: 'bell',     href: 'opinion.html',            screen: 'OPN01-L' },
-            { id: 'opn-committee', label: '산업안전보건위원회', icon: 'list',     soon: '산안위 (OPN02-L)',        screen: 'OPN02-L' },
-            // 이행관리 (CMP / SFR-014)
-            { id: 'cmp-status',    label: '이행관리',           icon: 'check',    soon: '이행 현황 (CMP01-V)',     screen: 'CMP01-V' },
+        // GNB 2. 점검·진단 (INS + DOC / SFR-012)
+        { id: 'inspect', label: '점검·진단', icon: 'check', items: [
+            { id: 'ins-status',     label: '안전점검 현황', icon: 'check', href: 'ins-status.html',  screen: 'INS01-V' },
+            { id: 'ins-list',       label: '점검 목록',     icon: 'list',  soon: '점검 목록 (INS02-L)', screen: 'INS02-L' },
+            { id: 'ins-settings',   label: '안전점검 설정', icon: 'cog',   soon: '안전점검 설정 (INS03-S)', screen: 'INS03-S' },
+            { id: 'doc-manual',     label: '매뉴얼',        icon: 'file',  href: 'doc-manual.html',   screen: 'DOC01-L' },
+            { id: 'doc-checklist',  label: '점검표',        icon: 'file',  soon: '점검표 (DOC02-L)', screen: 'DOC02-L' },
         ]},
 
-        // 6. 시스템관리 — SYS01-S(신규) + AUTH06-S + NTF03-S + STA + CRT + 마스터 + 감사로그
+        // GNB 3. 도급 관리 (CON / SFR-013) — 외부 사용자(SUB) 협업 워크플로우
+        { id: 'contract', label: '도급 관리', icon: 'building', items: [
+            { id: 'contractor',   label: '도급계약',    icon: 'building', href: 'contractor.html',    screen: 'CON01-L' },
+            { id: 'con-sub',      label: '수급업체',    icon: 'users',    href: 'con-sub.html',       screen: 'CON02-L' },
+            { id: 'con-council',  label: '협의체',      icon: 'list',     href: 'con-council.html',   screen: 'CON03-L' },
+            { id: 'con-tbm',      label: 'TBM',         icon: 'check',    href: 'con-tbm.html',       screen: 'CON09-L' },
+            { id: 'con-settings', label: '설정',        icon: 'cog',      href: 'con-settings.html',  screen: 'CON10-S' },
+        ]},
+
+        // GNB 4. 종사자 참여 (OPN / SFR-011·019)
+        { id: 'opinion', label: '종사자 참여', icon: 'bell', items: [
+            { id: 'opn-status',    label: '현황',                icon: 'chart', soon: '의견 현황 (OPN01-V)', screen: 'OPN01-V' },
+            { id: 'opinion',       label: '의견 목록',           icon: 'list',  href: 'opinion.html',         screen: 'OPN01-L' },
+            { id: 'opn-committee', label: '산업안전보건위원회', icon: 'users', soon: '산안위 (OPN03-L · 결정사항 #20)', screen: 'OPN03-L' },
+            { id: 'opn-settings',  label: '설정',                icon: 'cog',   soon: '의견청취 설정 (OPN04-S)', screen: 'OPN04-S' },
+        ]},
+
+        // GNB 5. 이행·증명 (IMP + CMP + STA + CRT / SFR-003·014·018·021) — 사후 추적·집계·증명
+        { id: 'comply', label: '이행·증명', icon: 'check', items: [
+            // 개선조치 (IMP / SFR-003)
+            { id: 'imp-status',   label: '개선조치 현황',  icon: 'check', href: 'imp-status.html', screen: 'IMP01-V' },
+            { id: 'imp-list',     label: '개선조치 목록',  icon: 'list',  href: 'imp-list.html',   screen: 'IMP01-L' },
+            { id: 'imp-prevent',  label: '재발방지대책',    icon: 'check', soon: '재발방지대책 (IMP01-L /incident_prevention)', screen: 'IMP01-L' },
+            // 이행 관리 (CMP / SFR-014)
+            { id: 'cmp-status',   label: '이행 현황',       icon: 'check', soon: '이행 현황 (CMP01-V)', screen: 'CMP01-V' },
+            { id: 'cmp-list',     label: '이행 목록',       icon: 'list',  soon: '이행 목록 (CMP02-L)', screen: 'CMP02-L' },
+            { id: 'cmp-settings', label: '법령 마스터',     icon: 'cog',   soon: '법령 마스터 (CMP03-S)', screen: 'CMP03-S' },
+            // 통계 (STA / SFR-018)
+            { id: 'sta-status',   label: '종합 통계',       icon: 'chart', soon: '종합 통계 (STA01-V)', screen: 'STA01-V' },
+            { id: 'sta-module',   label: '모듈별 통계',     icon: 'chart', soon: '모듈별 통계 (STA02-V)', screen: 'STA02-V' },
+            // 제증명 (CRT / SFR-021)
+            { id: 'crt-history',  label: '제증명 발급 이력', icon: 'file', soon: '발급 이력 (CRT01-V)', screen: 'CRT01-V' },
+            { id: 'crt-issue',    label: '증명서 발급',      icon: 'file', soon: '증명서 발급 (CRT02-F)', screen: 'CRT02-F' },
+        ]},
+
+        // GNB 6. 안전보건 경영 (POL + PLN + BGT + EVL / SFR-005·004·008·009) — 연간 사이클
+        { id: 'safety', label: '안전보건 경영', icon: 'shield', items: [
+            // 안전보건 방침 (POL / SFR-005)
+            { id: 'safety-policy', label: '방침 관리',      icon: 'shield',   href: 'safety-policy.html', screen: 'POL01-L' },
+            { id: 'pol-history',   label: '방침 이력',      icon: 'file',     href: 'pol-history.html',   screen: 'POL01-L' },
+            { id: 'pol-check',     label: '경영방침 점검',  icon: 'check',    soon: '경영방침 점검 (POL04-V)', screen: 'POL04-V' },
+            // 안전보건 계획 (PLN / SFR-004)
+            { id: 'pln-status',    label: '계획 현황',      icon: 'chart',    href: 'pln-status.html',    screen: 'PLN01-V' },
+            { id: 'pln-list',      label: '계획 목록',      icon: 'list',     href: 'pln-list.html',      screen: 'PLN01-L' },
+            { id: 'pln-calendar',  label: '캘린더',         icon: 'calendar', href: 'pln-calendar.html',  screen: 'PLN03-V' },
+            { id: 'pln-settings',  label: '계획 설정',      icon: 'cog',      href: 'pln-settings.html',  screen: 'PLN04-S' },
+            // 안전보건 예산 (BGT / SFR-008)
+            { id: 'bgt-status',    label: '예산 현황',      icon: 'coins',    href: 'bgt-status.html',    screen: 'BGT01-V' },
+            { id: 'bgt-tree',      label: '예방 항목 트리', icon: 'list',     href: 'bgt-tree.html',      screen: 'BGT02-V' },
+            { id: 'bgt-settings',  label: '예산 설정',      icon: 'cog',      href: 'bgt-settings.html',  screen: 'BGT05-S' },
+            // 인력 평가 (EVL / SFR-009)
+            { id: 'evl-list',      label: '인력 평가',      icon: 'user',     href: 'evl-list.html',      screen: 'EVL01-V' },
+            { id: 'evl-settings',  label: '평가 설정',      icon: 'cog',      href: 'evl-settings.html',  screen: 'EVL03-S' },
+        ]},
+
+        // GNB 7. 기반 관리 (TGT + ORG + STF / SFR-002·006·010) — 초기 셋팅·가끔 업데이트
+        //    선행 PRD-001 결과: ORG03-V → STF04-V 이전 통합
+        { id: 'base', label: '기반 관리', icon: 'building', items: [
+            // 관리대상 (TGT / SFR-002)
+            { id: 'target-status', label: '관리대상 현황',     icon: 'building', href: 'target-status.html', screen: 'TGT01-V' },
+            // 조직 (ORG / SFR-006) — PRD v1.4 "전담조직" → "조직"
+            { id: 'org-chart',     label: '조직도',            icon: 'users',    href: 'org-chart.html',     screen: 'ORG01-V' },
+            { id: 'organization',  label: '구성원',            icon: 'users',    href: 'organization.html',  screen: 'ORG02-L' },
+            // 안전보건 인력 (STF / SFR-010 + SFR-006 공동) — PRD v1.4 "안전관리자 인력" → "안전보건 인력"
+            { id: 'stf-status',    label: '전체 인력 현황',    icon: 'chart',    href: 'stf-status.html',    screen: 'STF01-V' },
+            { id: 'org-dedicated', label: '부서별 전담인력',   icon: 'user',     href: 'org-dedicated.html', screen: 'STF04-V' },
+            { id: 'stf-const',     label: '공사별 선임 현황',  icon: 'building', soon: '공사별 선임 (STF02-V)', screen: 'STF02-V' },
+            { id: 'stf-settings',  label: '안전보건 인력 설정', icon: 'cog',     soon: '법정 인원 마스터 (STF03-S)', screen: 'STF03-S' },
+        ]},
+
+        // GNB 8. 시스템 관리 (SYS + AUTH06-S + NTF03-S + 감사로그) — CEO/GM/SHM 전용
         //    결정사항 #24: 외부 시스템 연동 단일 진실 공급원(SSoT) = SYS01-S.
-        { id: 'system', label: '시스템관리', icon: 'cog', items: [
-            { id: 'sys-integration', label: '외부 시스템 연동', icon: 'cog',   href: 'sys-integration.html',   screen: 'SYS01-S' },
-            { id: 'sys-ext-users',   label: '외부 사용자 관리', icon: 'users', soon: '외부 사용자 (AUTH06-S)', screen: 'AUTH06-S' },
-            { id: 'sys-notif',       label: '알림 운영',        icon: 'bell',  href: 'ntf-admin.html',         screen: 'NTF03-S' },
-            { id: 'sys-stat',        label: '통계·현황',        icon: 'chart', soon: '종합 통계 (STA01-V)',    screen: 'STA01-V' },
-            { id: 'sys-cert',        label: '제증명 관리',      icon: 'file',  soon: '발급 신청 (CRT01-L)',    screen: 'CRT01-L' },
-            { id: 'sys-master',      label: '마스터 데이터',    icon: 'list',  soon: '마스터 데이터' },
-            { id: 'sys-audit',       label: '감사 로그',        icon: 'shield',soon: '감사 로그' },
+        { id: 'system', label: '시스템 관리', icon: 'cog', items: [
+            { id: 'sys-integration', label: '외부 시스템 연동', icon: 'cog',    href: 'sys-integration.html', screen: 'SYS01-S' },
+            { id: 'sys-ext-users',   label: '외부 사용자 관리', icon: 'users',  soon: '외부 사용자 (AUTH06-S)', screen: 'AUTH06-S' },
+            { id: 'sys-notif',       label: '알림 운영',        icon: 'bell',   href: 'ntf-admin.html',       screen: 'NTF03-S' },
+            { id: 'sys-audit',       label: '감사 로그',        icon: 'shield', soon: '감사 로그' },
         ]},
     ];
 

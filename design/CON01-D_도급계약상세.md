@@ -205,7 +205,7 @@ CON05-F STEP 2의 평가서·평가 결과 표시 (CON01-D 내 read-only 뷰)
   - 미달 시: contracts.status='BLOCKED' 자동 전환
   - 본 화면 노출 시 [결재 진행] 버튼 비활성 + 안내 메시지
 
-운영자가 ORG03-V에서 안전관리자 추가 선임 시:
+운영자가 STF04-V에서 안전관리자 추가 선임 시:
   - 충족 검증 자동 재실행
   - 충족 시 contracts.status='EVALUATING' 자동 복귀 (또는 DRAFT)
 ```

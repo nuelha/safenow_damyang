@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리대상 등록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── TGT02-F 전용 (4-Step Wizard) ─── */
+
+        /* 스텝 인디케이터 — 클릭 가능 */
+        .tgt-f-stepper {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 16px 24px;
+        }
+        .tgt-f-stepper-track {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .tgt-f-step {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer;
+            transition: opacity .12s;
+        }
+        .tgt-f-step.disabled {
+            opacity: .35; cursor: not-allowed;
+        }
+        .tgt-f-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+            flex-shrink: 0;
+            transition: all .15s;
+        }
+        .tgt-f-step.is-done .tgt-f-step-num {
+            background: var(--main); color: white;
+        }
+        .tgt-f-step.is-current .tgt-f-step-num {
+            background: var(--main); color: white;
+            box-shadow: 0 0 0 4px var(--brand-100);
+        }
+        .tgt-f-step-label {
+            display: flex; flex-direction: column;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .tgt-f-step-label .title {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-gray);
+            letter-spacing: -0.2px;
+        }
+        .tgt-f-step.is-done .tgt-f-step-label .title,
+        .tgt-f-step.is-current .tgt-f-step-label .title {
+            color: var(--main-dark2);
+        }
+        .tgt-f-step-connector {
+            flex: 1; height: 2px;
+            background: var(--card-line);
+            min-width: 24px;
+        }
+        .tgt-f-step-connector.is-done { background: var(--main); }
+
+        /* 폼 카드 — 스텝별 컨테이너 */
+        .tgt-f-step-pane { display: none; }
+        .tgt-f-step-pane.is-active { display: block; }
+
+        .tgt-f-section {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 24px 28px;
+        }
+        .tgt-f-section-title {
+            font-size: 17px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 18px;
+            letter-spacing: -0.3px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .tgt-f-section-title .step-tag {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            margin-right: 8px;
+            vertical-align: middle;
+            letter-spacing: 0;
+        }
+
+        /* 폼 필드 */
+        .tgt-f-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .tgt-f-field:last-child { margin-bottom: 0; }
+        .tgt-f-field-label {
+            font-size: 13px; font-weight: 600;
+            color: var(--main-dark2);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .tgt-f-field-label .req { color: var(--status-danger-fg); }
+        .tgt-f-field-label .hint {
+            font-size: 11px; font-weight: 500;
+            color: var(--text-gray);
+            margin-left: auto;
+        }
+        .tgt-f-field input[type="text"],
+        .tgt-f-field input[type="email"],
+        .tgt-f-field input[type="tel"],
+        .tgt-f-field select,
+        .tgt-f-field textarea {
+            font-size: 14px;
+            padding: 10px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            background: white;
+            color: var(--text-black);
+            width: 100%;
+            transition: border-color .12s;
+        }
+        .tgt-f-field input:focus,
+        .tgt-f-field select:focus,
+        .tgt-f-field textarea:focus {
+            outline: none;
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px var(--brand-100);
+        }
+        .tgt-f-field input[readonly] {
+            background: var(--gray-100);
+            color: var(--text-gray);
+        }
+        .tgt-f-field textarea { resize: vertical; min-height: 80px; }
+        .tgt-f-field-help { font-size: 11px; color: var(--text-gray); }
+        .tgt-f-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 720px) { .tgt-f-row-2 { grid-template-columns: 1fr; } }
+
+        /* 라디오 카드 (type/status/FMS 연동) */
+        .tgt-f-radio-group {
+            display: flex; gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tgt-f-radio-group.cols-3 > * { flex: 1 1 calc(33.33% - 7px); min-width: 120px; }
+        .tgt-f-radio {
+            position: relative;
+            display: flex; flex-direction: column; gap: 4px;
+            padding: 14px 16px;
+            background: white;
+            border: 1.5px solid var(--card-line);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .12s;
+        }
+        .tgt-f-radio input { position: absolute; opacity: 0; pointer-events: none; }
+        .tgt-f-radio:hover { border-color: var(--main); }
+        .tgt-f-radio.is-checked {
+            background: var(--brand-50);
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px var(--brand-100);
+        }
+        .tgt-f-radio .opt-title {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .tgt-f-radio.is-checked .opt-title {
+            color: var(--main);
+        }
+        .tgt-f-radio .opt-title .check {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px;
+            border: 1.5px solid var(--card-line);
+            border-radius: 50%;
+            flex-shrink: 0;
+            color: white;
+        }
+        .tgt-f-radio.is-checked .opt-title .check {
+            background: var(--main);
+            border-color: var(--main);
+        }
+        .tgt-f-radio .opt-desc {
+            font-size: 12px; color: var(--text-gray);
+        }
+
+        /* 인라인 액션 (부서 selector / FMS 조회 / 우편번호) */
+        .tgt-f-input-with-action {
+            display: flex; gap: 8px;
+        }
+        .tgt-f-input-with-action input { flex: 1; }
+        .tgt-f-input-action {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 10px 14px;
+            font-size: 13px; font-weight: 600;
+            background: var(--main-dark2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity .12s;
+        }
+        .tgt-f-input-action:hover { opacity: 0.9; }
+        .tgt-f-input-action.secondary {
+            background: white;
+            color: var(--main-dark2);
+            border: 1px solid var(--card-line);
+        }
+
+        /* 안내 banner */
+        .tgt-f-notice {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--status-info-fg);
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+        .tgt-f-notice.warn {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            color: var(--status-warning-fg);
+        }
+        .tgt-f-notice.success {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .tgt-f-notice svg { flex-shrink: 0; margin-top: 2px; }
+        .tgt-f-notice strong { font-weight: 700; }
+
+        /* STEP 2 동적 분기 (FMS 연동 / 직접 등록 토글) */
+        .tgt-f-conditional { display: none; }
+        .tgt-f-conditional.is-visible { display: block; }
+
+        /* STEP 3 — 담당자 검색 + 추가 */
+        .tgt-f-assignee-block {
+            padding: 16px;
+            background: var(--gray-50, #fafafa);
+            border: 1px solid var(--card-line);
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .tgt-f-assignee-head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .tgt-f-assignee-head .role {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tgt-f-assignee-head .role-code {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+        }
+        .tgt-f-user-chips {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .tgt-f-user-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px;
+            font-size: 12px; font-weight: 600;
+            background: white;
+            border: 1px solid var(--main);
+            color: var(--main-dark);
+            border-radius: 999px;
+        }
+        .tgt-f-user-chip.no-qual {
+            border-color: var(--status-warning-border);
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+        }
+        .tgt-f-user-chip .qual-tag {
+            font-size: 10px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            padding: 0 5px;
+            border-radius: 3px;
+        }
+        .tgt-f-user-chip .remove {
+            background: none; border: none; cursor: pointer;
+            color: inherit; opacity: 0.6;
+            font-size: 14px; line-height: 1;
+            padding: 0 0 0 4px;
+        }
+        .tgt-f-user-chip .remove:hover { opacity: 1; }
+
+        /* STEP 4 — 검토 요약 */
+        .tgt-f-review-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 0;
+            background: white;
+        }
+        .tgt-f-review-row {
+            display: contents;
+        }
+        .tgt-f-review-row > * {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .tgt-f-review-row:last-child > * { border-bottom: none; }
+        .tgt-f-review-label {
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: var(--gray-50, #fafafa);
+        }
+        .tgt-f-review-value {
+            font-size: 14px;
+            color: var(--text-black);
+            display: flex; align-items: center; gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tgt-f-review-value .auto-tag {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+
+        /* 푸터 */
+        .tgt-f-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px;
+            padding: 16px 0 32px;
+        }
+        .tgt-f-footer .group { display: flex; gap: 8px; }
+
+        /* type chip mini (STEP 4 검토용) */
+        .target-type-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .target-type-chip.facility { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .target-type-chip.task     { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .target-type-chip.business { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 구성원·부서 선택 모달은 js/pickers.js (DYPicker) 공통 컴포넌트 사용 */
+    </style>
+</head>
+<body data-dy-page="target-status"
+      data-back-href="target-status.html"
+      data-back-label="관리대상 현황">
+    <main>
+
+        <!-- ─── 페이지 헤더 ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <h1 id="page-title">관리대상 등록</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    4단계로 입력 — 기본정보 → 시설형 추가정보(시설일 때만) → 담당자 → 검토·저장. 부서장은 트리거로 자동 매핑되므로 입력 생략.
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 스텝 인디케이터 ─── -->
+        <div class="tgt-f-stepper">
+            <div class="tgt-f-stepper-track">
+                <div class="tgt-f-step is-current" data-step="1">
+                    <span class="tgt-f-step-num">1</span>
+                    <span class="tgt-f-step-label">
+                        <span class="title">기본정보</span>
+                        <span>관리대상명·유형·부서</span>
+                    </span>
+                </div>
+                <div class="tgt-f-step-connector"></div>
+                <div class="tgt-f-step" data-step="2" id="step-2-indicator">
+                    <span class="tgt-f-step-num">2</span>
+                    <span class="tgt-f-step-label">
+                        <span class="title">시설형 추가정보</span>
+                        <span id="step-2-sub">시설일 때만</span>
+                    </span>
+                </div>
+                <div class="tgt-f-step-connector"></div>
+                <div class="tgt-f-step" data-step="3">
+                    <span class="tgt-f-step-num">3</span>
+                    <span class="tgt-f-step-label">
+                        <span class="title">담당자</span>
+                        <span>선택 (자동 매핑됨)</span>
+                    </span>
+                </div>
+                <div class="tgt-f-step-connector"></div>
+                <div class="tgt-f-step" data-step="4">
+                    <span class="tgt-f-step-num">4</span>
+                    <span class="tgt-f-step-label">
+                        <span class="title">검토 및 저장</span>
+                        <span>최종 확인</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             ▼ STEP 1: 기본정보
+        ============================================================ -->
+        <div class="tgt-f-step-pane is-active" data-pane="1">
+            <section class="tgt-f-section">
+                <h2 class="tgt-f-section-title">
+                    <span class="step-tag">STEP 1</span>기본정보
+                </h2>
+
+                <div class="tgt-f-field">
+                    <label class="tgt-f-field-label" for="f-name">
+                        관리대상명 <span class="req">*</span>
+                        <span class="hint">1~200자</span>
+                    </label>
+                    <input type="text" id="f-name" placeholder="예: 군청 청사 관리" maxlength="200">
+                    <span class="tgt-f-field-help">시설명·업무명·사업명을 명확히 입력하세요. 이후 화면 헤더와 알림에 표시됩니다.</span>
+                </div>
+
+                <div class="tgt-f-field">
+                    <label class="tgt-f-field-label">
+                        유형(type) <span class="req">*</span>
+                    </label>
+                    <div class="tgt-f-radio-group cols-3">
+                        <label class="tgt-f-radio" data-type="facility">
+                            <input type="radio" name="target-type" value="FACILITY">
+                            <span class="opt-title">
+                                <span class="check">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                                시설 (FACILITY)
+                            </span>
+                            <span class="opt-desc">청사·체육관·정수장 등 물리적 건축물 — STEP 2 추가정보 입력 필요</span>
+                        </label>
+                        <label class="tgt-f-radio" data-type="task">
+                            <input type="radio" name="target-type" value="TASK">
+                            <span class="opt-title">
+                                <span class="check">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                                업무 (TASK)
+                            </span>
+                            <span class="opt-desc">화학물질 취급·고소작업 등 위험 업무 단위</span>
+                        </label>
+                        <label class="tgt-f-radio" data-type="business">
+                            <input type="radio" name="target-type" value="BUSINESS">
+                            <span class="opt-title">
+                                <span class="check">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                                사업 (BUSINESS)
+                            </span>
+                            <span class="opt-desc">도급공사·위탁사업 등 — e호조 import 가능</span>
+                        </label>
+                    </div>
+                    <span class="tgt-f-field-help">유형에 따라 이후 STEP 구성과 필수 입력값이 달라집니다.</span>
+                </div>
+
+                <div class="tgt-f-row-2">
+                    <div class="tgt-f-field">
+                        <label class="tgt-f-field-label" for="f-dept">
+                            담당부서 <span class="req">*</span>
+                        </label>
+                        <div class="tgt-f-input-with-action">
+                            <input type="text" id="f-dept" placeholder="부서를 선택하세요" readonly value="">
+                            <button type="button" class="tgt-f-input-action secondary"
+                                    onclick="window.tgtF.openDeptSelect()">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                                부서 선택
+                            </button>
+                        </div>
+                        <span class="tgt-f-field-help">부서장이 자동으로 관리책임자(RESPONSIBLE)로 매핑됩니다.</span>
+                    </div>
+                    <div class="tgt-f-field">
+                        <label class="tgt-f-field-label">
+                            상태 <span class="req">*</span>
+                        </label>
+                        <div class="tgt-f-radio-group cols-3">
+                            <label class="tgt-f-radio is-checked" style="padding:10px 14px;">
+                                <input type="radio" name="target-status" value="ACTIVE" checked>
+                                <span class="opt-title" style="font-size:13px;">
+                                    <span class="check">
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                    활성
+                                </span>
+                            </label>
+                            <label class="tgt-f-radio" style="padding:10px 14px;">
+                                <input type="radio" name="target-status" value="INACTIVE">
+                                <span class="opt-title" style="font-size:13px;">
+                                    <span class="check">
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                    비활성
+                                </span>
+                            </label>
+                            <label class="tgt-f-radio" style="padding:10px 14px;">
+                                <input type="radio" name="target-status" value="PENDING">
+                                <span class="opt-title" style="font-size:13px;">
+                                    <span class="check">
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                    등록대기
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tgt-f-field">
+                    <label class="tgt-f-field-label" for="f-desc">설명 <span class="hint">선택 · 최대 2,000자</span></label>
+                    <textarea id="f-desc" maxlength="2000"
+                              placeholder="예) 본관(5층) + 별관(3층) + 주차장으로 구성된 복합 시설. 일부 원료·제조물 취급 영역 있음 (지하 보일러실)..."></textarea>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ STEP 2: 시설형 추가정보 (FACILITY만)
+        ============================================================ -->
+        <div class="tgt-f-step-pane" data-pane="2">
+            <section class="tgt-f-section">
+                <h2 class="tgt-f-section-title">
+                    <span class="step-tag">STEP 2</span>시설형 추가정보
+                </h2>
+
+                <div class="tgt-f-notice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span><strong>복합 시설 안내</strong> — 본관·별관·부속 시설이 모두 같은 FMS ID라면 본 관리대상 1건으로 등록하고, 분류는 대표값을 선택한 뒤 부가 정보는 설명에 기재해주세요.</span>
+                </div>
+
+                <div class="tgt-f-field">
+                    <label class="tgt-f-field-label">
+                        FMS 연동 여부 <span class="req">*</span>
+                    </label>
+                    <div class="tgt-f-radio-group">
+                        <label class="tgt-f-radio is-checked" style="flex:1; min-width:240px;" data-fms="link">
+                            <input type="radio" name="fms-mode" value="LINK" checked>
+                            <span class="opt-title">
+                                <span class="check">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                                FMS 연동 <span style="color:var(--status-info-fg); font-size:11px; padding:1px 6px; background:var(--status-info-bg); border-radius:4px; margin-left:4px;">권장</span>
+                            </span>
+                            <span class="opt-desc">FMS ID를 입력하면 분류·종별·주소를 자동으로 불러오고 매일 06:00 정기 동기화</span>
+                        </label>
+                        <label class="tgt-f-radio" style="flex:1; min-width:240px;" data-fms="manual">
+                            <input type="radio" name="fms-mode" value="MANUAL">
+                            <span class="opt-title">
+                                <span class="check">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                                직접 등록
+                            </span>
+                            <span class="opt-desc">FMS에 미등록된 시설을 본 시스템에서만 관리. 변경 시 직접 갱신 필요</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- FMS 연동 모드 -->
+                <div class="tgt-f-conditional is-visible" data-fms-pane="link">
+                    <div class="tgt-f-field">
+                        <label class="tgt-f-field-label" for="f-fms-id">
+                            FMS ID <span class="req">*</span>
+                            <span class="hint">UNIQUE — 다른 관리대상과 중복 불가</span>
+                        </label>
+                        <div class="tgt-f-input-with-action">
+                            <input type="text" id="f-fms-id" placeholder="예: FMS-001234">
+                            <button type="button" class="tgt-f-input-action"
+                                    onclick="window.tgtF.lookupFms()">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                FMS 조회
+                            </button>
+                        </div>
+                        <span class="tgt-f-field-help">조회 성공 시 아래 필드가 자동으로 채워지고 잠깁니다.</span>
+                    </div>
+                    <div id="fms-result-block" style="display:none;">
+                        <div class="tgt-f-notice success">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><strong>FMS 조회 성공</strong> — 다음 정보가 자동으로 입력되었습니다. 본 필드는 FMS에서 동기화되므로 본 시스템에서 직접 수정할 수 없습니다.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 직접 등록 모드 -->
+                <div class="tgt-f-conditional" data-fms-pane="manual">
+                    <div class="tgt-f-notice warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span>직접 등록은 FMS 갱신 시 자동 동기화되지 않습니다. 분류·종별·주소 변경 시 본 시스템에서 직접 수정해야 합니다.</span>
+                    </div>
+                </div>
+
+                <!-- 공통 필드 (FMS 조회 결과로 자동 채워지거나 직접 입력) -->
+                <div class="tgt-f-row-2">
+                    <div class="tgt-f-field">
+                        <label class="tgt-f-field-label" for="f-cdpa">
+                            중대재해법 분류 <span class="req">*</span>
+                        </label>
+                        <select id="f-cdpa">
+                            <option value="">-- 선택 --</option>
+                            <option value="public_use">공중이용시설</option>
+                            <option value="raw_material">원료·제조물</option>
+                            <option value="transport">공중교통수단</option>
+                        </select>
+                    </div>
+                    <div class="tgt-f-field">
+                        <label class="tgt-f-field-label" for="f-grade">
+                            시설물안전법 종별 <span class="req">*</span>
+                        </label>
+                        <select id="f-grade">
+                            <option value="">-- 선택 --</option>
+                            <option value="g1">1종 (중대시설)</option>
+                            <option value="g2">2종</option>
+                            <option value="g3">3종</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="tgt-f-field">
+                    <label class="tgt-f-field-label" for="f-address">
+                        주소 <span class="req">*</span>
+                    </label>
+                    <div class="tgt-f-input-with-action">
+                        <input type="text" id="f-address" placeholder="우편번호 검색 후 입력하세요">
+                        <button type="button" class="tgt-f-input-action secondary"
+                                onclick="window.tgtF.openZipSearch()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            우편번호 검색
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ STEP 3: 담당자 (선택)
+        ============================================================ -->
+        <div class="tgt-f-step-pane" data-pane="3">
+            <section class="tgt-f-section">
+                <h2 class="tgt-f-section-title">
+                    <span class="step-tag">STEP 3</span>담당자 (선택)
+                </h2>
+
+                <div class="tgt-f-notice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span><strong>관리책임자(RESPONSIBLE)</strong>는 STEP 1에서 선택한 부서의 부서장이 자동으로 매핑됩니다. 본 단계는 안전관리자·보건관리자·관리감독자 등을 <strong>추가로 선택할 때만</strong> 입력하세요. 전부 건너뛰어도 됩니다.</span>
+                </div>
+
+                <!-- 안전관리자 -->
+                <div class="tgt-f-assignee-block">
+                    <div class="tgt-f-assignee-head">
+                        <span class="role">
+                            안전관리자
+                            <span class="role-code">SAFETY_MGR</span>
+                        </span>
+                        <button type="button" class="tgt-f-input-action secondary"
+                                onclick="window.tgtF.openMemberModal('safety')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                            구성원 선택
+                        </button>
+                    </div>
+                    <span class="tgt-f-field-help" style="margin-bottom:8px; display:block;">자격증 보유 여부가 칩에 함께 표시됩니다. 산업안전기사·건설안전기사 등 SAFETY 관련 자격이 권장됩니다.</span>
+                    <div class="tgt-f-user-chips" data-role-chips="safety">
+                        <span class="tgt-f-user-empty" style="font-size:12px; color:var(--text-lightgray);">선택된 구성원이 없습니다 — 위 [구성원 선택] 버튼으로 추가</span>
+                    </div>
+                </div>
+
+                <!-- 보건관리자 -->
+                <div class="tgt-f-assignee-block">
+                    <div class="tgt-f-assignee-head">
+                        <span class="role">
+                            보건관리자
+                            <span class="role-code">HEALTH_MGR</span>
+                        </span>
+                        <button type="button" class="tgt-f-input-action secondary"
+                                onclick="window.tgtF.openMemberModal('health')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                            구성원 선택
+                        </button>
+                    </div>
+                    <span class="tgt-f-field-help" style="margin-bottom:8px; display:block;">50명 이상 사업장은 의무 선임. 산업보건지도사·산업위생관리기사 등 보건 관련 자격이 권장됩니다.</span>
+                    <div class="tgt-f-user-chips" data-role-chips="health">
+                        <span class="tgt-f-user-empty" style="font-size:12px; color:var(--text-lightgray);">선택된 구성원이 없습니다</span>
+                    </div>
+                </div>
+
+                <!-- 관리감독자 -->
+                <div class="tgt-f-assignee-block">
+                    <div class="tgt-f-assignee-head">
+                        <span class="role">
+                            관리감독자
+                            <span class="role-code">SUPERVISOR</span>
+                        </span>
+                        <button type="button" class="tgt-f-input-action secondary"
+                                onclick="window.tgtF.openMemberModal('sup')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                            구성원 선택
+                        </button>
+                    </div>
+                    <span class="tgt-f-field-help" style="margin-bottom:8px; display:block;">자격증 검증 생략 — 부서장 자동 매핑되나 별도 인원도 추가 가능합니다.</span>
+                    <div class="tgt-f-user-chips" data-role-chips="sup">
+                        <span class="tgt-f-user-empty" style="font-size:12px; color:var(--text-lightgray);">선택된 구성원이 없습니다</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ STEP 4: 검토 및 저장
+        ============================================================ -->
+        <div class="tgt-f-step-pane" data-pane="4">
+            <section class="tgt-f-section">
+                <h2 class="tgt-f-section-title">
+                    <span class="step-tag">STEP 4</span>검토 및 저장
+                </h2>
+
+                <div class="tgt-f-notice success">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span><strong>저장 시 자동 처리</strong> — 트리거가 자동으로 부서장을 관리책임자(AUTO)로 매핑하고, 새올 포틀릿 알림을 발송합니다. STEP 3에서 입력한 담당자에게도 알림이 발송됩니다.</span>
+                </div>
+
+                <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2); margin: 0 0 10px;">기본정보</h3>
+                <div class="tgt-f-review-grid" style="border: 1px solid var(--card-line); border-radius: 8px; overflow: hidden; margin-bottom: 18px;">
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">관리대상명</span>
+                        <span class="tgt-f-review-value" data-review="name">—</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">유형(type)</span>
+                        <span class="tgt-f-review-value" data-review="type">—</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">담당부서</span>
+                        <span class="tgt-f-review-value" data-review="dept">—</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">상태</span>
+                        <span class="tgt-f-review-value" data-review="status">활성</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">설명</span>
+                        <span class="tgt-f-review-value" data-review="desc">—</span>
+                    </div>
+                </div>
+
+                <div id="review-facility-block" style="display:none;">
+                    <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2); margin: 0 0 10px;">시설형 추가정보</h3>
+                    <div class="tgt-f-review-grid" style="border: 1px solid var(--card-line); border-radius: 8px; overflow: hidden; margin-bottom: 18px;">
+                        <div class="tgt-f-review-row">
+                            <span class="tgt-f-review-label">FMS 연동</span>
+                            <span class="tgt-f-review-value" data-review="fms-mode">—</span>
+                        </div>
+                        <div class="tgt-f-review-row">
+                            <span class="tgt-f-review-label">FMS ID</span>
+                            <span class="tgt-f-review-value" data-review="fms-id">—</span>
+                        </div>
+                        <div class="tgt-f-review-row">
+                            <span class="tgt-f-review-label">중대재해법 분류</span>
+                            <span class="tgt-f-review-value" data-review="cdpa">—</span>
+                        </div>
+                        <div class="tgt-f-review-row">
+                            <span class="tgt-f-review-label">시설물안전법 종별</span>
+                            <span class="tgt-f-review-value" data-review="grade">—</span>
+                        </div>
+                        <div class="tgt-f-review-row">
+                            <span class="tgt-f-review-label">주소</span>
+                            <span class="tgt-f-review-value" data-review="address">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2); margin: 0 0 10px;">담당자</h3>
+                <div class="tgt-f-review-grid" style="border: 1px solid var(--card-line); border-radius: 8px; overflow: hidden; margin-bottom: 18px;">
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">관리책임자</span>
+                        <span class="tgt-f-review-value" data-review="responsible">
+                            <span style="color:var(--text-gray);" id="responsible-name">부서 선택 시 자동 결정</span>
+                            <span class="auto-tag">AUTO</span>
+                        </span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">안전관리자</span>
+                        <span class="tgt-f-review-value" data-review="safety">—</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">보건관리자</span>
+                        <span class="tgt-f-review-value" data-review="health">—</span>
+                    </div>
+                    <div class="tgt-f-review-row">
+                        <span class="tgt-f-review-label">관리감독자</span>
+                        <span class="tgt-f-review-value" data-review="sup">—</span>
+                    </div>
+                </div>
+
+                <div class="tgt-f-notice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span>저장하면 관리대상 상세(TGT02-D)로 이동합니다. <strong>임시저장</strong>으로 보관해 두려면 좌측 푸터의 [임시저장] 버튼을 누르세요 (상태 = PENDING으로 저장 + 모든 검증 우회).</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 푸터 (이전 / 임시저장 / 다음·저장)
+        ============================================================ -->
+        <div class="tgt-f-footer">
+            <div class="group">
+                <button class="btn btn-secondary" type="button" id="btn-prev" style="display:none;"
+                        onclick="window.tgtF.prev()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    이전
+                </button>
+                <button class="btn btn-secondary" type="button"
+                        onclick="window.tgtF.tempSave()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    임시저장
+                </button>
+            </div>
+            <div class="group">
+                <button class="btn btn-primary" type="button" id="btn-next"
+                        onclick="window.tgtF.next()">
+                    다음
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <button class="btn btn-primary" type="button" id="btn-save" style="display:none;"
+                        onclick="window.tgtF.save()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    저장
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 구성원·부서 선택 모달은 js/pickers.js 공통 컴포넌트로 자동 주입됨 -->
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/pickers.js"></script>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+        }
+
+        /* ─── 라디오 카드 active 클래스 동기화 ─── */
+        function syncRadioGroup() {
+            document.querySelectorAll('.tgt-f-radio').forEach(label => {
+                const input = label.querySelector('input[type=radio]');
+                if (!input) return;
+                label.classList.toggle('is-checked', input.checked);
+            });
+        }
+        document.querySelectorAll('input[type=radio]').forEach(input => {
+            input.addEventListener('change', () => {
+                document.querySelectorAll(`input[name="${input.name}"]`).forEach(sibling => {
+                    sibling.closest('.tgt-f-radio')?.classList.toggle('is-checked', sibling.checked);
+                });
+            });
+        });
+
+        /* ─── type 변경: STEP 2 동적 노출 + 스텝 인디케이터 ─── */
+        document.querySelectorAll('input[name="target-type"]').forEach(input => {
+            input.addEventListener('change', () => {
+                const isFacility = input.value === 'FACILITY';
+                const indicator = document.getElementById('step-2-indicator');
+                const sub = document.getElementById('step-2-sub');
+                if (isFacility) {
+                    indicator.classList.remove('disabled');
+                    sub.textContent = 'FMS 연동/직접 등록';
+                } else {
+                    indicator.classList.add('disabled');
+                    sub.textContent = '건너뜀 (' + (input.value === 'TASK' ? '업무' : '사업') + ')';
+                }
+            });
+        });
+
+        /* ─── FMS 모드 변경: 입력 영역 토글 ─── */
+        document.querySelectorAll('input[name="fms-mode"]').forEach(input => {
+            input.addEventListener('change', () => {
+                const mode = input.value;
+                document.querySelectorAll('[data-fms-pane]').forEach(p => {
+                    p.classList.toggle('is-visible', p.dataset.fmsPane === (mode === 'LINK' ? 'link' : 'manual'));
+                });
+                // 모드 전환 시 cdpa/grade/address readonly 해제
+                if (mode === 'MANUAL') {
+                    ['f-cdpa', 'f-grade', 'f-address'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) { el.readOnly = false; el.disabled = false; }
+                    });
+                    document.getElementById('fms-result-block').style.display = 'none';
+                }
+            });
+        });
+
+        /* ─── 스텝 전환 ─── */
+        let currentStep = 1;
+        function gotoStep(n) {
+            // type=TASK/BUSINESS일 때 step 2 건너뛰기
+            const isFacility = (document.querySelector('input[name="target-type"]:checked') || {}).value === 'FACILITY';
+            if (n === 2 && !isFacility) {
+                n = currentStep < 2 ? 3 : 1;
+            }
+            n = Math.max(1, Math.min(4, n));
+            currentStep = n;
+
+            document.querySelectorAll('.tgt-f-step-pane').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.pane === String(n));
+            });
+
+            // 스텝 인디케이터 갱신
+            document.querySelectorAll('.tgt-f-step').forEach((s, idx) => {
+                const stepNo = parseInt(s.dataset.step, 10);
+                s.classList.remove('is-current', 'is-done');
+                if (stepNo < n) s.classList.add('is-done');
+                if (stepNo === n) s.classList.add('is-current');
+            });
+            // connector
+            document.querySelectorAll('.tgt-f-step-connector').forEach((c, idx) => {
+                c.classList.toggle('is-done', idx + 1 < n);
+            });
+
+            // 푸터 버튼
+            document.getElementById('btn-prev').style.display = (n === 1) ? 'none' : '';
+            document.getElementById('btn-next').style.display = (n === 4) ? 'none' : '';
+            document.getElementById('btn-save').style.display = (n === 4) ? '' : 'none';
+
+            // STEP 4 진입 시 review 갱신
+            if (n === 4) updateReview();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 스텝 인디케이터 직접 클릭으로 이동
+        document.querySelectorAll('.tgt-f-step').forEach(s => {
+            s.addEventListener('click', () => {
+                if (s.classList.contains('disabled')) return;
+                gotoStep(parseInt(s.dataset.step, 10));
+            });
+        });
+
+        /* ─── 검증 ─── */
+        function validateStep(n) {
+            const errs = [];
+            if (n === 1) {
+                if (!document.getElementById('f-name').value.trim()) errs.push('관리대상명을 입력해주세요');
+                if (!document.querySelector('input[name="target-type"]:checked')) errs.push('유형(type)을 선택해주세요');
+                if (!document.getElementById('f-dept').value.trim()) errs.push('담당부서를 선택해주세요');
+            } else if (n === 2) {
+                const mode = (document.querySelector('input[name="fms-mode"]:checked') || {}).value;
+                if (mode === 'LINK') {
+                    if (!document.getElementById('f-fms-id').value.trim()) errs.push('FMS ID를 입력하고 조회를 완료해주세요');
+                }
+                if (!document.getElementById('f-cdpa').value) errs.push('중대재해법 분류를 선택해주세요');
+                if (!document.getElementById('f-grade').value) errs.push('시설물안전법 종별을 선택해주세요');
+                if (!document.getElementById('f-address').value.trim()) errs.push('주소를 입력해주세요');
+            }
+            return errs;
+        }
+
+        /* ─── STEP 4 review 영역 갱신 ─── */
+        function updateReview() {
+            const setReview = (k, v) => {
+                const el = document.querySelector(`[data-review="${k}"]`);
+                if (el) el.textContent = v || '—';
+            };
+            const setReviewHtml = (k, html) => {
+                const el = document.querySelector(`[data-review="${k}"]`);
+                if (el) el.innerHTML = html;
+            };
+
+            setReview('name', document.getElementById('f-name').value);
+            const typeInput = document.querySelector('input[name="target-type"]:checked');
+            const typeMap = { FACILITY: { label: '시설', cls: 'facility' }, TASK: { label: '업무', cls: 'task' }, BUSINESS: { label: '사업', cls: 'business' } };
+            if (typeInput && typeMap[typeInput.value]) {
+                const t = typeMap[typeInput.value];
+                setReviewHtml('type', `<span class="target-type-chip ${t.cls}">${t.label}</span> ${typeInput.value}`);
+            }
+            setReview('dept', document.getElementById('f-dept').value);
+            const statusInput = document.querySelector('input[name="target-status"]:checked');
+            setReview('status', statusInput ? ({ ACTIVE: '활성', INACTIVE: '비활성', PENDING: '등록대기' })[statusInput.value] : '—');
+            setReview('desc', document.getElementById('f-desc').value || '(없음)');
+
+            // 시설형 정보
+            const isFacility = typeInput && typeInput.value === 'FACILITY';
+            document.getElementById('review-facility-block').style.display = isFacility ? '' : 'none';
+            if (isFacility) {
+                const mode = (document.querySelector('input[name="fms-mode"]:checked') || {}).value;
+                setReview('fms-mode', mode === 'LINK' ? 'FMS 연동' : '직접 등록');
+                setReview('fms-id', mode === 'LINK' ? document.getElementById('f-fms-id').value : '(직접 등록)');
+                const cdpaSel = document.getElementById('f-cdpa');
+                setReview('cdpa', cdpaSel.value ? cdpaSel.options[cdpaSel.selectedIndex].text : '');
+                const gradeSel = document.getElementById('f-grade');
+                setReview('grade', gradeSel.value ? gradeSel.options[gradeSel.selectedIndex].text : '');
+                setReview('address', document.getElementById('f-address').value);
+            }
+
+            // 담당자
+            const collectChips = (role) => {
+                const chips = document.querySelectorAll(`[data-role-chips="${role}"] .tgt-f-user-chip`);
+                if (chips.length === 0) return '(미지정)';
+                return Array.from(chips).map(c => c.firstChild.textContent.trim()).join(', ');
+            };
+            setReview('safety', collectChips('safety'));
+            setReview('health', collectChips('health'));
+            setReview('sup', collectChips('sup'));
+
+            // 책임자: 부서 선택 시 input에 저장된 head/position 우선 사용
+            const deptInput = document.getElementById('f-dept');
+            const dept = deptInput.value;
+            const respNameEl = document.getElementById('responsible-name');
+            if (respNameEl) {
+                if (dept && deptInput.dataset.head) {
+                    const pos = deptInput.dataset.headPos || '';
+                    respNameEl.innerHTML = deptInput.dataset.head + (pos ? ` <span style="color:var(--text-gray); font-weight:500;">(${pos})</span>` : '');
+                    respNameEl.style.color = 'var(--text-black)';
+                } else if (dept) {
+                    respNameEl.textContent = '부서장 미지정 — 추후 설정 필요';
+                    respNameEl.style.color = 'var(--status-warning-fg)';
+                } else {
+                    respNameEl.textContent = '부서 선택 시 자동 결정';
+                    respNameEl.style.color = 'var(--text-gray)';
+                }
+            }
+        }
+
+        /* ─── 역할 매핑 (UI key → DYPicker roleCode) ─── */
+        const ROLE_LABEL = {
+            safety: { code: 'SAFETY_MGR', label: '안전관리자' },
+            health: { code: 'HEALTH_MGR', label: '보건관리자' },
+            sup:    { code: 'SUPERVISOR', label: '관리감독자' }
+        };
+
+        /* ─── 담당자 칩 렌더 (선택 결과 표시) ─── */
+        function hasQualForRole(member, roleKey) {
+            const cfg = (window.DYPicker && DYPicker.ROLE_DEFAULTS)
+                ? DYPicker.ROLE_DEFAULTS[ROLE_LABEL[roleKey].code]
+                : null;
+            if (!cfg || !cfg.checkQual) return true;
+            if (!member.quals || member.quals.length === 0) return false;
+            return member.quals.some(q => cfg.qualKeywords.some(k => q.includes(k)));
+        }
+        function addChip(role, member) {
+            const wrap = document.querySelector(`[data-role-chips="${role}"]`);
+            if (!wrap) return;
+            const empty = wrap.querySelector('.tgt-f-user-empty');
+            if (empty) empty.remove();
+            if (wrap.querySelector(`[data-user-id="${member.id}"]`)) return;
+
+            const cfg = DYPicker.ROLE_DEFAULTS[ROLE_LABEL[role].code];
+            const isQualified = hasQualForRole(member, role);
+            const chip = document.createElement('span');
+            chip.className = 'tgt-f-user-chip' + ((cfg.checkQual && !isQualified) ? ' no-qual' : '');
+            chip.dataset.userId = member.id;
+
+            const qualHtml = cfg.checkQual
+                ? (isQualified
+                    ? `<span class="qual-tag">${member.quals.join(', ')}</span>`
+                    : `<span class="qual-tag" style="background:var(--status-warning-bg); color:var(--status-warning-fg);">⚠ 자격 미보유</span>`)
+                : (member.quals.length ? `<span class="qual-tag">${member.quals.join(', ')}</span>` : '');
+
+            chip.innerHTML = `${member.name} <span style="color:var(--text-gray); font-weight:500;">(${member.dept} · ${member.position})</span> ${qualHtml}` +
+                `<button type="button" class="remove">×</button>`;
+            chip.querySelector('.remove').addEventListener('click', () => {
+                chip.remove();
+                if (wrap.children.length === 0) {
+                    const span = document.createElement('span');
+                    span.className = 'tgt-f-user-empty';
+                    span.style.cssText = 'font-size:12px; color:var(--text-lightgray);';
+                    span.textContent = '선택된 구성원이 없습니다 — 위 [구성원 선택] 버튼으로 추가';
+                    wrap.appendChild(span);
+                }
+            });
+            wrap.appendChild(chip);
+        }
+
+        window.tgtF = {
+            next: function () {
+                const errs = validateStep(currentStep);
+                if (errs.length) {
+                    showToast(errs[0]);
+                    return;
+                }
+                // STEP 1에서 type이 TASK/BUSINESS이면 STEP 2 건너뜀
+                const isFacility = (document.querySelector('input[name="target-type"]:checked') || {}).value === 'FACILITY';
+                if (currentStep === 1 && !isFacility) {
+                    gotoStep(3);
+                } else {
+                    gotoStep(currentStep + 1);
+                }
+            },
+            prev: function () {
+                const isFacility = (document.querySelector('input[name="target-type"]:checked') || {}).value === 'FACILITY';
+                if (currentStep === 3 && !isFacility) {
+                    gotoStep(1);
+                } else {
+                    gotoStep(currentStep - 1);
+                }
+            },
+            tempSave: function () {
+                showToast('임시저장 완료 — 상태 PENDING으로 보관됩니다 (모든 검증 우회)');
+            },
+            save: function () {
+                const name = document.getElementById('f-name').value.trim() || '신규 관리대상';
+                showToast('"' + name + '" 등록 완료 — 관리대상 상세로 이동합니다');
+                setTimeout(() => {
+                    const typeInput = document.querySelector('input[name="target-type"]:checked');
+                    const targetMap = { FACILITY: 'target-detail.html', TASK: 'target-detail-task.html', BUSINESS: 'target-detail-business.html' };
+                    window.location.href = (typeInput && targetMap[typeInput.value]) || 'target-detail.html';
+                }, 1200);
+            },
+            openDeptSelect: function () {
+                const input = document.getElementById('f-dept');
+                DYPicker.openDept({
+                    title: '담당부서 선택',
+                    subtitle: '담당부서',
+                    currentName: input.value.trim(),
+                    onSelect: function (dept) {
+                        input.value = dept.name;
+                        input.dataset.deptId = dept.id;
+                        input.dataset.head = dept.head || '';
+                        input.dataset.headPos = dept.position || '';
+                        showToast('"' + dept.name + '" 선택 — 부서장 ' + (dept.head || '미지정') + ' 자동 매핑 예정');
+                    }
+                });
+            },
+            openZipSearch: function () {
+                const addr = prompt('주소 입력 (우편번호 검색 모의)', '전남 담양군 담양읍 추성로 1');
+                if (addr) document.getElementById('f-address').value = addr.trim();
+            },
+            lookupFms: function () {
+                const id = document.getElementById('f-fms-id').value.trim();
+                if (!id) {
+                    showToast('FMS ID를 먼저 입력해주세요');
+                    return;
+                }
+                // mock 조회 — 잠시 후 자동 채움
+                showToast('FMS 조회 중... ' + id);
+                setTimeout(() => {
+                    document.getElementById('f-cdpa').value = 'public_use';
+                    document.getElementById('f-grade').value = 'g1';
+                    document.getElementById('f-address').value = '전남 담양군 담양읍 추성로 1';
+                    // 잠금 (FMS 동기화 필드)
+                    ['f-cdpa', 'f-grade', 'f-address'].forEach(id2 => {
+                        const el = document.getElementById(id2);
+                        if (!el) return;
+                        if (el.tagName === 'SELECT') el.disabled = true;
+                        else el.readOnly = true;
+                    });
+                    document.getElementById('fms-result-block').style.display = '';
+                    showToast('FMS 조회 성공 — 분류·종별·주소가 자동 채워졌습니다');
+                }, 700);
+            },
+            openMemberModal: function (role) {
+                const cfg = ROLE_LABEL[role];
+                // 이미 칩으로 추가된 구성원 ID 수집 (모달에서 회색 비활성)
+                const alreadyChips = document.querySelectorAll(`[data-role-chips="${role}"] .tgt-f-user-chip`);
+                const excludeIds = Array.from(alreadyChips).map(c => c.dataset.userId).filter(Boolean);
+                DYPicker.openMember({
+                    title: cfg.label + ' 선택',
+                    roleCode: cfg.code,
+                    roleLabel: cfg.label,
+                    multi: true,
+                    excludeIds: excludeIds,
+                    onSelect: function (chosen /* array */, meta) {
+                        chosen.forEach(m => addChip(role, m));
+                        showToast(cfg.label + ' ' + chosen.length + '명 지정 완료' + (meta && meta.forced ? ' (자격 미보유 강제 지정 포함)' : ''));
+                    }
+                });
+            }
+        };
+
+        /* ─── 기본값: 시설형 예시처럼 김안전 1명 prefill (안전관리자) ─── */
+        (function prefillDefault() {
+            const kim = DYPicker.MEMBERS.find(m => m.id === 'u1');
+            if (kim) addChip('safety', kim);
+        })();
+
+        // 초기 동기화
+        syncRadioGroup();
+    })();
+    </script>
+</body>
+</html>

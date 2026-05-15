@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전담인력 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <title>부서별 전담인력 (STF04-V) - 담양군 중대재해예방통합관리시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="./js/tailwind-config.js"></script>
     <link rel="stylesheet" href="./css/style.css">
     <style>
-        /* ─── ORG03-V 전용 ─── */
+        /* ─── STF04-V 전용 (구 ORG03-V — PRD v1.4 안전보건 인력 모듈로 이전) ─── */
 
         /* 결과 카운트 */
         .ded-meta-row { display:flex; align-items:center; gap:12px; }
@@ -166,6 +166,40 @@
             border-color: var(--status-neutral-border);
             color: var(--status-neutral-fg);
         }
+        /* 자율선임 보조 칩 (OPTIONAL + 선임자 존재 시 함께 표시) */
+        .ded-badge.voluntary {
+            background: var(--status-purple-bg);
+            border-color: var(--status-purple-border);
+            color: var(--status-purple-fg);
+            margin-left: 4px;
+        }
+        /* 자율선임 버튼 */
+        .ded-btn.voluntary {
+            background: white;
+            border: 1px dashed var(--status-purple-fg);
+            color: var(--status-purple-fg);
+        }
+        .ded-btn.voluntary:hover {
+            background: var(--status-purple-bg);
+            border-style: solid;
+        }
+        /* OPTIONAL 카드: 자율선임된 person 메타 라인 */
+        .ded-person-meta .voluntary-hint {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            background: var(--status-purple-bg);
+            color: var(--status-purple-fg);
+            margin-top: 2px;
+            width: fit-content;
+        }
+        /* OPTIONAL + 비지정 카드의 자율선임 안내 */
+        .ded-empty .voluntary-hint-text {
+            font-size: 11px;
+            color: var(--text-lightgray);
+            margin-top: 4px;
+        }
 
         /* 선임 인원 카운트 */
         .ded-count {
@@ -260,11 +294,11 @@
             color: white;
         }
         .ded-btn.primary:hover { background: var(--main-dark); border-color: var(--main-dark); }
-        .ded-btn.outline {
-            border-color: var(--card-line);
+        .ded-btn.is-outline {
+            border-color: var(--text-lightgray);
             color: var(--text-black);
         }
-        .ded-btn.outline:hover { border-color: var(--main); color: var(--main); }
+        .ded-btn.is-outline:hover { border-color: var(--main); color: var(--main); }
         .ded-btn.danger {
             border-color: var(--status-danger-border);
             color: var(--status-danger-fg);
@@ -377,6 +411,43 @@
             cursor: pointer;
         }
         .ded-user-pick.empty:hover { border-color: var(--main); color: var(--main); }
+        /* 선택 완료 상태 — 성공 톤 강조 */
+        .ded-user-pick.is-filled {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            box-shadow: inset 3px 0 0 var(--main);
+            animation: ded-pick-in .25s ease-out;
+        }
+        @keyframes ded-pick-in {
+            from { transform: translateY(-3px); opacity: 0.5; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .ded-user-pick.is-filled::before {
+            content: '✓';
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--main);
+            color: white;
+            font-size: 12px; font-weight: 800;
+            flex-shrink: 0;
+        }
+        .ded-user-pick.is-filled .ded-pick-status {
+            font-size: 11px; font-weight: 700;
+            color: var(--status-success-fg);
+            background: white;
+            border: 1px solid var(--status-success-border);
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        /* 비활성 [선임] 버튼 — 선택 전 상태 */
+        .btn.is-disabled,
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
 
         @media (max-width: 1023px) {
             .ded-role-grid { grid-template-columns: repeat(2, 1fr); }
@@ -386,7 +457,7 @@
         }
     </style>
 </head>
-<body data-dy-page="org-dedicated" data-page-title="전담인력 현황" data-page-subtitle="부서별 안전관리자·보건관리자 선임 현황">
+<body data-dy-page="org-dedicated" data-page-title="부서별 전담인력 현황" data-page-subtitle="부서별 안전관리자·보건관리자·관리감독자·산업보건의 선임 현황 (STF04-V · 구 ORG03-V)">
     <main>
 
         <!-- ─── KPI 4분할 ─── -->
@@ -462,7 +533,7 @@
     </main>
 
     <!-- ============================================================ -->
-    <!-- ORG03-M  전담인력 선임 모달 -->
+    <!-- STF04-M 전담인력 선임 모달 (구 ORG03-M) -->
     <!-- ============================================================ -->
     <div class="ded-modal-backdrop" id="appoint-modal">
         <div class="ded-modal" role="dialog" aria-modal="true">
@@ -473,6 +544,12 @@
                 </button>
             </div>
             <div class="ded-modal-body">
+                <!-- 자율선임 안내 (OPTIONAL 역할일 때만 노출) -->
+                <div id="appoint-voluntary-banner" style="display:none; margin-bottom: 14px; padding: 12px 14px; background: var(--status-purple-bg); border: 1px solid var(--status-purple-border); border-radius: 8px; font-size: 13px; color: var(--status-purple-fg); line-height: 1.6;">
+                    <strong>법정 비대상 부서</strong> — 본 역할은 법적 의무가 아닌 <strong>자율 선임</strong>으로 기록됩니다.
+                    <span style="display:block; font-size:11px; color:var(--text-gray); margin-top:4px;">DB: <code style="background:white; padding:1px 5px; border-radius:3px;">dedicated_personnel.is_voluntary = true</code> · 충족 통계에서 분리 집계됩니다.</span>
+                </div>
+
                 <div class="ded-readonly-row">
                     <span class="k">대상 부서</span>
                     <span class="v" id="appoint-dept">-</span>
@@ -516,9 +593,6 @@
                 <p style="font-size:14px; color:var(--text-black); line-height:1.5;" id="release-msg">
                     선임을 해제하시겠습니까?
                 </p>
-                <p style="font-size:12px; color:var(--text-gray); margin-top:8px;">
-                    해제 후 해당 역할은 <strong style="color:var(--status-danger-fg);">미충족</strong> 상태로 전환됩니다.
-                </p>
             </div>
             <div class="ded-modal-footer">
                 <button class="btn btn-outline" type="button" onclick="window.closeReleaseModal()">취소</button>
@@ -529,8 +603,27 @@
 
     <div id="toast" class="toast" role="status"></div>
 
+    <script src="./js/pickers.js"></script>
     <script src="./js/layout.js"></script>
     <script>
+    /* ─── 구성원 이름 → ORG02-D 상세 URL 매핑 ───
+     *   organization.html과 동일한 출처 구분을 따름:
+     *   - MANUAL 사용자: 이건강, 윤소장(=윤과장이 아닌 별개 인물 — 이름이 다름), 백관리(시설관리과 강제선임)
+     *   - LOCAL_INVITED: 외부 사용자 (도급 안전관리책임자 등)
+     *   - 그 외 SSO
+     */
+    const MEMBER_DETAIL_MAP = {
+        // MANUAL — 직접 등록
+        '이건강':   'org-member-detail-manual.html',
+        '윤소장':   'org-member-detail-manual.html',
+        '백관리':   'org-member-detail-manual.html',
+        // LOCAL_INVITED — 외부 사용자 (자율 위촉 자문의사 등)
+        '강의사':   'org-member-detail-external.html'
+    };
+    window.memberDetailUrl = function (name) {
+        return MEMBER_DETAIL_MAP[name] || 'org-member-detail.html';
+    };
+
     (function () {
         'use strict';
 
@@ -576,7 +669,8 @@
                     safety:     { status: 'MET',   need: 1, person: { name: '정농업', pos: '6급 주사', qual: '산업안전기사' } },
                     health:     { status: 'MET',   need: 1, person: { name: '윤보건', pos: '6급 주사', qual: '간호사' } },
                     supervisor: { status: 'AUTO',  need: 1, person: { name: '이센터장', pos: '4급 서기관', note: '부서장 자동 매핑' } },
-                    doctor:     { status: 'OPTIONAL', need: 0, person: null },
+                    // 자율선임 예시: 법정 비대상이지만 부서 자율로 외부 의사 자문 계약 체결
+                    doctor:     { status: 'OPTIONAL', need: 0, voluntary: true, person: { name: '강의사', pos: '외부 자문 · 매월 2회', qual: '의사면허', voluntary: true } },
                 }
             },
             {
@@ -649,15 +743,20 @@
         const list$ = document.getElementById('dept-list');
         const count$ = document.getElementById('result-count');
 
-        function badgeHtml(status) {
+        function badgeHtml(status, role) {
+            let html = '';
             switch (status) {
-                case 'MET':           return '<span class="ded-badge met">충족</span>';
-                case 'UNMET':         return '<span class="ded-badge unmet">미충족</span>';
-                case 'UNMET_FORCED':  return '<span class="ded-badge unmet">강제선임</span>';
-                case 'AUTO':          return '<span class="ded-badge auto">자동</span>';
-                case 'OPTIONAL':      return '<span class="ded-badge optional">선택</span>';
+                case 'MET':           html = '<span class="ded-badge met">충족</span>'; break;
+                case 'UNMET':         html = '<span class="ded-badge unmet">미충족</span>'; break;
+                case 'UNMET_FORCED':  html = '<span class="ded-badge unmet">강제선임</span>'; break;
+                case 'AUTO':          html = '<span class="ded-badge auto">자동</span>'; break;
+                case 'OPTIONAL':      html = '<span class="ded-badge optional">선택</span>'; break;
             }
-            return '';
+            // 자율선임된 OPTIONAL 카드: 보조 칩 추가
+            if (status === 'OPTIONAL' && role && role.person) {
+                html += '<span class="ded-badge voluntary">자율선임</span>';
+            }
+            return html;
         }
 
         function roleCard(deptId, roleKey, role) {
@@ -672,8 +771,11 @@
 
             // 인원수 표시 (MET의 경우 더 있을 수도)
             let countText;
-            if (role.status === 'OPTIONAL') countText = '<span class="ded-count">법정 비대상</span>';
-            else {
+            if (role.status === 'OPTIONAL') {
+                countText = role.person
+                    ? '<span class="ded-count">법정 비대상 · <strong>자율선임 1명</strong></span>'
+                    : '<span class="ded-count">법정 비대상</span>';
+            } else {
                 const cur = has ? (role.more ? 1 + role.more : 1) : 0;
                 const need = role.need;
                 countText = `<span class="ded-count"><strong>${cur}</strong>/${need}명</span>`;
@@ -692,6 +794,7 @@
                     body = `<div class="ded-empty">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
                         부서 인원 기준상 비대상
+                        <span class="voluntary-hint-text">필요 시 자율 선임 가능</span>
                     </div>`;
                 } else {
                     body = `<div class="ded-empty">
@@ -701,6 +804,7 @@
                 }
             } else {
                 const isAuto = role.status === 'AUTO';
+                const isVoluntary = role.status === 'OPTIONAL' && role.person.voluntary;
                 const qualHtml = role.person.qual
                     ? `<span class="ded-qual ${role.person.forced ? 'missing' : ''}">${role.person.forced
                         ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
@@ -709,15 +813,23 @@
                 const moreHtml = role.more
                     ? `<span style="font-size:11px; color:var(--text-gray); margin-top:2px;">+ 외 ${role.more}명</span>`
                     : '';
+                const voluntaryHint = isVoluntary
+                    ? `<span class="voluntary-hint">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          자율선임 (법적 의무 아님)
+                      </span>`
+                    : '';
+                const memberUrl = window.memberDetailUrl(role.person.name);
                 body = `
                     <div class="ded-person">
                         <div class="ded-person-avatar ${isAuto ? 'auto' : ''}">${role.person.name.slice(0,1)}</div>
                         <div class="ded-person-meta">
                             <div class="ded-person-name">
-                                <a href="#" onclick="event.preventDefault(); window.DYLayout._soon(event, '구성원 상세 (ORG02-D) - ${role.person.name}');">${role.person.name}</a>
+                                <a href="${memberUrl}">${role.person.name}</a>
                             </div>
                             <div class="ded-person-pos">${role.person.pos}</div>
                             ${qualHtml}
+                            ${voluntaryHint}
                             ${moreHtml}
                         </div>
                     </div>
@@ -729,14 +841,26 @@
             if (role.status === 'AUTO') {
                 // 정보 표시 전용 — 액션 없음
             } else if (role.status === 'OPTIONAL') {
-                // 없음
+                // 해석 B: 법정 비대상도 자율 선임 가능
+                if (role.person) {
+                    // 이미 자율선임된 상태 — 수정/해제
+                    actions = `<div class="ded-actions">
+                        <button class="ded-btn is-outline" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}', true)">수정</button>
+                        <button class="ded-btn danger" type="button" onclick="window.openRelease('${deptId}', '${roleKey}')">해제</button>
+                    </div>`;
+                } else {
+                    // 미선임 OPTIONAL — 자율 선임 버튼
+                    actions = `<div class="ded-actions">
+                        <button class="ded-btn voluntary" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}', false)">+ 자율 선임</button>
+                    </div>`;
+                }
             } else if (role.status === 'UNMET') {
                 actions = `<div class="ded-actions">
                     <button class="ded-btn primary" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}')">+ 선임하기</button>
                 </div>`;
             } else if (role.status === 'MET' || role.status === 'UNMET_FORCED') {
                 actions = `<div class="ded-actions">
-                    <button class="ded-btn outline" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}', true)">수정</button>
+                    <button class="ded-btn is-outline" type="button" onclick="window.openAppoint('${deptId}', '${roleKey}', true)">수정</button>
                     <button class="ded-btn danger" type="button" onclick="window.openRelease('${deptId}', '${roleKey}')">해제</button>
                 </div>`;
             }
@@ -745,7 +869,7 @@
                 <div class="${cls}" data-role="${roleKey}">
                     <div class="ded-role-head">
                         <span class="ded-role-label">${meta.label} <span class="legal">${meta.legal}</span></span>
-                        ${badgeHtml(role.status)}
+                        ${badgeHtml(role.status, role)}
                     </div>
                     ${countText}
                     ${body}
@@ -821,16 +945,29 @@
         window.openAppoint = function (deptId, roleKey, isEdit) {
             const d = DEPTS.find(x => x.id === deptId);
             if (!d) return;
-            currentAppoint = { deptId, roleKey, isEdit };
-            document.getElementById('appoint-title').textContent = isEdit ? '전담인력 수정' : '전담인력 선임';
+            const role = d.roles[roleKey];
+            const isVoluntary = role.status === 'OPTIONAL';
+            currentAppoint = { deptId, roleKey, isEdit, isVoluntary };
+
+            // 타이틀
+            let title;
+            if (isEdit) title = isVoluntary ? '자율선임 수정' : '전담인력 수정';
+            else        title = isVoluntary ? '자율 선임' : '전담인력 선임';
+            document.getElementById('appoint-title').textContent = title;
+
+            // 자율선임 안내 banner 노출
+            document.getElementById('appoint-voluntary-banner').style.display = isVoluntary ? '' : 'none';
+
             document.getElementById('appoint-dept').textContent = d.name;
-            document.getElementById('appoint-role').textContent = ROLES[roleKey].label;
+            document.getElementById('appoint-role').textContent = ROLES[roleKey].label + (isVoluntary ? ' (법정 비대상)' : '');
 
             // prefill user pick
             const pick = document.getElementById('user-pick');
+            const saveBtn = document.querySelector('#appoint-modal .ded-modal-footer .btn-primary');
             if (isEdit && d.roles[roleKey].person) {
                 const p = d.roles[roleKey].person;
-                pick.classList.remove('empty');
+                // 기존 선임자 prefill — 선택 완료 상태로 표시
+                pick.className = 'ded-user-pick is-filled';
                 pick.innerHTML = `
                     <div class="ded-person-avatar">${p.name.slice(0,1)}</div>
                     <div class="ded-person-meta" style="flex:1;">
@@ -838,13 +975,26 @@
                         <div class="ded-person-pos">${p.pos}</div>
                         ${p.qual ? `<span class="ded-qual ${p.forced ? 'missing' : ''}">${p.qual}</span>` : ''}
                     </div>
-                    <button type="button" class="ded-btn outline" style="flex:0 0 auto;" onclick="window.pickUser()">변경</button>
+                    <span class="ded-pick-status">선임 중</span>
+                    <button type="button" class="ded-btn is-outline" style="flex:0 0 auto; margin-left:10px;" onclick="window.pickUser()">변경</button>
                 `;
                 pick.onclick = null;
+                // 선임 버튼은 활성 + 이름 포함
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('is-disabled');
+                    saveBtn.textContent = '저장 — ' + p.name;
+                }
             } else {
                 pick.className = 'ded-user-pick empty';
                 pick.innerHTML = '구성원 검색해서 선택';
                 pick.onclick = window.pickUser;
+                // 선임 버튼 비활성 (대상자 미선택)
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('is-disabled');
+                    saveBtn.textContent = isVoluntary ? '자율 선임 (대상자 선택 필요)' : '선임 (대상자 선택 필요)';
+                }
             }
 
             document.getElementById('appoint-modal').classList.add('is-open');
@@ -853,14 +1003,72 @@
             document.getElementById('appoint-modal').classList.remove('is-open');
             currentAppoint = null;
         };
+        // 역할 키 → DYPicker roleCode 매핑
+        const PICKER_ROLE_MAP = {
+            safety:     'SAFETY_MGR',
+            health:     'HEALTH_MGR',
+            supervisor: 'SUPERVISOR',
+            doctor:     'HEALTH_DOCTOR'
+        };
         window.pickUser = function () {
-            // 실제로는 구성원 검색 모달 호출 (자격증 표시 + 부서 필터)
-            window.DYLayout._soon({preventDefault: () => {}}, '구성원 검색 모달 (자격증 표시)');
+            if (!currentAppoint) return;
+            const d = DEPTS.find(x => x.id === currentAppoint.deptId);
+            const roleKey = currentAppoint.roleKey;
+            const isVoluntary = d.roles[roleKey].status === 'OPTIONAL';
+            const roleCode = PICKER_ROLE_MAP[roleKey];
+            const cfg = (window.DYPicker && DYPicker.ROLE_DEFAULTS && DYPicker.ROLE_DEFAULTS[roleCode]) || { label: ROLES[roleKey].label };
+
+            DYPicker.openMember({
+                title: (isVoluntary ? '자율 ' : '') + cfg.label + ' 선택',
+                roleCode: roleCode,
+                roleLabel: cfg.label,
+                multi: false,
+                prefilterDept: d.name,
+                onSelect: function (member, meta) {
+                    // 선택된 사용자를 모달의 user-pick 영역에 채움 (선택 완료 상태)
+                    const pick = document.getElementById('user-pick');
+                    const isQual = (member.quals && member.quals.length)
+                        ? member.quals.join(', ')
+                        : '자격증 미보유';
+                    const isForced = meta && meta.forced;
+                    pick.className = 'ded-user-pick is-filled';
+                    pick.innerHTML = `
+                        <div class="ded-person-avatar">${member.name.slice(0,1)}</div>
+                        <div class="ded-person-meta" style="flex:1;">
+                            <div class="ded-person-name">${member.name}</div>
+                            <div class="ded-person-pos">${member.dept} · ${member.position}</div>
+                            ${member.quals && member.quals.length
+                                ? `<span class="ded-qual ${isForced ? 'missing' : ''}">${isForced ? '⚠ ' : '✓ '}${isQual}</span>`
+                                : `<span class="ded-qual missing">⚠ 자격증 미보유${isForced ? ' (강제 선임)' : ''}</span>`}
+                        </div>
+                        <span class="ded-pick-status">${isForced ? '강제 선임' : '선택됨'}</span>
+                        <button type="button" class="ded-btn is-outline" style="flex:0 0 auto; margin-left:10px;" onclick="window.pickUser()">변경</button>
+                    `;
+                    pick.onclick = null;
+                    // 선택된 사용자 정보 저장
+                    currentAppoint.user = { id: member.id, name: member.name, isForced: !!isForced };
+                    // 선임 버튼 활성화 + 선택자명 표시
+                    const saveBtn = document.querySelector('#appoint-modal .ded-modal-footer .btn-primary');
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('is-disabled');
+                        saveBtn.textContent = (isVoluntary ? '자율 선임 ' : '저장 ') + '— ' + member.name + (isForced ? ' (강제)' : '');
+                    }
+                    // 토스트로 확인 메시지
+                    showToast(member.name + ' 선택 완료 — 우측 하단 [' + (isVoluntary ? '자율 선임' : '저장') + '] 클릭 시 저장됩니다');
+                }
+            });
         };
         window.saveAppoint = function () {
-            const title = currentAppoint && currentAppoint.isEdit ? '수정' : '선임';
+            const ca = currentAppoint;
+            if (!ca) return;
+            const d = DEPTS.find(x => x.id === ca.deptId);
+            const isVoluntary = d.roles[ca.roleKey].status === 'OPTIONAL';
+            const userPart = ca.user ? ' — ' + ca.user.name : '';
+            const forcedPart = ca.user && ca.user.isForced ? ' (자격 미보유 강제 선임)' : '';
+            const prefix = isVoluntary ? '자율 선임' : ('전담인력 ' + (ca.isEdit ? '수정' : '선임'));
             window.closeAppointModal();
-            showToast(`전담인력 ${title}이 저장되었습니다. (목업)`);
+            showToast(prefix + userPart + forcedPart + ' 완료 (목업)');
         };
 
         /* ─── 해제 모달 ─── */
@@ -869,10 +1077,18 @@
             const d = DEPTS.find(x => x.id === deptId);
             if (!d) return;
             currentRelease = { deptId, roleKey };
-            const p = d.roles[roleKey].person;
+            const role = d.roles[roleKey];
+            const p = role.person;
+            const isVoluntary = role.status === 'OPTIONAL';
+            const title = isVoluntary ? '자율선임 해제' : '선임 해제';
+            const detail = isVoluntary
+                ? `<span style="font-size:12px; color:var(--status-purple-fg); display:block; margin-top:6px;">법정 비대상 부서의 자율선임이므로 해제 후 카드는 "비대상" 표시로 돌아갑니다.</span>`
+                : `<span style="font-size:12px; color:var(--text-gray); display:block; margin-top:6px;">해제 후 해당 역할은 <strong style="color:var(--status-danger-fg);">미충족</strong> 상태로 전환됩니다.</span>`;
+            document.getElementById('release-modal').querySelector('.ded-modal-title').textContent = title;
             document.getElementById('release-msg').innerHTML =
                 `<strong>${d.name}</strong>의 <strong>${ROLES[roleKey].label}</strong> 선임을 해제하시겠습니까?<br>` +
-                (p ? `<span style="font-size:12px; color:var(--text-gray);">현재 선임자: ${p.name} (${p.pos})</span>` : '');
+                (p ? `<span style="font-size:12px; color:var(--text-gray);">현재 선임자: ${p.name} (${p.pos})</span>` : '') +
+                detail;
             document.getElementById('release-modal').classList.add('is-open');
         };
         window.closeReleaseModal = function () {

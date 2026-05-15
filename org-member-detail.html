@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구성원 상세 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── ORG02-D 전용 ─── */
+
+        /* 화면 내부 서브 탭 (4개 영역 전환) */
+        .org-d-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .org-d-tabs::-webkit-scrollbar { display: none; }
+        .org-d-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            white-space: nowrap;
+            transition: all .15s ease;
+        }
+        .org-d-tab:hover { color: var(--main-dark); }
+        .org-d-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+        .org-d-tab .badge-count {
+            font-size: 11px; font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-variant-numeric: tabular-nums;
+        }
+        .org-d-tab.is-active .badge-count {
+            background: var(--main);
+            color: white;
+        }
+        .org-d-tab .badge-count.warn { background: var(--status-warning-fg); color: white; }
+        .org-d-pane { display: none; }
+        .org-d-pane.is-active { display: flex; flex-direction: column; gap: 16px; }
+
+        .org-d-actions { display: inline-flex; gap: 8px; flex-shrink: 0; }
+
+        /* 사용자 아바타 (헤더 큰 사이즈) */
+        .org-d-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--brand-100);
+            color: var(--main-dark2);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* 출처 chip (SSO/MANUAL/LOCAL) */
+        .src-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .src-chip.sso     { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .src-chip.manual  { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .src-chip.local   { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 권한 chip (permission_role) */
+        .perm-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+        .perm-chip.ceo  { background: var(--status-danger-bg); color: var(--status-danger-fg); border: 1px solid var(--status-danger-border); }
+        .perm-chip.gm   { background: var(--status-warning-bg); color: var(--status-warning-fg); border: 1px solid var(--status-warning-border); }
+        .perm-chip.sm   { background: var(--brand-100); color: var(--main-dark); border: 1px solid var(--status-success-border); }
+        .perm-chip.shm  { background: var(--status-info-bg); color: var(--status-info-fg); border: 1px solid var(--status-info-border); }
+        .perm-chip.wkr  { background: var(--gray-100); color: var(--text-gray); border: 1px solid var(--text-lightgray); }
+        .perm-chip.sub, .perm-chip.con { background: var(--status-purple-bg); color: var(--status-purple-fg); border: 1px solid var(--status-purple-border); }
+
+        /* 활성 상태 chip */
+        .org-status-chip {
+            display: inline-flex; align-items: center;
+            padding: 4px 12px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+        .org-status-chip.active   { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .org-status-chip.inactive { background: var(--gray-100); color: var(--text-gray); border-color: var(--text-lightgray); }
+
+        /* 동기화 메타 */
+        .org-d-sync-meta {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--status-info-fg);
+        }
+        .org-d-sync-meta strong { font-weight: 700; }
+
+        .info-grid-value .inline-action {
+            display: inline-flex; align-items: center; gap: 3px;
+            margin-left: 8px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 600;
+            color: var(--text-gray);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .info-grid-value .inline-action:hover {
+            border-color: var(--main);
+            color: var(--main);
+        }
+        .info-grid-value .inline-action.disabled {
+            opacity: .5; cursor: not-allowed;
+        }
+        .info-grid-value .inline-action.disabled:hover {
+            border-color: var(--card-line); color: var(--text-gray);
+        }
+
+        /* 자격증 / 담당 관리대상 테이블 — 카드 내부 mini-list */
+        .qual-list, .assignment-list {
+            border-top: 1px solid var(--card-line);
+        }
+        .qual-row {
+            display: grid;
+            grid-template-columns: 1fr 110px 110px 110px 100px 90px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+        }
+        .qual-row:last-child { border-bottom: none; }
+        .qual-row .qual-name { font-weight: 600; color: var(--text-black); }
+        .qual-row .qual-type {
+            display: inline-flex; align-items: center;
+            padding: 1px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .qual-row .qual-type.private { background: var(--gray-100); color: var(--text-gray); }
+        .qual-row .qual-date { color: var(--text-gray); font-variant-numeric: tabular-nums; }
+        .qual-row .qual-status {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+        .qual-row .qual-status.valid {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border-color: var(--status-success-border);
+        }
+        .qual-row .qual-status.near {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border-color: var(--status-warning-border);
+        }
+        .qual-row .qual-status.expired {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border-color: var(--status-danger-border);
+        }
+        .qual-row .qual-actions {
+            display: inline-flex; gap: 4px; justify-content: flex-end;
+        }
+
+        .mini-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 600;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            color: var(--text-black);
+            cursor: pointer;
+            transition: all .12s;
+        }
+        .mini-btn:hover { border-color: var(--main); color: var(--main); }
+        .mini-btn.danger:hover { background: var(--status-danger-bg); border-color: var(--status-danger-border); color: var(--status-danger-fg); }
+
+        /* 교육이수 — 카테고리별 진행률 카드 */
+        .edu-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 1100px) { .edu-summary { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px)  { .edu-summary { grid-template-columns: 1fr; } }
+
+        .edu-card {
+            padding: 16px 18px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .edu-card-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .edu-card-title {
+            font-size: 13px; font-weight: 700;
+            color: var(--main-dark2);
+        }
+        .edu-card-meet {
+            font-size: 11px; font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 999px;
+        }
+        .edu-card-meet.ok    { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .edu-card-meet.short { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .edu-card-hours {
+            display: flex; align-items: baseline; gap: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+        .edu-card-hours .cur {
+            font-size: 22px; font-weight: 800;
+            color: var(--main);
+            letter-spacing: -0.4px;
+            line-height: 1;
+        }
+        .edu-card-hours .sep, .edu-card-hours .req {
+            font-size: 13px; color: var(--text-gray);
+        }
+        .edu-card-bar {
+            height: 6px; background: var(--gray-100); border-radius: 999px; overflow: hidden;
+        }
+        .edu-card-bar > div { height: 100%; border-radius: 999px; background: var(--main); }
+        .edu-card-bar > div.short { background: var(--status-warning-fg); }
+        .edu-card-note {
+            font-size: 11px; color: var(--text-gray);
+        }
+
+        .edu-history-row {
+            display: grid;
+            grid-template-columns: 1fr 130px 70px 90px 60px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+        }
+        .edu-history-row:last-child { border-bottom: none; }
+        .edu-history-row .edu-name { font-weight: 600; color: var(--text-black); }
+        .edu-history-row .edu-cat {
+            display: inline-flex; align-items: center;
+            padding: 1px 8px;
+            font-size: 11px; font-weight: 600;
+            border-radius: 4px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .edu-history-row .edu-date { color: var(--text-gray); font-variant-numeric: tabular-nums; }
+        .edu-history-row .edu-hours { text-align: right; font-weight: 700; color: var(--text-black); font-variant-numeric: tabular-nums; }
+
+        /* 담당 관리대상 행 */
+        .assignment-row {
+            display: grid;
+            grid-template-columns: 1fr 150px 90px 110px 60px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background .12s;
+        }
+        .assignment-row:hover {
+            background: var(--gray-50, #fafafa);
+        }
+        .assignment-row:last-child { border-bottom: none; }
+        .assignment-row .asn-target { font-weight: 600; color: var(--text-black); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .assignment-row .asn-target .type-mini {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .assignment-row .asn-target .type-mini.facility { background: var(--brand-100); color: var(--main-dark); }
+        .assignment-row .asn-target .type-mini.task     { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .assignment-row .asn-target .type-mini.business { background: var(--status-purple-bg); color: var(--status-purple-fg); }
+        .assignment-row .asn-role {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 999px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .assignment-row .asn-source-chip {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+        }
+        .assignment-row .asn-source-chip.auto   { background: var(--brand-100); color: var(--main-dark); }
+        .assignment-row .asn-source-chip.manual { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .assignment-row .asn-date { color: var(--text-gray); font-variant-numeric: tabular-nums; }
+
+        /* 빈 상태 */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+            font-size: 13px;
+            gap: 10px;
+            text-align: center;
+        }
+        .empty-state .empty-icon {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--text-lightgray);
+        }
+
+        /* ─── 모달 (ORG02-M 수정 / 자격증 등록 / 권한 변경 / 자격증 삭제 확인) ─── */
+        .org-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            z-index: 1000;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .org-modal-backdrop.is-open { display: flex; }
+        .org-modal {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 560px;
+            max-height: calc(100vh - 48px);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: org-modal-in .14s ease-out;
+        }
+        .org-modal.lg { max-width: 680px; }
+        .org-modal.sm { max-width: 440px; }
+        @keyframes org-modal-in {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .org-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            flex-shrink: 0;
+        }
+        .org-modal-title {
+            font-size: 17px; font-weight: 700;
+            color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .org-modal-title .src-chip { font-size: 10px; padding: 1px 8px; }
+        .org-modal-close {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px;
+            background: none; border: none; cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-gray);
+            transition: all .12s;
+        }
+        .org-modal-close:hover { background: var(--gray-100); color: var(--main-dark2); }
+        .org-modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .org-modal-footer {
+            display: flex; align-items: center; justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--gray-50, #fafafa);
+            flex-shrink: 0;
+        }
+
+        /* 모달 폼 */
+        .org-form-row { display: flex; flex-direction: column; gap: 6px; }
+        .org-form-row .label {
+            font-size: 13px; font-weight: 600;
+            color: var(--main-dark2);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .org-form-row .label .req { color: var(--status-danger-fg); }
+        .org-form-row .label .readonly-tag {
+            font-size: 10px; font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--gray-100); color: var(--text-gray);
+        }
+        .org-form-row input[type="text"],
+        .org-form-row input[type="email"],
+        .org-form-row input[type="tel"],
+        .org-form-row input[type="date"],
+        .org-form-row select,
+        .org-form-row textarea {
+            font-size: 14px;
+            padding: 9px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            background: white;
+            color: var(--text-black);
+            width: 100%;
+            transition: border-color .12s;
+        }
+        .org-form-row input:focus,
+        .org-form-row select:focus,
+        .org-form-row textarea:focus {
+            outline: none;
+            border-color: var(--main);
+            box-shadow: 0 0 0 3px var(--brand-100);
+        }
+        .org-form-row input:read-only,
+        .org-form-row input[readonly] {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            cursor: not-allowed;
+        }
+        .org-form-row textarea { resize: vertical; min-height: 70px; }
+        .org-form-row .hint {
+            font-size: 11px; color: var(--text-gray);
+        }
+        .org-form-row.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 540px) {
+            .org-form-row.row-2 { grid-template-columns: 1fr; }
+        }
+
+        /* 권한 변경 모달 - before/after 비교 */
+        .perm-compare {
+            display: grid; grid-template-columns: 1fr 24px 1fr;
+            align-items: center; gap: 10px;
+            padding: 14px 16px;
+            background: var(--gray-100);
+            border-radius: 10px;
+        }
+        .perm-compare .col {
+            display: flex; flex-direction: column; gap: 4px;
+            text-align: center;
+        }
+        .perm-compare .col-label {
+            font-size: 11px; font-weight: 600; color: var(--text-gray);
+        }
+        .perm-compare .arrow {
+            color: var(--text-gray);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* 위험 banner 내부 */
+        .modal-warn-banner {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 14px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--status-warning-fg);
+            line-height: 1.5;
+        }
+        .modal-warn-banner.danger {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+        .modal-warn-banner svg { flex-shrink: 0; margin-top: 1px; }
+        .modal-warn-banner strong { font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="organization"
+      data-back-href="organization.html"
+      data-back-label="구성원 목록">
+    <main>
+
+        <!-- ─── 페이지 헤더 ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row" style="gap:16px;">
+                    <span class="org-d-avatar">김</span>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <h1 style="margin:0;">김안전</h1>
+                            <span class="src-chip sso">SSO</span>
+                            <span class="perm-chip sm">SM · 안전관리자</span>
+                            <span class="org-status-chip active">활성</span>
+                        </div>
+                        <div class="detail-header-subtitle">
+                            안전건설과 안전관리팀 · 6급 주사 · 산업안전기사·건설안전기사 보유
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="org-d-actions">
+                <button class="btn btn-secondary" type="button"
+                        onclick="window.orgD.openEditModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    수정
+                </button>
+                <button class="btn btn-secondary" type="button" onclick="window.orgD.toggleStatus()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    비활성화
+                </button>
+            </div>
+        </section>
+
+        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <div class="org-d-tabs" role="tablist">
+            <button class="org-d-tab is-active" type="button" data-pane="info">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                기본정보
+            </button>
+            <button class="org-d-tab" type="button" data-pane="qual">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2-2 2-2 2 2-2 2z"/><path d="M19.4 7.5a8.5 8.5 0 1 0-12.4 11.3"/><path d="M16 21l-3-3-3 3 1-4 5 4z"/></svg>
+                자격증
+                <span class="badge-count">3</span>
+            </button>
+            <button class="org-d-tab" type="button" data-pane="edu">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                교육이수
+                <span class="badge-count">4</span>
+            </button>
+            <button class="org-d-tab" type="button" data-pane="targets">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/></svg>
+                담당 관리대상
+                <span class="badge-count">3</span>
+            </button>
+        </div>
+
+        <!-- ============================================================
+             ▼ 기본정보 탭
+        ============================================================ -->
+        <div class="org-d-pane is-active" data-pane="info">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">기본정보</h2>
+                    <span class="text-gray" style="font-size:13px;">SSO 사용자 — 행정포털 동기화 대상 필드는 수정 불가</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">이름</span>
+                        <span class="info-grid-value">
+                            김안전
+                            <span class="text-gray">행정포털 원본</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">행정포털 ID</span>
+                        <span class="info-grid-value">
+                            <span style="font-variant-numeric:tabular-nums;">kim.safety</span>
+                            <span class="text-gray">external_id</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">부서</span>
+                        <span class="info-grid-value">
+                            <a href="org-chart.html" class="text-primary" style="color:var(--main); text-decoration:underline; font-weight:600;">안전건설과 안전관리팀</a>
+                            <button class="inline-action disabled" type="button"
+                                    title="SSO 사용자는 행정포털에서 부서 변경됩니다"
+                                    onclick="window.DYLayout._soon(event, 'SSO 사용자 부서 변경 차단 — 행정포털에서 변경')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                부서 이동 불가
+                            </button>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">직급</span>
+                        <span class="info-grid-value">
+                            6급 주사
+                            <span class="text-gray">행정포털 원본</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">권한</span>
+                        <span class="info-grid-value">
+                            <span class="perm-chip sm">SM</span>
+                            <span class="text-gray">안전관리자 — 위험성평가·점검 수행 권한</span>
+                            <button class="inline-action" type="button"
+                                    onclick="window.orgD.openPermModal()">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                권한 변경
+                            </button>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">직종 (worker_type)</span>
+                        <span class="info-grid-value">
+                            안전보건관리자
+                            <span class="text-gray">법정교육 신규선임 34h 기준</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">이메일</span>
+                        <span class="info-grid-value">
+                            <a href="mailto:kim.safety@damyang.go.kr" style="color:var(--text-black); text-decoration:none;">kim.safety@damyang.go.kr</a>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">연락처</span>
+                        <span class="info-grid-value">
+                            <span style="font-variant-numeric:tabular-nums;">061-380-3025</span>
+                            <span class="text-gray">내선 3025</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">활성 상태</span>
+                        <span class="info-grid-value">
+                            <span class="org-status-chip active">활성</span>
+                            <span class="text-gray">2024-03-15 SSO 자동 등록</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row last-row">
+                        <span class="info-grid-label">마지막 동기화</span>
+                        <span class="info-grid-value">
+                            <span style="font-variant-numeric:tabular-nums;">2026-05-11 06:00</span>
+                            <span class="text-gray">행정포털 → 본 시스템</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:12px 24px 18px;">
+                    <div class="org-d-sync-meta">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+                        <span><strong>SSO 사용자</strong> — 이름·부서·직급은 행정포털(새올)에서 동기화됩니다. 이메일·연락처·직종·권한·자격증·교육이수만 본 시스템에서 관리됩니다.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 자격증 탭
+        ============================================================ -->
+        <div class="org-d-pane" data-pane="qual">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">자격증 관리 <span class="text-muted" style="font-size:14px; font-weight:500;">(3건)</span></h2>
+                    <button class="btn-register" type="button"
+                            onclick="window.orgD.openQualModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        자격증 등록
+                    </button>
+                </div>
+                <div class="card-body" style="padding:0 24px;">
+                    <!-- 헤더 라인 -->
+                    <div class="qual-row" style="font-weight:700; color:var(--text-gray); font-size:12px; border-bottom:1px solid var(--card-line);">
+                        <span>자격증명</span>
+                        <span>종류</span>
+                        <span>취득일</span>
+                        <span>만료일</span>
+                        <span style="text-align:center;">상태</span>
+                        <span style="text-align:right;"></span>
+                    </div>
+
+                    <div class="qual-list">
+                        <div class="qual-row">
+                            <span class="qual-name">산업안전기사</span>
+                            <span><span class="qual-type">국가기술</span></span>
+                            <span class="qual-date">2023-06-15</span>
+                            <span class="qual-date" style="color:var(--text-lightgray);">만료없음</span>
+                            <span style="text-align:center;"><span class="qual-status valid">유효</span></span>
+                            <span class="qual-actions">
+                                <button class="mini-btn" type="button"
+                                        onclick="window.orgD.downloadQualFile(this)">파일</button>
+                                <button class="mini-btn danger" type="button"
+                                        onclick="window.orgD.confirmDeleteQual(this)">삭제</button>
+                            </span>
+                        </div>
+                        <div class="qual-row">
+                            <span class="qual-name">건설안전기사</span>
+                            <span><span class="qual-type">국가기술</span></span>
+                            <span class="qual-date">2024-04-10</span>
+                            <span class="qual-date" style="color:var(--text-lightgray);">만료없음</span>
+                            <span style="text-align:center;"><span class="qual-status valid">유효</span></span>
+                            <span class="qual-actions">
+                                <button class="mini-btn" type="button"
+                                        onclick="window.orgD.downloadQualFile(this)">파일</button>
+                                <button class="mini-btn danger" type="button"
+                                        onclick="window.orgD.confirmDeleteQual(this)">삭제</button>
+                            </span>
+                        </div>
+                        <div class="qual-row">
+                            <span class="qual-name">위험물산업기사</span>
+                            <span><span class="qual-type">국가기술</span></span>
+                            <span class="qual-date">2021-11-20</span>
+                            <span class="qual-date">2026-11-20</span>
+                            <span style="text-align:center;"><span class="qual-status near">D-189</span></span>
+                            <span class="qual-actions">
+                                <button class="mini-btn" type="button"
+                                        onclick="window.orgD.downloadQualFile(this)">파일</button>
+                                <button class="mini-btn danger" type="button"
+                                        onclick="window.orgD.confirmDeleteQual(this)">삭제</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:0 24px 18px;">
+                    <div class="org-d-sync-meta" style="background:var(--status-warning-bg); border-color:var(--status-warning-border); color:var(--status-warning-fg);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span><strong>1건 만료 임박</strong> — 위험물산업기사 D-189 (2026-11-20). 갱신 신청은 한국산업인력공단을 통해 진행하세요.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 교육이수 탭
+        ============================================================ -->
+        <div class="org-d-pane" data-pane="edu">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">법정교육 이수 현황 <span class="text-muted" style="font-size:14px; font-weight:500;">· 2026년 기준</span></h2>
+                    <span class="text-gray" style="font-size:13px;">직종: 안전보건관리자 · 신규선임 34h 기준</span>
+                </div>
+                <div class="card-body" style="padding:18px 24px;">
+
+                    <!-- 카테고리별 요약 -->
+                    <div class="edu-summary">
+                        <div class="edu-card">
+                            <div class="edu-card-head">
+                                <span class="edu-card-title">정기교육</span>
+                                <span class="edu-card-meet ok">충족</span>
+                            </div>
+                            <div class="edu-card-hours">
+                                <span class="cur">8</span><span class="sep">/</span><span class="req">6h</span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:auto;">2026 Q1</span>
+                            </div>
+                            <div class="edu-card-bar"><div style="width:100%;"></div></div>
+                            <div class="edu-card-note">분기 6h 기준 · Q2 진행 예정</div>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-head">
+                                <span class="edu-card-title">신규선임</span>
+                                <span class="edu-card-meet ok">충족</span>
+                            </div>
+                            <div class="edu-card-hours">
+                                <span class="cur">36</span><span class="sep">/</span><span class="req">34h</span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:auto;">2024-03</span>
+                            </div>
+                            <div class="edu-card-bar"><div style="width:100%;"></div></div>
+                            <div class="edu-card-note">안전보건관리자 선임 시 1회 이수 완료</div>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-head">
+                                <span class="edu-card-title">특별교육</span>
+                                <span class="edu-card-meet short">미달</span>
+                            </div>
+                            <div class="edu-card-hours">
+                                <span class="cur">4</span><span class="sep">/</span><span class="req">16h</span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:auto;">관리감독자</span>
+                            </div>
+                            <div class="edu-card-bar"><div class="short" style="width:25%;"></div></div>
+                            <div class="edu-card-note">2026 연간 16h 기준 · 12h 부족</div>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-head">
+                                <span class="edu-card-title">채용 시 교육</span>
+                                <span class="edu-card-meet ok">충족</span>
+                            </div>
+                            <div class="edu-card-hours">
+                                <span class="cur">8</span><span class="sep">/</span><span class="req">8h</span>
+                                <span style="font-size:11px; color:var(--text-gray); margin-left:auto;">2024-03</span>
+                            </div>
+                            <div class="edu-card-bar"><div style="width:100%;"></div></div>
+                            <div class="edu-card-note">최초 입직 시 1회 이수</div>
+                        </div>
+                    </div>
+
+                    <!-- 이수 이력 -->
+                    <div style="margin-top:8px;">
+                        <h3 style="font-size:14px; font-weight:700; color:var(--main-dark2); margin-bottom:8px;">이수 이력 <span class="text-muted" style="font-size:13px; font-weight:500;">(4건)</span></h3>
+                        <div style="border-top: 1px solid var(--card-line);">
+                            <div class="edu-history-row" style="font-weight:700; color:var(--text-gray); font-size:12px; border-bottom: 1px solid var(--card-line);">
+                                <span>교육명</span>
+                                <span>카테고리</span>
+                                <span style="text-align:right;">시간</span>
+                                <span>이수일</span>
+                                <span></span>
+                            </div>
+                            <div class="edu-history-row">
+                                <span class="edu-name">2026년 1분기 안전보건 정기교육</span>
+                                <span><span class="edu-cat">정기교육</span></span>
+                                <span class="edu-hours">8h</span>
+                                <span class="edu-date">2026-03-22</span>
+                                <a href="#" class="mini-btn" onclick="event.preventDefault(); window.orgD.previewEduCert(this);">증빙</a>
+                            </div>
+                            <div class="edu-history-row">
+                                <span class="edu-name">관리감독자 특별교육 (전기설비 분야)</span>
+                                <span><span class="edu-cat">특별교육</span></span>
+                                <span class="edu-hours">4h</span>
+                                <span class="edu-date">2026-03-15</span>
+                                <a href="#" class="mini-btn" onclick="event.preventDefault(); window.orgD.previewEduCert(this);">증빙</a>
+                            </div>
+                            <div class="edu-history-row">
+                                <span class="edu-name">안전보건관리자 신규선임 교육</span>
+                                <span><span class="edu-cat">신규선임</span></span>
+                                <span class="edu-hours">36h</span>
+                                <span class="edu-date">2024-03-10</span>
+                                <a href="#" class="mini-btn" onclick="event.preventDefault(); window.orgD.previewEduCert(this);">증빙</a>
+                            </div>
+                            <div class="edu-history-row">
+                                <span class="edu-name">신규 채용자 기본 안전교육</span>
+                                <span><span class="edu-cat">채용 시</span></span>
+                                <span class="edu-hours">8h</span>
+                                <span class="edu-date">2024-03-04</span>
+                                <a href="#" class="mini-btn" onclick="event.preventDefault(); window.orgD.previewEduCert(this);">증빙</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="org-d-sync-meta" style="background:var(--gray-100); border-color:var(--card-line); color:var(--text-gray); margin-top:16px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>교육이수 상세 관리는 Phase 3 <strong>EDU 모듈</strong>에서 확장 예정. 현재는 카테고리별 누적 시간과 이수 이력만 표시.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================================
+             ▼ 담당 관리대상 탭
+        ============================================================ -->
+        <div class="org-d-pane" data-pane="targets">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">담당 관리대상 <span class="text-muted" style="font-size:14px; font-weight:500;">(3건)</span></h2>
+                    <span class="text-gray" style="font-size:13px;">target_assignees 기준 · 클릭 시 관리대상 상세 이동</span>
+                </div>
+                <div class="card-body" style="padding:0 24px 18px;">
+                    <div class="assignment-list">
+                        <div class="assignment-row" style="font-weight:700; color:var(--text-gray); font-size:12px; cursor:default; padding-top:14px;"
+                             onclick="event.stopPropagation();">
+                            <span>관리대상</span>
+                            <span>역할</span>
+                            <span>출처</span>
+                            <span>선임일</span>
+                            <span></span>
+                        </div>
+                        <div class="assignment-row" onclick="window.location.href='target-detail.html'">
+                            <span class="asn-target">
+                                군청 청사 관리
+                                <span class="type-mini facility">시설</span>
+                                <span class="type-mini" style="background:#e0eefb; color:#3e7bc7;">1종</span>
+                            </span>
+                            <span><span class="asn-role">SAFETY_MGR · 안전관리자</span></span>
+                            <span><span class="asn-source-chip manual" title="MANUAL=직접 지정">MANUAL</span></span>
+                            <span class="asn-date">2026-03-15</span>
+                            <a href="target-detail.html" class="mini-btn" onclick="event.stopPropagation();">상세</a>
+                        </div>
+                        <div class="assignment-row" onclick="window.location.href='target-detail.html'">
+                            <span class="asn-target">
+                                환경자원시설 (소각장·하수처리)
+                                <span class="type-mini facility">시설</span>
+                                <span class="type-mini" style="background:#fdedda; color:#e58a3c;">2종</span>
+                            </span>
+                            <span><span class="asn-role">SAFETY_MGR · 안전관리자</span></span>
+                            <span><span class="asn-source-chip manual" title="MANUAL=직접 지정">MANUAL</span></span>
+                            <span class="asn-date">2026-02-10</span>
+                            <a href="target-detail.html" class="mini-btn" onclick="event.stopPropagation();">상세</a>
+                        </div>
+                        <div class="assignment-row" onclick="window.location.href='target-detail-business.html'">
+                            <span class="asn-target">
+                                도로 확장공사 1단계
+                                <span class="type-mini business">사업</span>
+                            </span>
+                            <span><span class="asn-role">SAFETY_MGR · 안전관리자</span></span>
+                            <span><span class="asn-source-chip manual" title="MANUAL=직접 지정">MANUAL</span></span>
+                            <span class="asn-date">2026-04-22</span>
+                            <a href="target-detail-business.html" class="mini-btn" onclick="event.stopPropagation();">상세</a>
+                        </div>
+                    </div>
+
+                    <div class="org-d-sync-meta" style="margin-top:14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>본 구성원은 <strong>안전관리자(SAFETY_MGR)</strong> 역할로 3건 매핑됨. 부서장이 아니므로 AUTO 매핑은 없고 모두 직접 지정(MANUAL)임.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+         ▼ 모달 1: 구성원 수정 (ORG02-M) — SSO 사용자라 일부 필드 readonly
+    ============================================================ -->
+    <div class="org-modal-backdrop" id="edit-modal" role="dialog" aria-modal="true">
+        <div class="org-modal lg">
+            <div class="org-modal-header">
+                <div class="org-modal-title">
+                    구성원 수정 <span class="src-chip sso">SSO</span>
+                </div>
+                <button class="org-modal-close" type="button" onclick="window.orgD.closeModal('edit-modal')" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="org-modal-body">
+                <div class="modal-warn-banner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span><strong>SSO 사용자</strong> — 이름·부서·직급은 행정포털(새올)에서 동기화됩니다. 본 모달에서는 이메일·연락처·직종만 수정 가능.</span>
+                </div>
+
+                <div class="org-form-row row-2">
+                    <div class="org-form-row">
+                        <span class="label">이름 <span class="readonly-tag">SSO</span></span>
+                        <input type="text" value="김안전" readonly>
+                    </div>
+                    <div class="org-form-row">
+                        <span class="label">행정포털 ID <span class="readonly-tag">SSO</span></span>
+                        <input type="text" value="kim.safety" readonly>
+                    </div>
+                </div>
+
+                <div class="org-form-row row-2">
+                    <div class="org-form-row">
+                        <span class="label">부서 <span class="readonly-tag">SSO</span></span>
+                        <input type="text" value="안전건설과 안전관리팀" readonly>
+                    </div>
+                    <div class="org-form-row">
+                        <span class="label">직급 <span class="readonly-tag">SSO</span></span>
+                        <input type="text" value="6급 주사" readonly>
+                    </div>
+                </div>
+
+                <div class="org-form-row">
+                    <span class="label">이메일 <span class="req">*</span></span>
+                    <input type="email" value="kim.safety@damyang.go.kr">
+                    <span class="hint">시스템 내 UNIQUE 검증 — 다른 구성원과 중복 불가</span>
+                </div>
+
+                <div class="org-form-row row-2">
+                    <div class="org-form-row">
+                        <span class="label">연락처</span>
+                        <input type="tel" value="061-380-3025">
+                    </div>
+                    <div class="org-form-row">
+                        <span class="label">직종 (worker_type)</span>
+                        <select>
+                            <option value="office">사무직 (정기 반기 6h)</option>
+                            <option value="field">현장직 (정기 분기 6h)</option>
+                            <option value="supervisor">관리감독자 (연 16h)</option>
+                            <option value="safety_manager" selected>안전보건관리자 (신규선임 34h)</option>
+                            <option value="etc">기타 (법정 기준 없음)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="org-form-row">
+                    <span class="label">권한 <span class="readonly-tag">CEO/GM 전용</span></span>
+                    <input type="text" value="SM (안전관리자)" readonly>
+                    <span class="hint">권한 변경은 별도 모달(권한 변경)에서 처리 — CEO/GM만 가능</span>
+                </div>
+
+                <div class="org-form-row">
+                    <span class="label">비고</span>
+                    <textarea placeholder="필요 시 메모 (최대 500자)"></textarea>
+                </div>
+            </div>
+            <div class="org-modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="window.orgD.closeModal('edit-modal')">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.orgD.saveEdit()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ▼ 모달 2: 권한 변경 — CEO/GM 전용, 본인 권한 변경 차단
+    ============================================================ -->
+    <div class="org-modal-backdrop" id="perm-modal" role="dialog" aria-modal="true">
+        <div class="org-modal">
+            <div class="org-modal-header">
+                <div class="org-modal-title">권한 변경</div>
+                <button class="org-modal-close" type="button" onclick="window.orgD.closeModal('perm-modal')" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="org-modal-body">
+                <div class="modal-warn-banner danger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span><strong>CEO/GM 권한 필요</strong> — 권한 변경은 감사 로그에 기록되며, 변경 즉시 본인에게 새올 포틀릿 알림이 발송됩니다. 본인 권한은 변경할 수 없습니다.</span>
+                </div>
+
+                <div class="perm-compare">
+                    <div class="col">
+                        <span class="col-label">현재 권한</span>
+                        <span class="perm-chip sm">SM</span>
+                        <span style="font-size:11px; color:var(--text-gray);">안전관리자</span>
+                    </div>
+                    <div class="arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                    <div class="col">
+                        <span class="col-label">변경 후</span>
+                        <select id="perm-new" style="font-size:13px; padding:6px 10px; border-radius:6px; border:1px solid var(--card-line);">
+                            <option value="CEO">CEO · 군수</option>
+                            <option value="GM">GM · 실/과/단/소장</option>
+                            <option value="SM" selected>SM · 안전관리자</option>
+                            <option value="SHM">SHM · 보건관리자</option>
+                            <option value="WKR">WKR · 일반 종사자</option>
+                        </select>
+                        <span style="font-size:11px; color:var(--text-gray);" id="perm-new-desc">현재와 동일</span>
+                    </div>
+                </div>
+
+                <div class="org-form-row">
+                    <span class="label">변경 사유 <span class="req">*</span></span>
+                    <textarea placeholder="권한 변경 사유 (예: 인사이동·직무 변경 등) — 감사 로그에 기록됩니다"></textarea>
+                </div>
+            </div>
+            <div class="org-modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="window.orgD.closeModal('perm-modal')">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.orgD.savePerm()">권한 변경</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ▼ 모달 3: 자격증 등록
+    ============================================================ -->
+    <div class="org-modal-backdrop" id="qual-modal" role="dialog" aria-modal="true">
+        <div class="org-modal">
+            <div class="org-modal-header">
+                <div class="org-modal-title">자격증 등록</div>
+                <button class="org-modal-close" type="button" onclick="window.orgD.closeModal('qual-modal')" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="org-modal-body">
+                <div class="org-form-row">
+                    <span class="label">자격증명 <span class="req">*</span></span>
+                    <input type="text" placeholder="예: 산업안전기사" id="qual-name">
+                </div>
+                <div class="org-form-row row-2">
+                    <div class="org-form-row">
+                        <span class="label">자격 종류 <span class="req">*</span></span>
+                        <select id="qual-type">
+                            <option value="national_tech">국가기술</option>
+                            <option value="national_pro">국가전문</option>
+                            <option value="private">민간</option>
+                            <option value="etc">기타</option>
+                        </select>
+                    </div>
+                    <div class="org-form-row">
+                        <span class="label">취득일 <span class="req">*</span></span>
+                        <input type="date" id="qual-acq-date" value="2026-05-15">
+                    </div>
+                </div>
+                <div class="org-form-row">
+                    <span class="label">만료일 <span style="font-size:11px; color:var(--text-gray); font-weight:500;">미입력 시 "만료없음"</span></span>
+                    <input type="date" id="qual-exp-date">
+                    <span class="hint">만료일은 취득일보다 이후여야 합니다</span>
+                </div>
+                <div class="org-form-row">
+                    <span class="label">자격증 파일 첨부</span>
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="padding:6px 10px;">
+                    <span class="hint">이미지(JPG/PNG) 또는 PDF 형식 · 최대 10MB</span>
+                </div>
+            </div>
+            <div class="org-modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="window.orgD.closeModal('qual-modal')">취소</button>
+                <button class="btn btn-primary" type="button" onclick="window.orgD.saveQual()">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ▼ 모달 4: 자격증 삭제 확인
+    ============================================================ -->
+    <div class="org-modal-backdrop" id="qual-delete-modal" role="dialog" aria-modal="true">
+        <div class="org-modal sm">
+            <div class="org-modal-header">
+                <div class="org-modal-title">자격증 삭제</div>
+                <button class="org-modal-close" type="button" onclick="window.orgD.closeModal('qual-delete-modal')" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="org-modal-body">
+                <div class="modal-warn-banner danger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>이 작업은 되돌릴 수 없습니다. 첨부된 자격증 파일도 함께 삭제됩니다.</span>
+                </div>
+                <p style="font-size:14px; color:var(--text-black); line-height:1.6;">
+                    <strong id="qual-delete-name" style="color:var(--main-dark2);">—</strong> 자격증을 정말 삭제하시겠습니까?
+                </p>
+            </div>
+            <div class="org-modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="window.orgD.closeModal('qual-delete-modal')">취소</button>
+                <button class="btn btn-primary" type="button" style="background:var(--status-danger-fg); border-color:var(--status-danger-fg);"
+                        onclick="window.orgD.doDeleteQual()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        /* ─── 화면 내부 서브 탭 전환 ─── */
+        function switchPane(target) {
+            document.querySelectorAll('.org-d-tab[data-pane]').forEach(b => {
+                b.classList.toggle('is-active', b.dataset.pane === target);
+            });
+            document.querySelectorAll('.org-d-pane').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.pane === target);
+            });
+        }
+        document.querySelectorAll('.org-d-tab[data-pane]').forEach(b => {
+            b.addEventListener('click', () => switchPane(b.dataset.pane));
+        });
+
+        /* ─── 모달 공통 ─── */
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.add('is-open');
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('is-open');
+        }
+        // 배경 클릭으로 닫기 + ESC 닫기
+        document.querySelectorAll('.org-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', e => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.org-modal-backdrop.is-open').forEach(bd => bd.classList.remove('is-open'));
+            }
+        });
+
+        /* ─── 권한 변경 모달: select 변경 시 설명 업데이트 ─── */
+        const PERM_DESC = {
+            CEO: '군수 — 최고 결재권',
+            GM:  '실/과/단/소장 — 권한 변경 가능',
+            SM:  '안전관리자 — 위험성평가·점검 수행',
+            SHM: '보건관리자 — 보건 영역 관리',
+            WKR: '일반 종사자 — 본인 영역만 열람·작성'
+        };
+        const permSelect = document.getElementById('perm-new');
+        const permDesc = document.getElementById('perm-new-desc');
+        if (permSelect && permDesc) {
+            permSelect.addEventListener('change', () => {
+                const v = permSelect.value;
+                permDesc.textContent = (v === 'SM') ? '현재와 동일' : PERM_DESC[v];
+            });
+        }
+
+        /* ─── 자격증 삭제 컨텍스트 (행 정보 기억) ─── */
+        let pendingDeleteRow = null;
+
+        /* ─── orgD 네임스페이스 ─── */
+        window.orgD = {
+            // 모달 닫기 (공통)
+            closeModal: closeModal,
+
+            // 비활성화/활성화 토글
+            toggleStatus: function () {
+                const chip = document.querySelector('.detail-header .org-status-chip');
+                const btn = document.querySelector('.org-d-actions .btn-secondary:last-child');
+                if (!chip || !btn) return;
+                const isActive = chip.classList.contains('active');
+                if (isActive) {
+                    if (!confirm("김안전 님을 비활성화 처리하시겠습니까?\ntarget_assignees 매핑은 유지되며, 추후 활성화 시 자동 복원됩니다.\nSSO 사용자이므로 동기화 예외 플래그가 함께 설정됩니다.")) return;
+                    chip.classList.remove('active'); chip.classList.add('inactive'); chip.textContent = '비활성';
+                    btn.innerHTML = btn.innerHTML.replace('비활성화', '활성화');
+                    showToast('비활성화 처리되었습니다 (동기화 예외 ON)');
+                } else {
+                    chip.classList.remove('inactive'); chip.classList.add('active'); chip.textContent = '활성';
+                    btn.innerHTML = btn.innerHTML.replace('활성화', '비활성화');
+                    showToast('활성화 처리되었습니다');
+                }
+            },
+
+            // 구성원 수정 모달
+            openEditModal: function () { openModal('edit-modal'); },
+            saveEdit: function () {
+                // 프로토타입: 실제 저장 없이 토스트
+                closeModal('edit-modal');
+                showToast('수정 사항이 저장되었습니다');
+            },
+
+            // 권한 변경 모달
+            openPermModal: function () { openModal('perm-modal'); },
+            savePerm: function () {
+                const v = permSelect ? permSelect.value : 'SM';
+                if (v === 'SM') {
+                    showToast('변경된 권한이 없습니다');
+                    return;
+                }
+                closeModal('perm-modal');
+                // 헤더의 권한 chip 업데이트 (프로토타입)
+                const chip = document.querySelector('.detail-header .perm-chip');
+                if (chip) {
+                    chip.className = 'perm-chip ' + v.toLowerCase();
+                    chip.textContent = v + ' · ' + (PERM_DESC[v] || '').split(' — ')[0];
+                }
+                showToast('권한 변경: SM → ' + v + ' (감사 로그 기록 + 본인 알림 발송)');
+            },
+
+            // 자격증 등록 모달
+            openQualModal: function () { openModal('qual-modal'); },
+            saveQual: function () {
+                const name = (document.getElementById('qual-name') || {}).value || '';
+                if (!name.trim()) {
+                    alert('자격증명을 입력해주세요');
+                    return;
+                }
+                const acq = (document.getElementById('qual-acq-date') || {}).value;
+                const exp = (document.getElementById('qual-exp-date') || {}).value;
+                if (exp && acq && exp <= acq) {
+                    alert('만료일은 취득일보다 이후여야 합니다');
+                    return;
+                }
+                closeModal('qual-modal');
+                showToast('자격증 "' + name + '" 등록 완료 (목록 새로고침은 프로토타입에서 생략)');
+            },
+
+            // 자격증 파일 다운로드
+            downloadQualFile: function (btn) {
+                const row = btn.closest('.qual-row');
+                const name = row ? row.querySelector('.qual-name').textContent : '자격증';
+                showToast(name + ' 파일 다운로드 시작 (PDF · 새 탭에서 열림)');
+            },
+
+            // 자격증 삭제 확인 모달
+            confirmDeleteQual: function (btn) {
+                const row = btn.closest('.qual-row');
+                const name = row ? row.querySelector('.qual-name').textContent : '';
+                pendingDeleteRow = row;
+                const nameEl = document.getElementById('qual-delete-name');
+                if (nameEl) nameEl.textContent = name;
+                openModal('qual-delete-modal');
+            },
+            doDeleteQual: function () {
+                if (pendingDeleteRow) {
+                    const name = pendingDeleteRow.querySelector('.qual-name').textContent;
+                    pendingDeleteRow.remove();
+                    pendingDeleteRow = null;
+                    showToast('"' + name + '" 자격증을 삭제했습니다');
+                }
+                closeModal('qual-delete-modal');
+            },
+
+            // 이수증 미리보기 (Phase 3 EDU 모듈 — 토스트 안내)
+            previewEduCert: function (btn) {
+                const row = btn.closest('.edu-history-row');
+                const name = row ? row.querySelector('.edu-name').textContent : '교육';
+                showToast(name + ' 이수증 미리보기 (Phase 3 EDU 모듈에서 구현 예정)');
+            }
+        };
+    })();
+    </script>
+</body>
+</html>
