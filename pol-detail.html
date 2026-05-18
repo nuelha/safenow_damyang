@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전경영방침 상세 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── POL02-D 전용 ─── */
+
+        /* 버전 chip */
+        .pol-version-chip {
+            display: inline-flex; align-items: center;
+            padding: 3px 10px;
+            background: var(--main);
+            color: white;
+            font-size: 12px; font-weight: 700;
+            border-radius: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+        .pol-current-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px;
+            background: var(--status-success-fg);
+            color: white;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+        }
+
+        /* 방침 본문 HTML 렌더링 영역 */
+        .pol-body {
+            padding: 24px 28px;
+            background: white;
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-black);
+        }
+        .pol-body h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--main-dark2);
+            margin: 24px 0 10px;
+            padding-left: 10px;
+            border-left: 3px solid var(--main);
+        }
+        .pol-body h3:first-child { margin-top: 0; }
+        .pol-body p { margin-bottom: 10px; }
+        .pol-body ul { padding-left: 22px; margin-bottom: 12px; }
+        .pol-body ul li { list-style: disc; margin-bottom: 6px; }
+        .pol-body strong { color: var(--text-black); font-weight: 700; }
+
+        /* 근거 법령 테이블 */
+        .pol-legal-table { width: 100%; border-collapse: collapse; }
+        .pol-legal-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        .pol-legal-table tbody td {
+            padding: 12px 20px;
+            font-size: 13px;
+            color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pol-legal-table tbody tr:last-child td { border-bottom: none; }
+        .pol-legal-table .law { font-weight: 700; }
+        .pol-legal-table .matched { color: var(--main-dark); font-weight: 600; }
+
+        /* KPI 카드 */
+        .pol-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 16px 22px;
+        }
+        .pol-kpi-card {
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+        }
+        .pol-kpi-name {
+            font-size: 13px; font-weight: 700;
+            color: var(--text-black);
+            margin-bottom: 6px;
+        }
+        .pol-kpi-target {
+            font-size: 20px; font-weight: 800;
+            color: var(--main-dark2);
+            line-height: 1;
+        }
+        .pol-kpi-target .unit { font-size: 13px; color: var(--text-gray); font-weight: 600; margin-left: 2px; }
+        .pol-kpi-formula {
+            font-size: 11px; color: var(--text-gray);
+            margin-top: 6px;
+            font-family: 'SF Mono', Consolas, monospace;
+        }
+
+        /* 첨부 */
+        .pol-attach-list { display: flex; flex-direction: column; gap: 6px; padding: 0 22px 18px; }
+        .pol-attach-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            cursor: pointer;
+        }
+        .pol-attach-row:hover { border-color: var(--main); background: var(--brand-100); }
+        .pol-attach-row .name { flex: 1; font-size: 13px; color: var(--text-black); font-weight: 600; }
+        .pol-attach-row .size { font-size: 11px; color: var(--text-gray); }
+
+        /* 결재 카드 */
+        .pol-approval-card {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 14px;
+            padding: 14px 18px;
+            background: var(--status-success-bg);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            margin: 0 22px 16px;
+        }
+        .pol-approval-card.requested { background: var(--status-info-bg); border-color: var(--status-info-border); }
+        .pol-approval-card.rejected { background: var(--status-danger-bg); border-color: var(--status-danger-border); }
+        .pol-approval-text { font-size: 13px; color: var(--status-success-fg); }
+        .pol-approval-card.requested .pol-approval-text { color: var(--status-info-fg); }
+        .pol-approval-card.rejected .pol-approval-text { color: var(--status-danger-fg); }
+    </style>
+</head>
+<body data-dy-page="safety-policy">
+    <main>
+        <!-- 상단 툴바 -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="pol-history.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                방침 이력
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.location.href='pol-form.html?id=v2.5&mode=edit'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    수정
+                </button>
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    PDF
+                </button>
+                <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '신규 버전 등록 → POL02-F')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    신규 버전 등록
+                </button>
+            </div>
+        </div>
+
+        <!-- 페이지 헤더 -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row" style="display: flex; align-items: center; gap: 10px;">
+                    <span class="pol-version-chip">v2.5</span>
+                    <h1>담양군 안전보건 경영방침</h1>
+                    <span class="pol-current-chip">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        현재 적용
+                    </span>
+                </div>
+                <div class="detail-header-subtitle">
+                    시행일 2026-01-20 · 작성자 김안전 (자치행정과) · 결재일 2026-01-20
+                </div>
+            </div>
+            <span class="chip-status success detail-header-status">결재 완료</span>
+        </section>
+
+        <!-- 기본정보 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">기본정보</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-grid-row">
+                    <span class="info-grid-label">버전</span>
+                    <span class="info-grid-value"><span class="pol-version-chip">v2.5</span> <span class="text-gray" style="margin-left:8px;">이전 버전: v2.0 (2025-01-15)</span></span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">시행일</span>
+                    <span class="info-grid-value">2026-01-20 <span class="text-gray">(시행 중 · 113일째)</span></span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">작성자</span>
+                    <span class="info-grid-value">김안전 <span class="text-gray">(자치행정과 · SHM)</span></span>
+                </div>
+                <div class="info-grid-row last-row">
+                    <span class="info-grid-label">결재 상태</span>
+                    <span class="info-grid-value">
+                        <span class="chip-status success">결재 완료</span>
+                        <span class="text-gray" style="margin-left:8px;">2026-01-20 · 군수 홍길동</span>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '결재 문서 다운로드')" style="margin-left:8px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            결재 문서
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 방침 본문 -->
+        <section class="card" style="padding: 0; overflow: hidden;">
+            <div class="card-header">
+                <h2 class="card-title">방침 본문</h2>
+            </div>
+            <div class="pol-body">
+                <h3>§1. 안전보건 경영방침</h3>
+                <p>담양군은 군민의 안전과 군청 종사자 및 도급업체 근로자의 생명·신체 보호를 최우선 가치로 삼고, <strong>중대재해 ZERO</strong> 달성을 위해 전사적 안전보건 경영체계를 구축·운영한다.</p>
+                <ul>
+                    <li>모든 의사결정 과정에서 안전을 최우선으로 고려한다.</li>
+                    <li>법적 의무를 준수하고 적극적으로 안전관리 표준을 향상시킨다.</li>
+                    <li>위험요인을 사전에 식별·평가·통제하여 사고를 예방한다.</li>
+                </ul>
+
+                <h3>§2. 안전보건 목표 (2026년)</h3>
+                <ul>
+                    <li>중대재해 발생 <strong>0건</strong> 유지</li>
+                    <li>정기 위험성평가 시행률 <strong>100%</strong></li>
+                    <li>전 직원 안전보건교육 이수율 <strong>95% 이상</strong></li>
+                    <li>도급계약 안전관리 적격성 평가 적합률 <strong>90% 이상</strong></li>
+                </ul>
+
+                <h3>§3. 조직 및 책임</h3>
+                <p>군수는 안전보건 경영의 최고 책임자로서 본 방침의 수립·이행을 총괄한다. 각 실·과·단·소장은 산하 부서의 안전보건 관리책임자로서 본 방침을 준수하고, 안전보건담당자(SHM)는 일상 안전관리 실무를 수행한다.</p>
+
+                <h3>§4. 실행 및 운영</h3>
+                <p>본 방침은 매년 점검을 통해 적정성을 평가하며, 위험성평가·점검 결과와 종사자 의견을 반영하여 지속적으로 개선한다.</p>
+
+                <h3>§5. 의사소통 및 종사자 참여</h3>
+                <p>분기 1회 산업안전보건위원회 개최, 상시 의견청취 시스템 운영을 통해 종사자의 안전보건 관련 의견이 경영 의사결정에 반영되도록 한다.</p>
+            </div>
+        </section>
+
+        <!-- 근거 법령 매칭 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">근거 법령 매칭</h2>
+                <span class="text-muted" style="font-size:13px;">3개 법령 · 5개 조항 매칭</span>
+            </div>
+            <table class="pol-legal-table">
+                <thead>
+                    <tr>
+                        <th>법령</th>
+                        <th>조항</th>
+                        <th>방침 매칭</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="law">중대재해처벌법 시행령</td>
+                        <td>제4조 (안전보건관리체계의 구축 및 그 이행에 관한 조치)</td>
+                        <td class="matched">§1, §2, §3</td>
+                    </tr>
+                    <tr>
+                        <td class="law">산업안전보건법</td>
+                        <td>제5조 (사업주 등의 의무)</td>
+                        <td class="matched">§3</td>
+                    </tr>
+                    <tr>
+                        <td class="law">산업안전보건법</td>
+                        <td>제15조 (안전보건관리책임자)</td>
+                        <td class="matched">§4</td>
+                    </tr>
+                    <tr>
+                        <td class="law">산업안전보건법</td>
+                        <td>제24조 (산업안전보건위원회)</td>
+                        <td class="matched">§5</td>
+                    </tr>
+                    <tr>
+                        <td class="law">산업안전보건법</td>
+                        <td>제75조 (안전보건 의견청취)</td>
+                        <td class="matched">§5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 안전보건 목표 (KPI) -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">안전보건 목표 (KPI 정의)</h2>
+                <span class="text-muted" style="font-size:13px;">2026년 KPI 6건</span>
+            </div>
+            <div class="pol-kpi-grid">
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">중대재해 발생률</div>
+                    <div class="pol-kpi-target">0<span class="unit">건</span></div>
+                    <div class="pol-kpi-formula">COUNT(critical_incidents WHERE year=2026)</div>
+                </div>
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">정기 위험성평가 시행률</div>
+                    <div class="pol-kpi-target">100<span class="unit">%</span></div>
+                    <div class="pol-kpi-formula">완료 / 계획 × 100</div>
+                </div>
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">안전보건교육 이수율</div>
+                    <div class="pol-kpi-target">95<span class="unit">%</span></div>
+                    <div class="pol-kpi-formula">이수자 / 전 직원 × 100</div>
+                </div>
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">도급계약 평가 적합률</div>
+                    <div class="pol-kpi-target">90<span class="unit">%</span></div>
+                    <div class="pol-kpi-formula">적격 / 평가 × 100</div>
+                </div>
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">의견청취 처리율</div>
+                    <div class="pol-kpi-target">100<span class="unit">%</span></div>
+                    <div class="pol-kpi-formula">SLA 내 처리 / 총 의견</div>
+                </div>
+                <div class="pol-kpi-card">
+                    <div class="pol-kpi-name">개선조치 이행률</div>
+                    <div class="pol-kpi-target">85<span class="unit">%</span></div>
+                    <div class="pol-kpi-formula">완료 / 발생</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 첨부 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">첨부 파일</h2>
+            </div>
+            <div class="pol-attach-list">
+                <div class="pol-attach-row" onclick="window.DYLayout._soon(event, '파일 다운로드')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="name">방침_v2.5_초안.docx</span>
+                    <span class="size">142 KB</span>
+                </div>
+                <div class="pol-attach-row" onclick="window.DYLayout._soon(event, '파일 다운로드')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--status-danger-fg);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="name">의견수렴_결과보고서.pdf</span>
+                    <span class="size">2.8 MB</span>
+                </div>
+                <div class="pol-attach-row" onclick="window.DYLayout._soon(event, '파일 다운로드')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--status-warning-fg);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="name">v2.0_v2.5_변경_요약.pdf</span>
+                    <span class="size">512 KB</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

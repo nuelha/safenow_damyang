@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>점검 목록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── INS02-L 전용 ─── */
+
+        /* 페이지 헤더 (제목 + 우상단 등록 버튼) */
+        .ins-page-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+        }
+        .ins-page-head .ins-page-titles { flex: 1; }
+
+        /* 상태 chip (INS01-V와 동일 패턴) */
+        .ins-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .ins-status-chip.scheduled {
+            background: var(--status-neutral-bg);
+            border-color: var(--status-neutral-border);
+            color: var(--status-neutral-fg);
+        }
+        .ins-status-chip.progress {
+            background: var(--status-info-bg);
+            border-color: var(--status-info-border);
+            color: var(--status-info-fg);
+        }
+        .ins-status-chip.done {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .ins-status-chip.overdue {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+
+        /* 점검 유형 chip */
+        .ins-type-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .ins-type-chip.regular { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .ins-type-chip.ad-hoc  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .ins-type-chip.special { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 결과 pill */
+        .ins-result-pills {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .ins-result-pill {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .ins-result-pill.ok   { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .ins-result-pill.bad  { background: var(--status-danger-bg);  color: var(--status-danger-fg); }
+        .ins-result-pill.fix  { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+
+        /* 셀 보조 정보 */
+        .cell-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .cell-main .cell-meta {
+            font-size: 11px; color: var(--text-gray);
+        }
+        .cell-main .cell-meta .doc-code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 10px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body data-dy-page="ins-list" data-page-title="점검 목록" data-page-subtitle="정기·수시·특별 안전점검 등록 및 진행 관리">
+    <main>
+
+        <!-- ─── 페이지 헤더 + 등록 버튼 ─── -->
+        <div class="ins-page-head">
+            <div class="ins-page-titles">
+                <div class="dy-page-title">
+                    <span class="dy-page-dot"></span>
+                    <h1>점검 목록</h1>
+                </div>
+                <div class="dy-page-subtitle">정기·수시·특별 안전점검 등록 및 진행 관리</div>
+            </div>
+            <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '점검 등록 (INS02-F)')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                점검 등록
+            </button>
+        </div>
+
+        <!-- ─── 필터 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>상수도사업소</option>
+                    <option>보건소</option>
+                    <option>문화관광과</option>
+                    <option>자치행정과</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">유형</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>정기</option>
+                    <option>수시</option>
+                    <option>특별</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>예정</option>
+                    <option>진행중</option>
+                    <option>완료</option>
+                    <option>기한초과</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">매뉴얼</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>INS-M-001 일반시설</option>
+                    <option>INS-M-002 청사정기</option>
+                    <option>INS-M-005 소방설비</option>
+                    <option>INS-M-008 화학물질</option>
+                    <option>INS-M-011 정수장</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select">
+                    <option>2026년 전체</option>
+                    <option>올해</option>
+                    <option>지난 6개월</option>
+                    <option>지난 1년</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="점검명·관리대상 검색">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- ─── 결과 카운트 ─── -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+            <span style="font-size:14px; color:var(--text-gray);">전체 <strong style="color:var(--main); font-weight:700;">50</strong>건 · 기한초과 <strong style="color:var(--status-danger-fg);">3</strong>건 · 진행중 <strong style="color:var(--status-info-fg);">6</strong>건</span>
+            <a href="ins-status.html" class="text-muted" style="font-size:13px;">← 점검 현황</a>
+        </div>
+
+        <!-- ─── 테이블 ─── -->
+        <section style="background:white; border:1px solid var(--card-line); border-radius:20px; overflow:hidden;">
+            <table class="table-figma">
+                <colgroup>
+                    <col>
+                    <col style="width:160px;">
+                    <col style="width:80px;">
+                    <col style="width:100px;">
+                    <col style="width:130px;">
+                    <col style="width:110px;">
+                    <col style="width:140px;">
+                    <col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>점검명 · 매뉴얼</th>
+                        <th>관리대상</th>
+                        <th style="text-align:center;">유형</th>
+                        <th style="text-align:center;">상태</th>
+                        <th>실시일·기한</th>
+                        <th>담당자</th>
+                        <th style="text-align:center;">결과 (적/부/보)</th>
+                        <th style="text-align:center;">상세</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 기한초과 -->
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">보건소 청사 정기 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-002</span> v2.0</span>
+                            </div>
+                        </td>
+                        <td>보건소 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip overdue">기한초과</span></td>
+                        <td>
+                            <span style="color:var(--status-danger-fg); font-weight:600;">기한 2026-05-08</span>
+                            <span class="imp-due-dday">D+5</span>
+                        </td>
+                        <td>강보건</td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:12px;">미실시</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">환경과 작업장 화학물질 취급 점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-008</span> v2.3-draft</span>
+                            </div>
+                        </td>
+                        <td>환경자원시설 <span class="type-tag">업무</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip ad-hoc">수시</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip overdue">기한초과</span></td>
+                        <td>
+                            <span style="color:var(--status-danger-fg); font-weight:600;">기한 2026-05-10</span>
+                            <span class="imp-due-dday">D+3</span>
+                        </td>
+                        <td>오환경</td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:12px;">미실시</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">담양읍 행정복지센터 노후시설 점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-006</span> v1.1</span>
+                            </div>
+                        </td>
+                        <td>담양읍 행정복지센터 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip overdue">기한초과</span></td>
+                        <td>
+                            <span style="color:var(--status-danger-fg); font-weight:600;">기한 2026-05-12</span>
+                            <span class="imp-due-dday">D+1</span>
+                        </td>
+                        <td>서지역</td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:12px;">미실시</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <!-- 진행중 (오늘 마감) -->
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">군청 청사 소방설비 분기 점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-005</span> v1.4</span>
+                            </div>
+                        </td>
+                        <td>군청 청사 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip progress">진행중</span></td>
+                        <td>
+                            <span style="color:var(--status-warning-fg); font-weight:600;">오늘 2026-05-13</span>
+                            <span class="imp-due-dday">오늘</span>
+                        </td>
+                        <td>한시설</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 12</span>
+                                <span class="ins-result-pill fix">보 2</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">계속</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">농기계 임대사업소 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-007</span> v1.0</span>
+                            </div>
+                        </td>
+                        <td>농기계 임대사업소 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip progress">진행중</span></td>
+                        <td>
+                            2026-05-15
+                            <span class="imp-due-dday">D-2</span>
+                        </td>
+                        <td>정농업</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 8</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">계속</a></td>
+                    </tr>
+                    <!-- 완료 -->
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">군민체육관 분기 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-003</span> v2.1</span>
+                            </div>
+                        </td>
+                        <td>군민체육관 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip done">완료</span></td>
+                        <td>2026-05-05</td>
+                        <td>정하나</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 15</span>
+                                <span class="ins-result-pill fix">보 1</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">상수도사업소 정수장 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-011</span> v1.0</span>
+                            </div>
+                        </td>
+                        <td>상수도사업소 본관 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip ad-hoc">수시</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip done">완료</span></td>
+                        <td>2026-05-02</td>
+                        <td>신상수</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 18</span>
+                                <span class="ins-result-pill bad">부 1</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">죽녹원 시설물 정기 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-009</span> v1.2</span>
+                            </div>
+                        </td>
+                        <td>죽녹원 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip done">완료</span></td>
+                        <td>2026-04-28</td>
+                        <td>신예지</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 22</span>
+                                <span class="ins-result-pill fix">보 3</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 특별 점검 -->
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">집중호우 대비 시설물 특별 점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-013</span> v1.1</span>
+                            </div>
+                        </td>
+                        <td>전 부서 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip special">특별</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip done">완료</span></td>
+                        <td>2026-04-22</td>
+                        <td>박안전</td>
+                        <td style="text-align:center;">
+                            <span class="ins-result-pills">
+                                <span class="ins-result-pill ok">적 38</span>
+                                <span class="ins-result-pill bad">부 2</span>
+                                <span class="ins-result-pill fix">보 5</span>
+                            </span>
+                        </td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 예정 -->
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">문화관광시설 분기 안전점검</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-004</span> v1.3</span>
+                            </div>
+                        </td>
+                        <td>문화관광과 산하 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip scheduled">예정</span></td>
+                        <td>
+                            2026-05-30
+                            <span class="imp-due-dday">D-17</span>
+                        </td>
+                        <td>정하나</td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:12px;">대기중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='ins-detail.html'">
+                        <td>
+                            <div class="cell-main">
+                                <strong style="color:var(--text-black);">상수도사업소 정수장 정기점검 (Q3)</strong>
+                                <span class="cell-meta"><span class="doc-code">INS-M-011</span> v1.0</span>
+                            </div>
+                        </td>
+                        <td>상수도사업소 본관 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="ins-type-chip regular">정기</span></td>
+                        <td style="text-align:center;"><span class="ins-status-chip scheduled">예정</span></td>
+                        <td>
+                            2026-06-15
+                            <span class="imp-due-dday">D-33</span>
+                        </td>
+                        <td>신상수</td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:12px;">대기중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 페이지네이션 -->
+        <div data-pagination data-current="1" data-total="5"></div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

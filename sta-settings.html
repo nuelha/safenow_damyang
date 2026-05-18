@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통계 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .settings-panel { display: none; }
+        .settings-panel.is-active { display: block; }
+
+        .cycle-table { width: 100%; border-collapse: collapse; }
+        .cycle-table thead th { background: var(--gray-100); color: var(--text-gray); font-size: 12px; font-weight: 600; padding: 10px 20px; text-align: left; }
+        .cycle-table tbody td { padding: 14px 20px; font-size: 14px; color: var(--text-black); border-bottom: 1px solid var(--card-line); vertical-align: middle; }
+        .cycle-table tbody tr:last-child td { border-bottom: none; }
+        .cycle-table .col-active { width: 80px; }
+        .cycle-table .col-action { width: 80px; text-align: right; }
+    </style>
+</head>
+<body data-dy-page="sta-settings" data-page-title="통계 설정" data-page-subtitle="통계 항목 마스터·기간 정책·엑셀 다운로드 옵션 (STA03-S)">
+    <main>
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="kpi" onclick="window.StaSettings.switchTab('kpi')">KPI 항목</button>
+            <button class="sub-tab" type="button" data-panel="cache" onclick="window.StaSettings.switchTab('cache')">캐싱·재계산</button>
+            <button class="sub-tab" type="button" data-panel="export" onclick="window.StaSettings.switchTab('export')">엑셀 옵션</button>
+        </div>
+
+        <!-- ① KPI 항목 -->
+        <div class="settings-panel is-active" data-panel="kpi">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">종합 통계 KPI 항목</span>
+                        <span class="settings-card-desc">STA01-V 상단 KPI 카드에 표시할 항목을 관리합니다. 최대 5개 추천.</span>
+                    </div>
+                    <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, 'KPI 항목 추가')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        KPI 추가
+                    </button>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr><th>코드</th><th>KPI명</th><th>산출 공식</th><th>표시 순서</th><th class="col-active">활성</th><th class="col-action"></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">CMP_RATE</code></td>
+                            <td><strong>의무이행률</strong></td>
+                            <td><code>compliance_executions DONE / 전체 × 100</code></td>
+                            <td>1</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">RSK_RATE</code></td>
+                            <td><strong>위험성평가 시행률</strong></td>
+                            <td><code>risk_assessments DONE / 등록 × 100</code></td>
+                            <td>2</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">INS_RATE</code></td>
+                            <td><strong>안전점검 실시율</strong></td>
+                            <td><code>inspections COMPLETED / PLANNED × 100</code></td>
+                            <td>3</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">CON_QUAL</code></td>
+                            <td><strong>도급사업 적격률</strong></td>
+                            <td><code>QUALIFIED / 전체 × 100</code></td>
+                            <td>4</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">INCIDENT</code></td>
+                            <td><strong>사고 건수</strong></td>
+                            <td><code>incidents COUNT (올해)</code></td>
+                            <td>5</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:var(--main); font-size:13px;">OPN_SLA</code></td>
+                            <td>의견 SLA 준수율</td>
+                            <td><code>SLA 내 처리 / 전체 × 100</code></td>
+                            <td>6</td>
+                            <td><label class="toggle-switch"><input type="checkbox"><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ② 캐싱 -->
+        <div class="settings-panel" data-panel="cache">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">통계 캐싱·재계산 정책</span>
+                        <span class="settings-card-desc">서버 부하 절감을 위해 통계 데이터는 캐싱됩니다. 실시간 필요 시 [재계산] 버튼 사용.</span>
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '전체 통계 재계산')">
+                        지금 재계산
+                    </button>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: grid; grid-template-columns: 200px 1fr; row-gap: 14px; align-items: center;">
+                    <span style="font-size:13px; color:var(--text-gray);">캐시 유효 시간</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" value="30" min="5" max="240" class="select" style="width:80px; height:34px;">
+                        <span style="font-size:13px;">분 (재계산 주기)</span>
+                    </div>
+                    <span style="font-size:13px; color:var(--text-gray);">자동 재계산</span>
+                    <span style="font-size:13px;">매일 00:00 (KST) · 일별 누적 통계 갱신</span>
+                    <span style="font-size:13px; color:var(--text-gray);">마지막 재계산</span>
+                    <span style="font-size:13px;">2026-05-13 12:00 (약 1.4초 소요)</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- ③ 엑셀 옵션 -->
+        <div class="settings-panel" data-panel="export">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">엑셀 다운로드 옵션</span>
+                        <span class="settings-card-desc">통계 화면의 [엑셀 다운로드] 시 포함할 시트 구성을 관리합니다.</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 16px 22px; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border:1px solid var(--card-line); border-radius: var(--radius-button);">
+                        <div><strong style="font-size:14px;">Sheet 1: 종합 KPI 요약</strong><div style="font-size:11px; color:var(--text-gray);">최상위 5개 KPI + 전년 비교</div></div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border:1px solid var(--card-line); border-radius: var(--radius-button);">
+                        <div><strong style="font-size:14px;">Sheet 2: 부서별 점수 상세</strong><div style="font-size:11px; color:var(--text-gray);">9개 부서 × 각 KPI 점수</div></div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border:1px solid var(--card-line); border-radius: var(--radius-button);">
+                        <div><strong style="font-size:14px;">Sheet 3: 카테고리별 분포</strong><div style="font-size:11px; color:var(--text-gray);">법령 카테고리별 의무 분포</div></div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border:1px solid var(--card-line); border-radius: var(--radius-button);">
+                        <div><strong style="font-size:14px;">Sheet 4: 사고 추이</strong><div style="font-size:11px; color:var(--text-gray);">최근 12개월 월별 사고</div></div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:white; border:1px solid var(--card-line); border-radius: var(--radius-button);">
+                        <div><strong style="font-size:14px;">Sheet 5: 원시 데이터</strong><div style="font-size:11px; color:var(--text-gray);">개별 레코드 (선택 — 용량 큼)</div></div>
+                        <label class="toggle-switch"><input type="checkbox"><span class="toggle-switch-slider"></span></label>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const subtitleMap = {
+            kpi: 'STA01-V 종합 통계 KPI 카드 항목 관리',
+            cache: '통계 캐싱·재계산 주기 정책',
+            export: '엑셀 다운로드 시 포함할 시트 구성',
+        };
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+        window.StaSettings = {
+            switchTab(name) {
+                document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.panel === name));
+                document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('is-active', p.dataset.panel === name));
+                if (subtitleEl && subtitleMap[name]) subtitleEl.textContent = subtitleMap[name];
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

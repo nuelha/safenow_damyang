@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>외부 사용자 초대 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── AUTH03-M — 모달 별도 페이지 (con-step4.html 또는 auth-external-users.html에서 트리거) ─── */
+
+        /* 모달 컨테이너 (페이지 형태로 표시) */
+        .invite-modal-backdrop {
+            min-height: calc(100vh - 64px);
+            background: rgba(15, 23, 42, 0.35);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 30px 20px;
+        }
+        .invite-modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%; max-width: 560px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .invite-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .invite-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .invite-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .invite-modal-close:hover { background: var(--gray-100); }
+
+        .invite-modal-body { padding: 24px; }
+        .invite-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .invite-modal-footer .left { font-size: 12px; color: var(--text-gray); }
+        .invite-modal-footer .right { display: flex; gap: 8px; }
+
+        /* 초대 컨텍스트 카드 */
+        .context-card {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .context-card .icon {
+            width: 36px; height: 36px;
+            background: white;
+            border-radius: 8px;
+            color: var(--main-dark2);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .context-card .body { flex: 1; font-size: 13px; line-height: 1.5; }
+        .context-card .body .subject { font-weight: 700; color: var(--main-dark2); }
+        .context-card .body .meta { font-size: 11px; color: var(--text-gray); }
+
+        /* 폼 그리드 */
+        .invite-form-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 16px;
+            column-gap: 12px;
+            align-items: center;
+        }
+        .invite-form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+        }
+        .invite-form-grid .label.required::after { content: " *"; color: var(--status-danger-fg); }
+        .invite-input, .invite-form-grid select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-black);
+            background: white;
+            height: 36px;
+        }
+        .invite-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
+        /* 권한 자동 표시 */
+        .role-auto-display {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            background: var(--gray-100);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .role-auto-display .role-badge {
+            padding: 2px 8px;
+            background: var(--main-dark);
+            color: white;
+            border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+        }
+        .role-auto-display .hint { color: var(--text-gray); font-size: 12px; }
+
+        /* 접근 범위 */
+        .access-scope-list {
+            margin-top: 6px;
+            padding: 10px 12px;
+            background: var(--gray-100);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-black);
+            line-height: 1.5;
+        }
+        .access-scope-list strong { font-weight: 700; }
+
+        /* 만료 옵션 */
+        .expiry-options {
+            display: flex; gap: 6px;
+        }
+        .expiry-option {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            font-size: 12px; color: var(--text-gray);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .expiry-option:hover { border-color: var(--main); }
+        .expiry-option.is-selected { background: var(--brand-100); color: var(--main-dark2); border-color: var(--main); }
+
+        /* 이메일 미리보기 */
+        .email-preview {
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: 10px;
+        }
+        .email-preview-title {
+            font-size: 12px; font-weight: 700;
+            color: var(--status-info-fg);
+            margin-bottom: 6px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .email-preview-content {
+            font-size: 12px;
+            color: var(--text-black);
+            line-height: 1.5;
+            background: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body data-dy-page="contractor">
+    <main style="padding: 0;">
+        <div class="invite-modal-backdrop">
+            <div class="invite-modal" role="dialog" aria-modal="true">
+                <!-- 헤더 -->
+                <div class="invite-modal-header">
+                    <div class="invite-modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        외부 사용자 초대 (AUTH03-M)
+                    </div>
+                    <button class="invite-modal-close" onclick="window.history.back()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- 본문 -->
+                <div class="invite-modal-body">
+                    <!-- 컨텍스트 -->
+                    <div class="context-card">
+                        <div class="icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                        </div>
+                        <div class="body">
+                            <div class="subject">청사 시설 보수공사 — A건설(주)</div>
+                            <div class="meta">도급계약 #2026-12 · 자치행정과 · 발급자 김도급 (SHM)</div>
+                        </div>
+                    </div>
+
+                    <!-- 폼 -->
+                    <div class="invite-form-grid">
+                        <span class="label required">담당자 이름</span>
+                        <input class="invite-input" type="text" placeholder="이름" value="김도급">
+
+                        <span class="label required">이메일</span>
+                        <input class="invite-input" type="email" placeholder="kim@example.com" value="kim@a.co.kr">
+
+                        <span class="label">연락처</span>
+                        <input class="invite-input" type="tel" placeholder="010-XXXX-XXXX" value="010-1234-5678">
+
+                        <span class="label">권한</span>
+                        <div class="role-auto-display">
+                            <span class="role-badge">SUB</span>
+                            <span class="hint">도급업체 — 자동 설정</span>
+                        </div>
+
+                        <span class="label">접근 범위</span>
+                        <div>
+                            <div class="access-scope-list">
+                                도급계약 <strong>#2026-12 청사 시설 보수공사</strong> 한정<br>
+                                <span style="color:var(--text-gray);">계약 종료 시(2026-08-31) 자동 비활성화</span>
+                            </div>
+                        </div>
+
+                        <span class="label">초대 유효기간</span>
+                        <div class="expiry-options" id="expiry-options">
+                            <div class="expiry-option" data-days="3">3일</div>
+                            <div class="expiry-option is-selected" data-days="7">7일 (기본)</div>
+                            <div class="expiry-option" data-days="14">14일</div>
+                            <div class="expiry-option" data-days="30">30일</div>
+                        </div>
+                    </div>
+
+                    <!-- 이메일 미리보기 -->
+                    <div class="email-preview">
+                        <div class="email-preview-title">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            발송될 초대 이메일 미리보기
+                        </div>
+                        <div class="email-preview-content">
+                            <strong>제목:</strong> [담양 안전관리시스템] 청사 시설 보수공사 도급업체 초대<br><br>
+                            <strong>김도급님,</strong><br><br>
+                            담양군청 자치행정과의 <strong>청사 시설 보수공사</strong> 도급업체로 초대되셨습니다.<br>
+                            아래 링크로 7일 이내에 접속하여 비밀번호를 설정해 주세요.<br><br>
+                            <span style="color: var(--main-dark); text-decoration: underline;">https://safety.damyang.go.kr/invitation/abc123def456...</span><br><br>
+                            <span style="color: var(--text-gray);">담양군청 안전건설과 · 발급자: 김도급</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 푸터 -->
+                <div class="invite-modal-footer">
+                    <div class="left">발송 후 invitation_tokens 발급 + 즉시 SMTP 발송</div>
+                    <div class="right">
+                        <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                        <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '초대 이메일 발송')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            초대 발송
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('#expiry-options .expiry-option').forEach(o => {
+            o.addEventListener('click', () => {
+                document.querySelectorAll('#expiry-options .expiry-option').forEach(x => x.classList.remove('is-selected'));
+                o.classList.add('is-selected');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>증명서 발급 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .crt-form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 18px;
+            column-gap: 16px;
+            padding: 24px;
+        }
+        .crt-form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+            line-height: 36px;
+        }
+        .crt-form-grid .label.required::after {
+            content: " *"; color: var(--status-danger-fg);
+        }
+        .crt-form-grid .value { display: flex; flex-direction: column; gap: 6px; }
+
+        .crt-input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            height: 38px;
+        }
+        .crt-textarea {
+            width: 100%;
+            min-height: 70px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .crt-date-range { display: flex; align-items: center; gap: 8px; }
+        .crt-date-range .crt-input { max-width: 200px; }
+
+        /* 유형 카드 라디오 */
+        .type-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .type-card {
+            padding: 16px 18px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .type-card:hover { border-color: var(--main); }
+        .type-card.is-selected.compliance { background: var(--brand-100); border-color: var(--main); }
+        .type-card.is-selected.inspection { background: var(--status-info-bg); border-color: var(--status-info-fg); }
+        .type-card-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 700;
+            color: var(--text-black);
+            margin-bottom: 4px;
+        }
+        .type-card.is-selected .type-card-title { color: var(--main-dark2); }
+        .type-card-desc { font-size: 12px; color: var(--text-gray); }
+        .type-card input { display: none; }
+
+        /* 자동 산출 카드 */
+        .auto-result-card {
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            padding: 16px 18px;
+        }
+        .auto-result-card .head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .auto-result-card .head-title { font-size: 13px; font-weight: 700; color: var(--main-dark2); }
+        .auto-result-list { display: flex; flex-direction: column; gap: 8px; }
+        .auto-result-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: var(--radius-button);
+            font-size: 13px;
+        }
+        .auto-result-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main); }
+        .auto-result-row .label { flex: 1; color: var(--text-black); font-weight: 600; }
+        .auto-result-row .value { color: var(--main-dark2); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+        /* 첨부 영역 */
+        .crt-attach-zone {
+            border: 2px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 22px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+        }
+        .crt-attach-zone:hover { border-color: var(--main); background: var(--brand-100); }
+
+        .crt-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .crt-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .crt-form-actions .buttons { display: flex; gap: 8px; }
+
+        .crt-hint { font-size: 12px; color: var(--text-gray); }
+    </style>
+</head>
+<body data-dy-page="crt-issue" data-page-title="증명서 발급" data-page-subtitle="이행확인서·점검결과 증명서 발급 신청 (CRT02-F)">
+    <main>
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="crt-status.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                발급 이력
+            </a>
+        </div>
+
+        <section class="card" style="padding: 0;">
+            <div class="card-header" style="padding: 16px 24px;">
+                <h2 class="card-title">증명서 발급 신청</h2>
+            </div>
+
+            <div class="crt-form-grid">
+                <!-- 1. 유형 -->
+                <span class="label required">증명서 유형</span>
+                <div class="value">
+                    <div class="type-cards" id="type-cards">
+                        <label class="type-card is-selected compliance" data-type="compliance">
+                            <input type="radio" name="cert-type" value="compliance" checked>
+                            <div class="type-card-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                이행확인서
+                            </div>
+                            <div class="type-card-desc">중대재해법·산안법 이행 사실 확인 (외부 기관 제출용)</div>
+                        </label>
+                        <label class="type-card" data-type="inspection">
+                            <input type="radio" name="cert-type" value="inspection">
+                            <div class="type-card-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                점검결과 증명서
+                            </div>
+                            <div class="type-card-desc">시설·관리대상 안전점검 결과 증명 (외부 발급용)</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. 신청 정보 -->
+                <span class="label required">신청자명</span>
+                <div class="value">
+                    <input class="crt-input" type="text" value="홍길동" style="max-width: 340px;">
+                </div>
+                <span class="label required">신청자 구분</span>
+                <div class="value">
+                    <div style="display:flex; gap:10px; padding-top: 8px;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
+                            <input type="radio" name="applicant-type" checked> 개인
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
+                            <input type="radio" name="applicant-type"> 법인
+                        </label>
+                    </div>
+                </div>
+                <span class="label">신청자 연락처</span>
+                <div class="value">
+                    <input class="crt-input" type="tel" value="010-1234-5678" style="max-width: 240px;">
+                </div>
+                <span class="label">신청 사유</span>
+                <div class="value">
+                    <textarea class="crt-textarea" placeholder="발급 신청 사유를 작성하세요">청사 시설 안전관리 이행 사실 확인을 위한 증명서 발급 신청. 산업안전보건법 §63 도급사업 평가 자료로 활용.</textarea>
+                </div>
+
+                <!-- 3. 대상 정보 -->
+                <span class="label required">대상 관리대상</span>
+                <div class="value">
+                    <select class="crt-input" style="max-width: 380px;">
+                        <option>군청 청사 (시설 · 자치행정과)</option>
+                        <option>군민체육관 (시설)</option>
+                        <option>담양읍 행정복지센터 (시설)</option>
+                        <option>환경자원시설 (업무)</option>
+                    </select>
+                    <span class="crt-hint">또는 부서 선택도 가능합니다.</span>
+                </div>
+                <span class="label required">증명 기간</span>
+                <div class="value">
+                    <div class="crt-date-range">
+                        <input class="crt-input" type="date" value="2026-01-01">
+                        <span style="color:var(--text-gray);">~</span>
+                        <input class="crt-input" type="date" value="2026-04-30">
+                    </div>
+                </div>
+
+                <!-- 4. 증명 내용 자동 산출 -->
+                <span class="label">증명 내용</span>
+                <div class="value">
+                    <div class="auto-result-card">
+                        <div class="head">
+                            <span class="head-title">📊 자동 산출 (해당 기간 기준)</span>
+                            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '재산출')">재산출</button>
+                        </div>
+                        <div class="auto-result-list">
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">의무이행률</span>
+                                <span class="value">92%</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">위험성평가 시행</span>
+                                <span class="value">8건 완료</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">안전보건교육 이수율</span>
+                                <span class="value">100%</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">안전점검 실시율</span>
+                                <span class="value">95%</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">사고 발생</span>
+                                <span class="value">0건</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox" checked>
+                                <span class="label">도급사업 평가 적격률</span>
+                                <span class="value">100%</span>
+                            </div>
+                            <div class="auto-result-row">
+                                <input type="checkbox">
+                                <span class="label">개선조치 이행률</span>
+                                <span class="value">87%</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 11px; color: var(--text-gray);">
+                            체크된 항목만 증명서에 포함됩니다. 자동 산출 값은 사용자 편집 가능합니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 첨부 -->
+                <span class="label">첨부 서류</span>
+                <div class="value">
+                    <div class="crt-attach-zone" onclick="window.DYLayout._soon(event, '파일 선택')">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main); margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <div style="font-size: 13px; color: var(--text-black); font-weight: 600;">신청자 신분증·법인 등기부 등</div>
+                        <div style="font-size: 11px; color: var(--text-gray); margin-top: 4px;">최대 5개 파일 · 파일당 10MB · jpg, png, pdf</div>
+                    </div>
+                </div>
+
+                <!-- 6. 발급자 정보 -->
+                <span class="label">발급 부서</span>
+                <div class="value">
+                    <input class="crt-input" type="text" value="자치행정과" disabled style="max-width: 240px;">
+                </div>
+                <span class="label">발급 책임자</span>
+                <div class="value">
+                    <input class="crt-input" type="text" value="자치행정과장 홍자치" disabled style="max-width: 340px;">
+                </div>
+            </div>
+
+            <div class="crt-form-actions">
+                <div class="left">발급은 온나라 결재 후 PDF + QR 코드 + 워터마크로 자동 생성됩니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 미리보기')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        PDF 미리보기
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '발급 요청 → 온나라 결재 → PDF 자동 생성')">
+                        결재요청 후 발급
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('#type-cards .type-card').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('#type-cards .type-card').forEach(x => x.classList.remove('is-selected', 'compliance', 'inspection'));
+                c.classList.add('is-selected', c.dataset.type);
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

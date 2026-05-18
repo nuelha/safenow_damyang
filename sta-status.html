@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>종합 통계 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* KPI 5분할 */
+        .sta-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .sta-kpi-cell {
+            padding: 18px 22px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 124px; justify-content: center;
+        }
+        .sta-kpi-cell:last-child { border-right: none; }
+        .sta-kpi-title { font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .sta-kpi-value { font-size: 26px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .sta-kpi-value .small { font-size: 13px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .sta-kpi-value.danger { color: var(--status-danger-fg); }
+        .sta-kpi-value.success { color: var(--status-success-fg); }
+        .sta-kpi-delta {
+            font-size: 12px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 3px;
+        }
+        .sta-kpi-delta.up { color: var(--status-success-fg); }
+        .sta-kpi-delta.down { color: var(--status-danger-fg); }
+        .sta-kpi-sub { font-size: 11px; color: var(--text-gray); }
+
+        /* 라인 차트 (간이) */
+        .chart-area {
+            position: relative;
+            height: 240px;
+            padding: 22px;
+        }
+        .chart-svg { width: 100%; height: 100%; overflow: visible; }
+        .chart-area .legend {
+            display: flex; gap: 14px;
+            padding: 8px 22px;
+            font-size: 12px;
+            border-top: 1px solid var(--card-line);
+        }
+        .chart-area .legend .item { display: flex; align-items: center; gap: 6px; color: var(--text-gray); }
+        .chart-area .legend .sw {
+            width: 16px; height: 3px;
+            border-radius: 2px;
+        }
+
+        /* 도넛 차트 (간이) */
+        .donut-container {
+            display: flex; align-items: center; gap: 24px;
+            padding: 22px;
+        }
+        .donut-svg { width: 180px; height: 180px; flex-shrink: 0; }
+        .donut-legend { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .donut-legend-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px;
+        }
+        .donut-legend-item .sw { width: 12px; height: 12px; border-radius: 3px; }
+        .donut-legend-item .label { flex: 1; color: var(--text-black); font-weight: 600; }
+        .donut-legend-item .pct { color: var(--text-gray); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+        /* 2분할 */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        @media (max-width: 1023px) {
+            .sta-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-dy-page="sta-status" data-page-title="종합 통계" data-page-subtitle="안전관리 종합 KPI · 부서·카테고리·사고 추이 시각화 (STA01-V)">
+    <main>
+        <!-- 필터 + 다운로드 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select"><option>2026년 전체</option><option>1분기</option><option>2분기</option><option>상반기</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select"><option>전체</option><option>안전건설과</option><option>시설관리과</option></select>
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드 — 통합관리시스템_종합통계_2026.xlsx')" style="margin-left:auto;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                엑셀 다운로드
+            </button>
+        </div>
+
+        <!-- 종합 KPI 5분할 -->
+        <section class="sta-kpi-grid">
+            <div class="sta-kpi-cell">
+                <span class="sta-kpi-title">의무이행률</span>
+                <span class="sta-kpi-value">82<span class="small">%</span></span>
+                <span class="sta-kpi-delta up">↑ 5%p</span>
+                <span class="sta-kpi-sub">전년 동기 대비</span>
+            </div>
+            <div class="sta-kpi-cell">
+                <span class="sta-kpi-title">위험성평가</span>
+                <span class="sta-kpi-value">87<span class="small">%</span></span>
+                <span class="sta-kpi-delta up">↑ 2%p</span>
+                <span class="sta-kpi-sub">132 / 152 완료</span>
+            </div>
+            <div class="sta-kpi-cell">
+                <span class="sta-kpi-title">안전점검</span>
+                <span class="sta-kpi-value">78<span class="small">%</span></span>
+                <span class="sta-kpi-delta down">↓ 3%p</span>
+                <span class="sta-kpi-sub">39 / 50 실시</span>
+            </div>
+            <div class="sta-kpi-cell">
+                <span class="sta-kpi-title">도급사업</span>
+                <span class="sta-kpi-value">85<span class="small">%</span></span>
+                <span class="sta-kpi-delta up">↑ 8%p</span>
+                <span class="sta-kpi-sub">평가 적격률</span>
+            </div>
+            <div class="sta-kpi-cell">
+                <span class="sta-kpi-title">중대재해</span>
+                <span class="sta-kpi-value success">0<span class="small">건</span></span>
+                <span class="sta-kpi-delta up">↓ 1건</span>
+                <span class="sta-kpi-sub">무재해 142일째</span>
+            </div>
+        </section>
+
+        <!-- 월별 추이 라인 차트 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">월별 KPI 추이 (2026년)</h2>
+                <span class="text-muted" style="font-size:13px;">의무이행률·위험성평가·안전점검 누적</span>
+            </div>
+            <div class="chart-area">
+                <svg class="chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+                    <!-- 그리드 -->
+                    <line x1="0" y1="0" x2="600" y2="0" stroke="#e2e8f0" stroke-width="1"/>
+                    <line x1="0" y1="50" x2="600" y2="50" stroke="#e2e8f0" stroke-width="1"/>
+                    <line x1="0" y1="100" x2="600" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+                    <line x1="0" y1="150" x2="600" y2="150" stroke="#e2e8f0" stroke-width="1"/>
+                    <line x1="0" y1="200" x2="600" y2="200" stroke="#e2e8f0" stroke-width="1"/>
+
+                    <!-- 의무이행 (초록) -->
+                    <polyline points="20,140 70,130 120,115 170,105 220,90 270,80 320,70 370,65 420,55 470,50 520,45 570,40"
+                              fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- 위험성평가 (파랑) -->
+                    <polyline points="20,160 70,150 120,140 170,125 220,110 270,95 320,80 370,72 420,65 470,58 520,52 570,48"
+                              fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- 안전점검 (주황) -->
+                    <polyline points="20,150 70,148 120,138 170,135 220,128 270,120 320,115 370,110 420,98 470,90 520,80 570,75"
+                              fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+                    <!-- 월 라벨 -->
+                    <g font-size="10" fill="#94a3b8" text-anchor="middle">
+                        <text x="20" y="195">1월</text>
+                        <text x="120" y="195">3월</text>
+                        <text x="220" y="195">5월</text>
+                        <text x="320" y="195">7월</text>
+                        <text x="420" y="195">9월</text>
+                        <text x="520" y="195">11월</text>
+                    </g>
+                </svg>
+            </div>
+            <div class="legend">
+                <div class="item"><span class="sw" style="background: #10b981;"></span> 의무이행률 (82%)</div>
+                <div class="item"><span class="sw" style="background: #3b82f6;"></span> 위험성평가 (87%)</div>
+                <div class="item"><span class="sw" style="background: #f59e0b;"></span> 안전점검 (78%)</div>
+            </div>
+        </section>
+
+        <!-- 2분할 -->
+        <section class="two-col">
+            <!-- 부서별 종합 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">부서별 종합 점수</h2>
+                    <span class="text-muted" style="font-size:13px;">의무이행·평가·점검 가중 평균</span>
+                </div>
+                <div class="card-body">
+                    <div class="dept-bar-list">
+                        <div class="dept-bar-item"><span class="dept-bar-name">보건소</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:92%;"></div></div><span class="dept-bar-value">92점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">안전건설과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:89%;"></div></div><span class="dept-bar-value">89점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">시설관리과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:88%;"></div></div><span class="dept-bar-value">88점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">자치행정과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:85%;"></div></div><span class="dept-bar-value">85점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">상수도사업소</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:84%;"></div></div><span class="dept-bar-value">84점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">농업기술센터</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:80%;"></div></div><span class="dept-bar-value">80점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">문화관광과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:78%;"></div></div><span class="dept-bar-value">78점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">환경과</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:68%;"></div></div><span class="dept-bar-value">68점</span></div>
+                        <div class="dept-bar-item"><span class="dept-bar-name">담양읍사무소</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:63%;"></div></div><span class="dept-bar-value">63점</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카테고리별 도넛 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">의무 카테고리별 분포</h2>
+                    <span class="text-muted" style="font-size:13px;">전체 142건</span>
+                </div>
+                <div class="donut-container">
+                    <svg class="donut-svg" viewBox="0 0 42 42">
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#e2e8f0" stroke-width="6"/>
+                        <!-- 중대재해법 28% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#c47a07" stroke-width="6"
+                                stroke-dasharray="28 72" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+                        <!-- 산안법 28% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="6"
+                                stroke-dasharray="28 72" stroke-dashoffset="-3" transform="rotate(-90 21 21)"/>
+                        <!-- 화학물질법 9% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ef4444" stroke-width="6"
+                                stroke-dasharray="9 91" stroke-dashoffset="-31" transform="rotate(-90 21 21)"/>
+                        <!-- 시설법 6% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3b82f6" stroke-width="6"
+                                stroke-dasharray="6 94" stroke-dashoffset="-40" transform="rotate(-90 21 21)"/>
+                        <!-- 지자체 4% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#9333ea" stroke-width="6"
+                                stroke-dasharray="4 96" stroke-dashoffset="-46" transform="rotate(-90 21 21)"/>
+                        <!-- 자체계획 25% -->
+                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#94a3b8" stroke-width="6"
+                                stroke-dasharray="25 75" stroke-dashoffset="-50" transform="rotate(-90 21 21)"/>
+                        <text x="21" y="22" text-anchor="middle" font-size="6" font-weight="700" fill="#1e293b">142</text>
+                        <text x="21" y="27" text-anchor="middle" font-size="3" fill="#64748b">총 의무</text>
+                    </svg>
+                    <div class="donut-legend">
+                        <div class="donut-legend-item"><span class="sw" style="background:#94a3b8;"></span><span class="label">자체 계획 항목</span><span class="pct">36건 (25%)</span></div>
+                        <div class="donut-legend-item"><span class="sw" style="background:#10b981;"></span><span class="label">산안법</span><span class="pct">40건 (28%)</span></div>
+                        <div class="donut-legend-item"><span class="sw" style="background:#c47a07;"></span><span class="label">중대재해법</span><span class="pct">40건 (28%)</span></div>
+                        <div class="donut-legend-item"><span class="sw" style="background:#ef4444;"></span><span class="label">화학물질법</span><span class="pct">12건 (9%)</span></div>
+                        <div class="donut-legend-item"><span class="sw" style="background:#3b82f6;"></span><span class="label">시설법</span><span class="pct">8건 (6%)</span></div>
+                        <div class="donut-legend-item"><span class="sw" style="background:#9333ea;"></span><span class="label">지자체 조례</span><span class="pct">6건 (4%)</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 최근 12개월 사고 추이 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">최근 12개월 사고 추이</h2>
+                <span class="text-muted" style="font-size:13px;">월별 사고 종류·심각도 (중대재해 0건)</span>
+            </div>
+            <div class="chart-area">
+                <svg class="chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+                    <!-- 베이스라인 -->
+                    <line x1="0" y1="180" x2="600" y2="180" stroke="#e2e8f0" stroke-width="1"/>
+                    <line x1="0" y1="135" x2="600" y2="135" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="0" y1="90" x2="600" y2="90" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+
+                    <!-- 막대 — 일반사고 -->
+                    <g fill="#3b82f6">
+                        <rect x="15" y="150" width="32" height="30" rx="3"/>
+                        <rect x="65" y="135" width="32" height="45" rx="3"/>
+                        <rect x="115" y="155" width="32" height="25" rx="3"/>
+                        <rect x="165" y="120" width="32" height="60" rx="3"/>
+                        <rect x="215" y="140" width="32" height="40" rx="3"/>
+                        <rect x="265" y="160" width="32" height="20" rx="3"/>
+                        <rect x="315" y="145" width="32" height="35" rx="3"/>
+                        <rect x="365" y="125" width="32" height="55" rx="3"/>
+                        <rect x="415" y="155" width="32" height="25" rx="3"/>
+                        <rect x="465" y="165" width="32" height="15" rx="3"/>
+                        <rect x="515" y="160" width="32" height="20" rx="3"/>
+                        <rect x="565" y="170" width="32" height="10" rx="3"/>
+                    </g>
+
+                    <!-- 월 라벨 -->
+                    <g font-size="10" fill="#94a3b8" text-anchor="middle">
+                        <text x="31" y="195">'25.06</text>
+                        <text x="231" y="195">'25.10</text>
+                        <text x="431" y="195">'26.02</text>
+                        <text x="581" y="195">'26.05</text>
+                    </g>
+                </svg>
+            </div>
+            <div class="legend">
+                <div class="item"><span class="sw" style="background: #3b82f6;"></span> 일반 사고 (경상·근접사고)</div>
+                <div class="item"><span class="sw" style="background: #ef4444;"></span> 중대재해 (0건)</div>
+                <div class="item" style="margin-left:auto;">평균 월 <strong style="color:var(--text-black);">2.8건</strong> · 최근 3개월 감소세</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

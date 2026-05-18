@@ -476,10 +476,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 방침 이력
             </button>
-            <button class="pol-tab" type="button" onclick="window.DYLayout._soon(event, '경영방침 점검 (POL04-V)')">
+            <a class="pol-tab" href="pol-inspection.html" style="text-decoration:none;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 경영방침 점검
-            </button>
+            </a>
             <button class="pol-tab" type="button" onclick="window.DYLayout._soon(event, 'KPI·점검 설정 (POL05-S)')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
                 설정
@@ -572,7 +572,7 @@
         <section class="card">
             <div class="card-header">
                 <h2 class="card-title">버전별 방침 이력</h2>
-                <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '신규 방침 등록 (POL02-F)')">
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.location.href='pol-form.html'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     신규 방침 등록
                 </button>
@@ -1007,7 +1007,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     PDF
                 </button>
-                ${canEdit ? `<button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '방침 수정 (POL02-F) - ${data.ver}')">수정</button>` : ''}
+                ${canEdit ? `<button class="btn btn-outline" type="button" onclick="window.location.href='pol-form.html?id=${data.ver}&mode=edit'">수정</button>` : ''}
                 ${canRequest ? `<button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '결재 진행 상태 업데이트 - ${data.ver}')">결재 결과 업데이트</button>` : ''}
                 ${(!canRequest && !isApproved) ? `<button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '결재 요청 - ${data.ver}')">결재 요청</button>` : ''}
             `;

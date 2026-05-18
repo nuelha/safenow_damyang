@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전경영방침 등록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── POL02-F 전용 ─── */
+
+        .pol-form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 18px;
+            column-gap: 16px;
+            padding: 24px;
+        }
+        .pol-form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+            line-height: 36px;
+        }
+        .pol-form-grid .label.required::after {
+            content: " *"; color: var(--status-danger-fg);
+        }
+        .pol-form-grid .value { display: flex; flex-direction: column; gap: 6px; }
+
+        .pol-input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            height: 38px;
+        }
+        .pol-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
+        /* HTML 에디터 (간이) */
+        .pol-editor-toolbar {
+            display: flex; gap: 4px;
+            padding: 6px 10px;
+            background: var(--gray-100);
+            border: 1px solid var(--card-line);
+            border-bottom: none;
+            border-radius: var(--radius-button) var(--radius-button) 0 0;
+        }
+        .pol-editor-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 5px;
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+        .pol-editor-btn:hover { color: var(--main-dark); background: var(--brand-100); }
+        .pol-editor-sep { width: 1px; background: var(--card-line); margin: 2px 4px; }
+
+        .pol-editor-textarea {
+            width: 100%;
+            min-height: 280px;
+            padding: 14px;
+            border: 1px solid var(--card-line);
+            border-radius: 0 0 var(--radius-button) var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            line-height: 1.7;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* 다중 입력 — 법령 매칭, KPI */
+        .multi-input-table { width: 100%; border-collapse: collapse; }
+        .multi-input-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .multi-input-table tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .multi-input-table tbody tr:last-child td { border-bottom: none; }
+        .multi-input-table input, .multi-input-table select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--card-line);
+            border-radius: 5px;
+            font-size: 13px;
+            height: 32px;
+        }
+        .row-delete-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: transparent;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+        .row-delete-btn:hover { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+
+        .pol-add-row-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 8px 14px;
+            background: white;
+            border: 1px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            color: var(--main-dark);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .pol-add-row-btn:hover { background: var(--brand-100); border-color: var(--main); }
+
+        /* 첨부 영역 */
+        .pol-attach-zone {
+            border: 2px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 24px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .pol-attach-zone:hover { border-color: var(--main); background: var(--brand-100); }
+
+        /* 폼 액션 */
+        .pol-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .pol-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .pol-form-actions .buttons { display: flex; gap: 8px; }
+
+        .pol-hint { font-size: 12px; color: var(--text-gray); }
+        .pol-hint.warn { color: var(--status-warning-fg); }
+    </style>
+</head>
+<body data-dy-page="safety-policy" data-page-title="안전경영방침 등록·수정" data-page-subtitle="새 버전 방침 작성 및 KPI·근거법령 매칭">
+    <main>
+        <!-- 상단 툴바 -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="pol-history.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                방침 이력
+            </a>
+        </div>
+
+        <section class="card" style="padding: 0;">
+            <div class="card-header" style="padding: 16px 24px;">
+                <h2 class="card-title">신규 방침 등록</h2>
+                <span class="text-muted" style="font-size:13px;">결재 진행 전 상태로 저장됩니다 (NOT_REQUESTED)</span>
+            </div>
+
+            <div class="pol-form-grid">
+                <!-- 버전 -->
+                <span class="label required">버전</span>
+                <div class="value">
+                    <input class="pol-input" type="text" value="v3.0" maxlength="20" style="max-width: 180px;">
+                    <span class="pol-hint">UNIQUE · v{n.m} 형식 권장 · 현재 적용 버전 v2.5</span>
+                </div>
+
+                <!-- 제목 -->
+                <span class="label required">제목</span>
+                <div class="value">
+                    <input class="pol-input" type="text" value="담양군 안전보건 경영방침" maxlength="200">
+                </div>
+
+                <!-- 시행일 -->
+                <span class="label required">시행일</span>
+                <div class="value">
+                    <input class="pol-input" type="date" value="2027-01-01" style="max-width: 200px;">
+                    <span class="pol-hint">미래 일자 가능. 결재 완료 후 시행일 도래 시 자동 적용 처리 옵션 있음.</span>
+                </div>
+
+                <!-- 방침 본문 -->
+                <span class="label required">방침 본문</span>
+                <div class="value">
+                    <div class="pol-editor-toolbar">
+                        <button class="pol-editor-btn" type="button" title="굵게"><strong>B</strong></button>
+                        <button class="pol-editor-btn" type="button" title="기울임"><em>I</em></button>
+                        <button class="pol-editor-btn" type="button" title="밑줄"><span style="text-decoration:underline;">U</span></button>
+                        <div class="pol-editor-sep"></div>
+                        <button class="pol-editor-btn" type="button" title="제목">H</button>
+                        <button class="pol-editor-btn" type="button" title="목록">≡</button>
+                        <button class="pol-editor-btn" type="button" title="순서있는 목록">1.</button>
+                        <div class="pol-editor-sep"></div>
+                        <button class="pol-editor-btn" type="button" title="링크">🔗</button>
+                    </div>
+                    <textarea class="pol-editor-textarea"><h3>§1. 안전보건 경영방침</h3>
+담양군은 군민의 안전과 군청 종사자 및 도급업체 근로자의 생명·신체 보호를 최우선 가치로 삼고, 중대재해 ZERO 달성을 위해 전사적 안전보건 경영체계를 구축·운영한다.
+
+<h3>§2. 안전보건 목표 (2027년)</h3>
+- 중대재해 발생 0건 유지
+- 정기 위험성평가 시행률 100%
+- 전 직원 안전보건교육 이수율 95% 이상
+
+<h3>§3. 조직 및 책임</h3>
+군수는 안전보건 경영의 최고 책임자로서 본 방침의 수립·이행을 총괄한다.
+
+<h3>§4. 실행 및 운영</h3>
+본 방침은 매년 점검을 통해 적정성을 평가하며, 위험성평가·점검 결과와 종사자 의견을 반영하여 지속적으로 개선한다.</textarea>
+                    <span class="pol-hint">HTML 직접 입력 가능 · XSS 검증 자동 적용 · 최소 500자 권장</span>
+                </div>
+
+                <!-- 근거 법령 매칭 -->
+                <span class="label">근거 법령 매칭</span>
+                <div class="value">
+                    <table class="multi-input-table">
+                        <thead>
+                            <tr>
+                                <th style="width:50%;">법령</th>
+                                <th style="width:35%;">방침 매칭 조항</th>
+                                <th style="width:60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option>중대재해처벌법 시행령 제4조</option>
+                                        <option>산업안전보건법 제5조</option>
+                                        <option>산업안전보건법 제15조</option>
+                                        <option>산업안전보건법 제24조</option>
+                                        <option>산업안전보건법 제75조</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="§1, §2, §3" placeholder="예: §1, §2"></td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option>중대재해처벌법 시행령 제4조</option>
+                                        <option selected>산업안전보건법 제5조</option>
+                                        <option>산업안전보건법 제15조</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="§3"></td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="pol-add-row-btn" onclick="window.DYLayout._soon(event, '법령 행 추가')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        법령 매칭 추가
+                    </button>
+                </div>
+
+                <!-- KPI 정의 -->
+                <span class="label">KPI 정의</span>
+                <div class="value">
+                    <table class="multi-input-table">
+                        <thead>
+                            <tr>
+                                <th style="width:35%;">KPI명</th>
+                                <th style="width:15%;">목표값</th>
+                                <th style="width:10%;">단위</th>
+                                <th>산출 공식</th>
+                                <th style="width:60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="중대재해 발생률"></td>
+                                <td><input type="text" value="0"></td>
+                                <td><input type="text" value="건"></td>
+                                <td><input type="text" value="COUNT(critical_incidents)"></td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="정기 위험성평가 시행률"></td>
+                                <td><input type="text" value="100"></td>
+                                <td><input type="text" value="%"></td>
+                                <td><input type="text" value="완료/계획×100"></td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="안전보건교육 이수율"></td>
+                                <td><input type="text" value="95"></td>
+                                <td><input type="text" value="%"></td>
+                                <td><input type="text" value="이수자/전직원×100"></td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="pol-add-row-btn" onclick="window.DYLayout._soon(event, 'KPI 추가')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        KPI 추가
+                    </button>
+                </div>
+
+                <!-- 첨부 -->
+                <span class="label">첨부 파일</span>
+                <div class="value">
+                    <div class="pol-attach-zone" onclick="window.DYLayout._soon(event, '파일 선택')">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main); margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <div style="font-size: 13px; color: var(--text-black); font-weight: 600;">초안·의견수렴 결과 등 첨부</div>
+                        <div style="font-size: 11px; color: var(--text-gray); margin-top: 4px;">최대 10개 파일 · 파일당 30MB · docx, pdf, hwp</div>
+                    </div>
+                </div>
+
+                <!-- 작성자 -->
+                <span class="label">작성자</span>
+                <div class="value">
+                    <input class="pol-input" type="text" value="김안전 (자치행정과 · SHM)" disabled style="max-width: 320px;">
+                    <span class="pol-hint">현재 로그인 사용자 자동 설정</span>
+                </div>
+            </div>
+
+            <div class="pol-form-actions">
+                <div class="left">저장 후 결재 요청 → 군수(CEO) 결재 → 적용 처리 흐름으로 진행됩니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='pol-detail.html?id=v3.0'">
+                        저장 후 상세 이동
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

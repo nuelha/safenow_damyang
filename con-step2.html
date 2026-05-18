@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계약 STEP 2 수급업체 평가 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 공통 STEP 인디케이터 */
+        .con-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .con-step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .con-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+        }
+        .con-step-item.is-done .con-step-num { background: var(--status-success-fg); color: white; }
+        .con-step-item.is-current .con-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .con-step-text { display: flex; flex-direction: column; }
+        .con-step-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+        .con-step-name { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .con-step-item.is-done .con-step-name { color: var(--status-success-fg); }
+        .con-step-item.is-current .con-step-name { color: var(--main-dark2); }
+        .con-step-connector { flex: 0 0 30px; height: 2px; background: var(--gray-100); margin: 0 8px; }
+        .con-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 평가서 정보 카드 */
+        .eval-form-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 22px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-card);
+            margin-bottom: 16px;
+        }
+        .eval-form-info { display: flex; flex-direction: column; gap: 4px; }
+        .eval-form-title { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .eval-form-meta { font-size: 12px; color: var(--text-gray); }
+        .eval-form-meta strong { color: var(--text-black); font-weight: 700; }
+
+        /* 평가 결과 chip */
+        .eval-result-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .eval-result-chip.qualified   { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .eval-result-chip.unqualified { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .eval-result-chip.pending     { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+
+        /* 평가 상태 chip */
+        .eval-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .eval-status-chip.pending   { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+        .eval-status-chip.progress  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .eval-status-chip.done      { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+
+        /* 진행 조건 안내 */
+        .con-progress-notice {
+            padding: 14px 18px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            font-size: 13px;
+            color: var(--status-warning-fg);
+            display: flex; align-items: center; gap: 10px;
+            margin: 0 22px 16px;
+        }
+        .con-progress-notice.is-ok {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .con-progress-notice strong { font-weight: 700; }
+
+        /* 폼 액션 */
+        .con-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .con-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .con-form-actions .buttons { display: flex; gap: 8px; }
+    </style>
+</head>
+<body data-dy-page="contractor" data-page-title="계약 STEP 2 — 수급업체 평가" data-page-subtitle="평가자 지정 + 평가 진행 모니터링 (계약 담당자는 점수 입력 직접 불가)">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="con-detail.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                도급계약 상세
+            </a>
+        </div>
+
+        <!-- ─── 4-Step 인디케이터 ─── -->
+        <section class="con-step-bar">
+            <div class="con-step-item is-done">
+                <div class="con-step-num">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 1</span>
+                    <span class="con-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-current">
+                <div class="con-step-num">2</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 2</span>
+                    <span class="con-step-name">수급업체 평가</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">3</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 3</span>
+                    <span class="con-step-name">선정 + 결재</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">4</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 4</span>
+                    <span class="con-step-name">초대 + 서약</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" style="padding: 0;">
+            <div class="card-header" style="padding: 16px 24px;">
+                <h2 class="card-title">청사 시설 보수공사 — 수급업체 평가</h2>
+            </div>
+
+            <!-- ─── 평가서 정보 ─── -->
+            <div style="padding: 16px 22px 0;">
+                <div class="eval-form-card">
+                    <div class="eval-form-info">
+                        <span class="eval-form-title">공사 안전관리 평가서 (CONSTRUCTION_SAFETY)</span>
+                        <span class="eval-form-meta">평가항목 <strong>8개</strong> · 만점 <strong>100점</strong> · 적격기준 <strong>70점 이상</strong></span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '평가서 변경 모달 (CON05-M3)')">
+                        평가서 변경
+                    </button>
+                </div>
+            </div>
+
+            <!-- ─── 진행 조건 안내 ─── -->
+            <div class="con-progress-notice is-ok">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>모든 업체 평가 완료 <strong>(3/3)</strong> · 평가자 지정 완료 — STEP 3으로 진행 가능합니다.</span>
+            </div>
+
+            <!-- ─── 수급업체 테이블 ─── -->
+            <div style="padding: 0 22px 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <span style="font-size:14px; color:var(--text-gray);">참여 업체 <strong style="color:var(--main);">3</strong>개 · 평가 완료 <strong style="color:var(--status-success-fg);">3</strong>개</span>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '+ 업체 추가 (CON05-M)')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        업체 추가
+                    </button>
+                </div>
+            </div>
+
+            <table class="table-figma">
+                <colgroup>
+                    <col><col style="width:130px;"><col style="width:80px;"><col style="width:100px;"><col style="width:130px;"><col style="width:90px;"><col style="width:90px;"><col style="width:90px;"><col style="width:90px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>업체명</th>
+                        <th>사업자번호</th>
+                        <th>대표자</th>
+                        <th style="text-align:center;">관리계획서</th>
+                        <th>평가자</th>
+                        <th style="text-align:center;">점수</th>
+                        <th style="text-align:center;">결과</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.location.href='con-evaluation.html'">
+                        <td><strong>A건설(주)</strong></td>
+                        <td>123-45-67890</td>
+                        <td>홍사장</td>
+                        <td style="text-align:center;"><span class="chip-status success">제출</span></td>
+                        <td>김안전</td>
+                        <td style="text-align:center; font-weight:700; color:var(--status-success-fg);">85점</td>
+                        <td style="text-align:center;"><span class="eval-result-chip qualified">적격</span></td>
+                        <td style="text-align:center;"><span class="eval-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="con-evaluation.html" onclick="event.stopPropagation();">수정</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='con-evaluation.html'">
+                        <td><strong>B건설(주)</strong></td>
+                        <td>234-56-78901</td>
+                        <td>이사장</td>
+                        <td style="text-align:center;"><span class="chip-status success">제출</span></td>
+                        <td>김안전</td>
+                        <td style="text-align:center; font-weight:700;">72점</td>
+                        <td style="text-align:center;"><span class="eval-result-chip qualified">적격</span></td>
+                        <td style="text-align:center;"><span class="eval-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="con-evaluation.html" onclick="event.stopPropagation();">수정</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='con-evaluation.html'">
+                        <td><strong>C건설(주)</strong></td>
+                        <td>345-67-89012</td>
+                        <td>박사장</td>
+                        <td style="text-align:center;"><span class="chip-status warning">미제출</span></td>
+                        <td>김안전</td>
+                        <td style="text-align:center; font-weight:700; color:var(--status-danger-fg);">65점</td>
+                        <td style="text-align:center;"><span class="eval-result-chip unqualified">부적격</span></td>
+                        <td style="text-align:center;"><span class="eval-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="con-evaluation.html" onclick="event.stopPropagation();">수정</a></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 진행 조건 미충족 예시 (참고) -->
+            <div style="padding: 18px 22px 0; font-size: 12px; color: var(--text-gray); line-height: 1.6;">
+                <strong style="color:var(--text-black);">진행 조건</strong> — 다음 STEP 진입을 위해 모든 업체의 평가자가 지정되고 평가가 완료되어야 합니다.
+            </div>
+
+            <div class="con-form-actions" style="margin-top: 18px;">
+                <div class="left">평가 완료 시 STEP 3 선정·결재로 진행합니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.location.href='con-step1.html?id=2026-12'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+                        이전
+                    </button>
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='con-step3.html?id=2026-12'">
+                        다음 STEP
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

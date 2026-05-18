@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>외부 사용자 관리 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* KPI 4분할 */
+        .ext-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .ext-kpi-cell {
+            padding: 18px 24px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 110px; justify-content: center;
+        }
+        .ext-kpi-cell:last-child { border-right: none; }
+        .ext-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .ext-kpi-title { font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .ext-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--brand-100); color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .ext-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .ext-kpi-icon.gray { background: var(--gray-100); color: var(--text-gray); }
+        .ext-kpi-icon.danger { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .ext-kpi-value { font-size: 26px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .ext-kpi-value .small { font-size: 13px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .ext-kpi-value.warning { color: var(--status-warning-fg); }
+        .ext-kpi-value.gray { color: var(--text-gray); }
+        .ext-kpi-value.danger { color: var(--status-danger-fg); }
+
+        /* 권한 chip */
+        .role-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .role-chip.sub { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .role-chip.con { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+
+        /* 상태 chip */
+        .ext-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .ext-status-chip.active { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .ext-status-chip.pending { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .ext-status-chip.expired { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+        .ext-status-chip.revoked { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+    </style>
+</head>
+<body data-dy-page="sys-ext-users" data-page-title="외부 사용자 관리" data-page-subtitle="도급업체(SUB)·컨설팅(CON) 계정 발급 및 접근 권한 관리 (AUTH06-S)">
+    <main>
+        <!-- KPI -->
+        <section class="ext-kpi-grid">
+            <div class="ext-kpi-cell">
+                <div class="ext-kpi-head">
+                    <span class="ext-kpi-title">활성</span>
+                    <span class="ext-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="ext-kpi-value">18<span class="small">명</span></div>
+                <div style="font-size: 11px; color: var(--text-gray);">SUB 12 · CON 6</div>
+            </div>
+            <div class="ext-kpi-cell">
+                <div class="ext-kpi-head">
+                    <span class="ext-kpi-title">초대 대기</span>
+                    <span class="ext-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="ext-kpi-value warning">3<span class="small">명</span></div>
+                <div style="font-size: 11px; color: var(--text-gray);">발송됨 · 미수락</div>
+            </div>
+            <div class="ext-kpi-cell">
+                <div class="ext-kpi-head">
+                    <span class="ext-kpi-title">만료</span>
+                    <span class="ext-kpi-icon gray">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </span>
+                </div>
+                <div class="ext-kpi-value gray">2<span class="small">건</span></div>
+                <div style="font-size: 11px; color: var(--text-gray);">7일 경과 · 재발송 필요</div>
+            </div>
+            <div class="ext-kpi-cell">
+                <div class="ext-kpi-head">
+                    <span class="ext-kpi-title">회수·비활성</span>
+                    <span class="ext-kpi-icon danger">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </span>
+                </div>
+                <div class="ext-kpi-value danger">4<span class="small">명</span></div>
+                <div style="font-size: 11px; color: var(--text-gray);">계약 종료·관리자 회수</div>
+            </div>
+        </section>
+
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">회사명</span>
+                <select class="select">
+                    <option>전체</option><option>A건설(주)</option><option>B건설(주)</option><option>전남환경(주)</option><option>광주배관공사</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">권한</span>
+                <select class="select"><option>전체</option><option>SUB (도급업체)</option><option>CON (컨설팅)</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select"><option>전체</option><option>활성</option><option>초대대기</option><option>만료</option><option>회수</option></select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="회사명·담당자·이메일 검색">
+                <button class="search-submit" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>검색</button>
+            </div>
+            <button class="btn-register" type="button" onclick="window.location.href='auth-invite.html'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                직접 초대 발급
+            </button>
+        </div>
+
+        <!-- 목록 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">외부 사용자 목록</h2>
+                <span class="text-muted" style="font-size:13px;">전체 <strong style="color:var(--main);">27</strong>명 · 최근 10건 표시</span>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:160px;"><col><col style="width:80px;"><col><col style="width:100px;"><col style="width:140px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>회사</th>
+                        <th>담당자 (이메일)</th>
+                        <th style="text-align:center;">권한</th>
+                        <th>접근범위</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세 모달')">
+                        <td><strong>A건설(주)</strong><div style="font-size:11px; color:var(--text-gray);">123-45-67890</div></td>
+                        <td>김도급<div style="font-size:11px; color:var(--text-gray);">kim@a.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>도급계약 #2026-12 청사 보수공사</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '상세');">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '회수');" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)B컨설팅</strong><div style="font-size:11px; color:var(--text-gray);">234-56-78901</div></td>
+                        <td>이컨설<div style="font-size:11px; color:var(--text-gray);">lee@bcs.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip con">CON</span></td>
+                        <td>자치행정과 위임 (안전관리 자문)</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>전남소방기술(주)</strong><div style="font-size:11px; color:var(--text-gray);">345-67-89012</div></td>
+                        <td>한소방<div style="font-size:11px; color:var(--text-gray);">han@jeonnam-fire.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>소방시설 정기점검 위탁용역</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>B건설(주)</strong><div style="font-size:11px; color:var(--text-gray);">456-78-90123</div></td>
+                        <td>박과장<div style="font-size:11px; color:var(--text-gray);">park@b-const.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>도급계약 #2026-12 청사 보수공사</td>
+                        <td style="text-align:center;"><span class="ext-status-chip pending">초대 대기 (D-5)</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">재발송</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)A건설</strong><div style="font-size:11px; color:var(--text-gray);">123-45-67890</div></td>
+                        <td>박현장<div style="font-size:11px; color:var(--text-gray);">park@a.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>도급계약 #2026-12 청사 보수공사</td>
+                        <td style="text-align:center;"><span class="ext-status-chip pending">초대 대기 (D-2)</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">재발송</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>광주배관공사(주)</strong><div style="font-size:11px; color:var(--text-gray);">567-89-01234</div></td>
+                        <td>최배관<div style="font-size:11px; color:var(--text-gray);">choi@gwangju-pipe.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>군민체육관 배관 교체공사</td>
+                        <td style="text-align:center;"><span class="ext-status-chip expired">만료 (D+3)</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">재발송</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)전남환경</strong><div style="font-size:11px; color:var(--text-gray);">678-90-12345</div></td>
+                        <td>오환경<div style="font-size:11px; color:var(--text-gray);">oh@jeonnam-env.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>환경자원시설 위탁 용역</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)광주안전평가</strong><div style="font-size:11px; color:var(--text-gray);">789-01-23456</div></td>
+                        <td>김컨설팅<div style="font-size:11px; color:var(--text-gray);">kim@gwangju-safety.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip con">CON</span></td>
+                        <td>안전건설과 위임 (시설관리과·환경과)</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)C건설</strong><div style="font-size:11px; color:var(--text-gray);">890-12-34567</div></td>
+                        <td>박사장<div style="font-size:11px; color:var(--text-gray);">park@c-const.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>계약 종료 (만료 2026-02-28)</td>
+                        <td style="text-align:center;"><span class="ext-status-chip revoked">회수</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">재활성화</a>
+                        </td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '외부 사용자 상세')">
+                        <td><strong>(주)담양종합관리</strong><div style="font-size:11px; color:var(--text-gray);">901-23-45678</div></td>
+                        <td>정관리<div style="font-size:11px; color:var(--text-gray);">jung@damyang-mgmt.co.kr</div></td>
+                        <td style="text-align:center;"><span class="role-chip sub">SUB</span></td>
+                        <td>청사 청소·시설 위탁 용역</td>
+                        <td style="text-align:center;"><span class="ext-status-chip active">활성</span></td>
+                        <td style="text-align:center;">
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation();" style="margin-left:4px;">회수</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="3"></div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

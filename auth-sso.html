@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 처리 중 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        .sso-box {
+            text-align: center;
+            max-width: 480px;
+            padding: 40px;
+        }
+        .sso-logo {
+            display: inline-flex;
+            width: 80px; height: 80px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            align-items: center; justify-content: center;
+            margin-bottom: 24px;
+        }
+        .sso-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }
+        .sso-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 36px;
+        }
+
+        /* 회전 스피너 */
+        .sso-spinner {
+            display: inline-block;
+            width: 56px; height: 56px;
+            border: 4px solid rgba(255,255,255,0.25);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: sso-spin 1s linear infinite;
+            margin-bottom: 24px;
+        }
+        @keyframes sso-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sso-status {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .sso-detail {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+        }
+
+        /* 진행 단계 */
+        .sso-steps {
+            margin-top: 32px;
+            display: flex; flex-direction: column; gap: 10px;
+            text-align: left;
+            background: rgba(255,255,255,0.1);
+            padding: 16px 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .sso-step {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        .sso-step.is-done { color: rgba(255,255,255,1); }
+        .sso-step.is-active { color: white; font-weight: 700; }
+        .sso-step .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            font-size: 11px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .sso-step.is-done .num { background: rgba(255,255,255,0.95); color: var(--main-dark); }
+        .sso-step.is-active .num { background: white; color: var(--main-dark2); }
+
+        /* 너무 오래 걸릴 시 안내 */
+        .sso-help {
+            margin-top: 28px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+        .sso-help a {
+            color: white; font-weight: 700; text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="sso-box">
+        <div class="sso-logo">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="sso-title">담양 중대재해통합관리시스템</div>
+        <div class="sso-subtitle">행정포털 SSO 인증을 진행하고 있습니다</div>
+
+        <div class="sso-spinner"></div>
+
+        <div class="sso-status">행정포털 인증 처리 중...</div>
+        <div class="sso-detail">잠시만 기다려 주세요. 보통 1-2초 내에 완료됩니다.</div>
+
+        <div class="sso-steps">
+            <div class="sso-step is-done">
+                <span class="num">✓</span>
+                <span>① 행정포털 인증 토큰 수신</span>
+            </div>
+            <div class="sso-step is-done">
+                <span class="num">✓</span>
+                <span>② SSO 액세스 토큰 발급</span>
+            </div>
+            <div class="sso-step is-active">
+                <span class="num">3</span>
+                <span>③ 사용자 정보 조회 중 (이름·부서·직급·권한)</span>
+            </div>
+            <div class="sso-step">
+                <span class="num">4</span>
+                <span>④ 권한 매핑 및 세션 발급</span>
+            </div>
+            <div class="sso-step">
+                <span class="num">5</span>
+                <span>⑤ 권한별 대시보드 라우팅</span>
+            </div>
+        </div>
+
+        <div class="sso-help">
+            5초 이상 화면이 멈춰 있다면 <a href="auth-error.html?code=sso_timeout">오류 안내</a>를 확인해 주세요.
+        </div>
+    </div>
+
+    <script>
+        // 2초 후 대시보드로 자동 리다이렉트 (시연용)
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2500);
+    </script>
+</body>
+</html>

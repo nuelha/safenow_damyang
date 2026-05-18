@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의견청취 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── OPN01-V 전용 ─── */
+        .opn-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .opn-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 124px; justify-content: center;
+        }
+        .opn-kpi-cell:last-child { border-right: none; }
+        .opn-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .opn-kpi-title { font-size: 15px; font-weight: 600; color: var(--text-black); }
+        .opn-kpi-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .opn-kpi-icon.warn   { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .opn-kpi-icon.info   { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .opn-kpi-icon.success{ background: var(--status-success-bg); color: var(--status-success-fg); }
+        .opn-kpi-value { font-size: 28px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .opn-kpi-value .small { font-size: 14px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .opn-kpi-value.warning { color: var(--status-warning-fg); }
+        .opn-kpi-value.info { color: var(--status-info-fg); }
+        .opn-kpi-value.success { color: var(--status-success-fg); }
+        .opn-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .opn-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 2분할 */
+        .opn-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* 카테고리 진행률 */
+        .opn-cat-list { padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; }
+        .opn-cat-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 60px;
+            align-items: center;
+            gap: 12px;
+        }
+        .opn-cat-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+        }
+        .opn-cat-label .swatch { width: 10px; height: 10px; border-radius: 3px; }
+        .opn-cat-label .swatch.improve  { background: var(--main); }
+        .opn-cat-label .swatch.complain { background: var(--status-danger-fg); }
+        .opn-cat-label .swatch.suggest  { background: var(--status-info-fg); }
+        .opn-cat-label .swatch.danger   { background: var(--status-warning-fg); }
+        .opn-cat-label .swatch.etc      { background: var(--text-lightgray); }
+        .opn-cat-track {
+            position: relative;
+            height: 22px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .opn-cat-fill {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            border-radius: 999px;
+            display: flex; align-items: center;
+            padding-left: 10px;
+            font-size: 11px; font-weight: 700; color: white;
+        }
+        .opn-cat-fill.improve  { background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%); }
+        .opn-cat-fill.complain { background: linear-gradient(90deg, var(--status-danger-fg) 0%, #f08a8a 100%); }
+        .opn-cat-fill.suggest  { background: linear-gradient(90deg, var(--status-info-fg) 0%, #76c8f0 100%); }
+        .opn-cat-fill.danger   { background: linear-gradient(90deg, var(--status-warning-fg) 0%, #f4c97e 100%); }
+        .opn-cat-fill.etc      { background: linear-gradient(90deg, var(--text-lightgray) 0%, #cbd5e0 100%); }
+        .opn-cat-count {
+            font-size: 13px; font-weight: 700; color: var(--text-black);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 처리 단계별 */
+        .opn-stage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 16px 22px;
+        }
+        .opn-stage-cell {
+            padding: 14px 12px;
+            border-radius: var(--radius-button);
+            background: var(--gray-100);
+            text-align: center;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .opn-stage-cell:hover { transform: translateY(-1px); }
+        .opn-stage-cell.danger { background: var(--status-danger-bg); border: 1px solid var(--status-danger-border); }
+        .opn-stage-cell.warn { background: var(--status-warning-bg); border: 1px solid var(--status-warning-border); }
+        .opn-stage-cell.info { background: var(--status-info-bg); border: 1px solid var(--status-info-border); }
+        .opn-stage-cell.success { background: var(--status-success-bg); border: 1px solid var(--status-success-border); }
+        .opn-stage-num { font-size: 22px; font-weight: 800; line-height: 1; color: var(--main-dark2); letter-spacing: -0.4px; }
+        .opn-stage-cell.danger .opn-stage-num { color: var(--status-danger-fg); }
+        .opn-stage-cell.warn .opn-stage-num { color: var(--status-warning-fg); }
+        .opn-stage-cell.info .opn-stage-num { color: var(--status-info-fg); }
+        .opn-stage-cell.success .opn-stage-num { color: var(--status-success-fg); }
+        .opn-stage-label { font-size: 11px; color: var(--text-gray); margin-top: 4px; font-weight: 600; }
+
+        /* 카테고리 chip */
+        .opn-cat-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .opn-cat-chip.improve  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .opn-cat-chip.complain { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .opn-cat-chip.suggest  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .opn-cat-chip.danger   { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .opn-cat-chip.etc      { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 상태 chip */
+        .opn-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .opn-status-chip.received { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .opn-status-chip.plan     { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .opn-status-chip.progress { background: var(--main); color: white; border-color: var(--main-dark); }
+        .opn-status-chip.done     { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+
+        @media (max-width: 1023px) {
+            .opn-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .opn-two-col { grid-template-columns: 1fr; }
+            .opn-stage-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body data-dy-page="opn-status" data-page-title="의견청취 현황" data-page-subtitle="종사자 의견 접수·처리 현황 및 산안법 §75 의견청취 의무이행 모니터링">
+    <main>
+
+        <!-- ─── 필터 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">기준연도</span>
+                <select class="select">
+                    <option>2026년</option>
+                    <option>2025년</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>안전건설과</option>
+                    <option>시설관리과</option>
+                    <option>환경과</option>
+                    <option>상수도사업소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">처리 단계</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>접수대기</option>
+                    <option>조치계획</option>
+                    <option>조치경과</option>
+                    <option>완료</option>
+                </select>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- ─── ① KPI 4분할 ─── -->
+        <section class="opn-kpi-grid">
+            <div class="opn-kpi-cell">
+                <div class="opn-kpi-head">
+                    <span class="opn-kpi-title">전체 의견</span>
+                    <span class="opn-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </span>
+                </div>
+                <div class="opn-kpi-value">87<span class="small">건</span></div>
+                <div class="opn-kpi-sub">2026년 누적 · 전년 동기 <strong>+12건</strong></div>
+            </div>
+            <div class="opn-kpi-cell">
+                <div class="opn-kpi-head">
+                    <span class="opn-kpi-title">접수 대기</span>
+                    <span class="opn-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                </div>
+                <div class="opn-kpi-value warning">5<span class="small">건</span></div>
+                <div class="opn-kpi-sub">SLA 초과 <strong style="color:var(--status-danger-fg);">2건</strong></div>
+            </div>
+            <div class="opn-kpi-cell">
+                <div class="opn-kpi-head">
+                    <span class="opn-kpi-title">진행 중</span>
+                    <span class="opn-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </span>
+                </div>
+                <div class="opn-kpi-value info">14<span class="small">건</span></div>
+                <div class="opn-kpi-sub">조치계획 <strong>9건</strong> · 경과 <strong>5건</strong></div>
+            </div>
+            <div class="opn-kpi-cell">
+                <div class="opn-kpi-head">
+                    <span class="opn-kpi-title">처리 완료</span>
+                    <span class="opn-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="opn-kpi-value success">68<span class="small">건</span></div>
+                <div class="opn-kpi-sub">처리율 <strong>78%</strong> · 평균 처리 <strong>8.4일</strong></div>
+            </div>
+        </section>
+
+        <!-- ─── ② 처리 단계별 + 카테고리별 ─── -->
+        <section class="opn-two-col">
+            <!-- 처리 단계별 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">처리 단계별 분포</h2>
+                    <a class="text-muted" href="opinion.html" style="font-size:13px;">전체 보기 →</a>
+                </div>
+                <div class="opn-stage-grid">
+                    <div class="opn-stage-cell warn" onclick="window.location.href='opinion.html'">
+                        <div class="opn-stage-num">5</div>
+                        <div class="opn-stage-label">접수 대기</div>
+                    </div>
+                    <div class="opn-stage-cell info" onclick="window.location.href='opinion.html'">
+                        <div class="opn-stage-num">9</div>
+                        <div class="opn-stage-label">조치계획</div>
+                    </div>
+                    <div class="opn-stage-cell" onclick="window.location.href='opinion.html'">
+                        <div class="opn-stage-num">5</div>
+                        <div class="opn-stage-label">조치경과</div>
+                    </div>
+                    <div class="opn-stage-cell success" onclick="window.location.href='opinion.html'">
+                        <div class="opn-stage-num">68</div>
+                        <div class="opn-stage-label">완료</div>
+                    </div>
+                </div>
+                <div style="padding: 0 22px 18px;">
+                    <div style="padding: 12px 14px; background: var(--brand-100); border-radius: 8px; font-size: 12px; color: var(--text-black); line-height: 1.6;">
+                        <strong style="color: var(--main-dark2);">4단계 워크플로우</strong> (SFR-011)<br>
+                        <span style="color: var(--text-gray);">접수대기 → 조치계획 → 조치경과 → 완료. 각 단계 SLA는 <a href="opn-settings.html" style="color:var(--main-dark); font-weight:600;">설정</a>에서 관리합니다.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카테고리별 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">카테고리별 분포</h2>
+                    <span class="text-muted" style="font-size:13px;">2026년 누적</span>
+                </div>
+                <div class="opn-cat-list">
+                    <div class="opn-cat-row">
+                        <span class="opn-cat-label"><span class="swatch improve"></span> 개선 제안</span>
+                        <div class="opn-cat-track"><div class="opn-cat-fill improve" style="width:35%;">35%</div></div>
+                        <span class="opn-cat-count">30건</span>
+                    </div>
+                    <div class="opn-cat-row">
+                        <span class="opn-cat-label"><span class="swatch complain"></span> 불만 / 신고</span>
+                        <div class="opn-cat-track"><div class="opn-cat-fill complain" style="width:25%;">25%</div></div>
+                        <span class="opn-cat-count">22건</span>
+                    </div>
+                    <div class="opn-cat-row">
+                        <span class="opn-cat-label"><span class="swatch danger"></span> 위험 신고</span>
+                        <div class="opn-cat-track"><div class="opn-cat-fill danger" style="width:20%;">20%</div></div>
+                        <span class="opn-cat-count">17건</span>
+                    </div>
+                    <div class="opn-cat-row">
+                        <span class="opn-cat-label"><span class="swatch suggest"></span> 건의 / 문의</span>
+                        <div class="opn-cat-track"><div class="opn-cat-fill suggest" style="width:14%;">14%</div></div>
+                        <span class="opn-cat-count">12건</span>
+                    </div>
+                    <div class="opn-cat-row">
+                        <span class="opn-cat-label"><span class="swatch etc"></span> 기타</span>
+                        <div class="opn-cat-track"><div class="opn-cat-fill etc" style="width:7%;">7%</div></div>
+                        <span class="opn-cat-count">6건</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── ③ 부서별 처리율 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">부서별 처리율</h2>
+                <span class="text-muted" style="font-size:13px;">전체 9개 부서 · 2026년 누적</span>
+            </div>
+            <div class="card-body">
+                <div class="dept-bar-list">
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">안전건설과</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill" style="width:94%;"></div></div>
+                        <span class="dept-bar-value">94%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">시설관리과</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill" style="width:88%;"></div></div>
+                        <span class="dept-bar-value">88%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">상수도사업소</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill" style="width:85%;"></div></div>
+                        <span class="dept-bar-value">85%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">자치행정과</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill" style="width:82%;"></div></div>
+                        <span class="dept-bar-value">82%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">문화관광과</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill" style="width:75%;"></div></div>
+                        <span class="dept-bar-value">75%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">환경과</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:68%;"></div></div>
+                        <span class="dept-bar-value">68%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">담양읍사무소</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:62%;"></div></div>
+                        <span class="dept-bar-value">62%</span>
+                    </div>
+                    <div class="dept-bar-item">
+                        <span class="dept-bar-name">보건소</span>
+                        <div class="dept-bar-track"><div class="dept-bar-fill danger" style="width:50%;"></div></div>
+                        <span class="dept-bar-value">50%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── ④ 최근 의견 목록 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">최근 의견 (최신 8건)</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.location.href='opn-form.html'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    의견 등록
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col><col style="width:120px;"><col style="width:100px;"><col style="width:110px;"><col style="width:100px;"><col style="width:120px;"><col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>의견 내용</th>
+                        <th>제출자 부서</th>
+                        <th style="text-align:center;">카테고리</th>
+                        <th style="text-align:center;">처리 단계</th>
+                        <th>접수일</th>
+                        <th>처리 담당자</th>
+                        <th style="text-align:center;">상세</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>주차장 야간 조명 부족 — 보행자 충돌 위험</strong></td>
+                        <td>자치행정과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip danger">위험 신고</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip received">접수 대기</span></td>
+                        <td>2026-05-10 <span style="color:var(--status-danger-fg); font-weight:600;">D+3</span></td>
+                        <td><span style="color:var(--text-lightgray);">미지정</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">처리</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>화학물질 저장창고 환기 시설 보완 요청</strong></td>
+                        <td>환경과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip improve">개선 제안</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip plan">조치계획</span></td>
+                        <td>2026-05-08</td>
+                        <td>오환경</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>안전화 지급 주기 단축 건의</strong></td>
+                        <td>시설관리과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip suggest">건의</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip progress">조치경과</span></td>
+                        <td>2026-04-25</td>
+                        <td>한시설</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>현장 안전교육 강화 요청 (월 2회 → 매주)</strong></td>
+                        <td>안전건설과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip improve">개선 제안</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip done">완료</span></td>
+                        <td>2026-04-15</td>
+                        <td>박안전</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>정수장 작업장 미끄럼 사고 우려 (바닥 마감재 노후)</strong></td>
+                        <td>상수도사업소</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip danger">위험 신고</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip received">접수 대기</span></td>
+                        <td>2026-05-12 <span style="color:var(--status-danger-fg); font-weight:600;">D+1</span></td>
+                        <td><span style="color:var(--text-lightgray);">미지정</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">처리</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>휴식공간 협소 — 작업자 피로 누적</strong></td>
+                        <td>환경과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip complain">불만</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip plan">조치계획</span></td>
+                        <td>2026-05-05</td>
+                        <td>오환경</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>고소작업 안전대 신규 모델 교체 요청</strong></td>
+                        <td>시설관리과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip improve">개선 제안</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip done">완료</span></td>
+                        <td>2026-04-02</td>
+                        <td>한시설</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='opn-detail.html'">
+                        <td><strong>죽녹원 진입로 야간 위험 조명 추가</strong></td>
+                        <td>문화관광과</td>
+                        <td style="text-align:center;"><span class="opn-cat-chip danger">위험 신고</span></td>
+                        <td style="text-align:center;"><span class="opn-status-chip done">완료</span></td>
+                        <td>2026-03-28</td>
+                        <td>신예지</td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

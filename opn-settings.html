@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의견청취 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 서브 탭 패널 */
+        .settings-panel { display: none; }
+        .settings-panel.is-active { display: block; }
+
+        /* 일반 사이클 표 */
+        .cycle-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .cycle-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        .cycle-table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .cycle-table tbody tr:last-child td { border-bottom: none; }
+        .cycle-table .col-period { width: 110px; }
+        .cycle-table .col-action { width: 80px; text-align: right; }
+        .cycle-table .col-active { width: 80px; }
+        .cycle-table .col-code { width: 130px; }
+
+        .period-value {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-weight: 700; color: var(--main-dark2);
+        }
+        .period-value-sub { color: var(--text-gray); font-size: 12px; font-weight: 500; }
+
+        /* 카테고리 chip */
+        .opn-cat-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .opn-cat-chip.improve  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .opn-cat-chip.complain { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .opn-cat-chip.suggest  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .opn-cat-chip.danger   { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .opn-cat-chip.etc      { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+    </style>
+</head>
+<body data-dy-page="opn-settings" data-page-title="의견청취 설정" data-page-subtitle="카테고리·SLA·익명 정책·법정 의견청취 사이클 콘텐츠 마스터">
+    <main>
+
+        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="category" onclick="window.OpnSettings.switchTab('category')">카테고리</button>
+            <button class="sub-tab" type="button" data-panel="sla" onclick="window.OpnSettings.switchTab('sla')">SLA · 단계별 기한</button>
+            <button class="sub-tab" type="button" data-panel="anonymous" onclick="window.OpnSettings.switchTab('anonymous')">익명 · 개인정보 정책</button>
+            <button class="sub-tab" type="button" data-panel="legal" onclick="window.OpnSettings.switchTab('legal')">법정 의견청취 사이클</button>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ① 카테고리 (CATEGORY) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel is-active" data-panel="category">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">의견 카테고리 마스터</span>
+                        <span class="settings-card-desc">
+                            의견 등록 폼(OPN01-F)에서 선택 가능한 카테고리를 관리합니다. 카테고리별 처리 담당 기본 부서·우선순위·SLA가 다릅니다.
+                        </span>
+                    </div>
+                    <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '카테고리 추가')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        카테고리 추가
+                    </button>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">코드</th>
+                            <th>카테고리</th>
+                            <th>처리 담당 기본 부서</th>
+                            <th>우선순위</th>
+                            <th class="col-active">활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">DANGER</code></td>
+                            <td><span class="opn-cat-chip danger">위험 신고</span></td>
+                            <td>안전건설과 / 시설관리과</td>
+                            <td><strong style="color:var(--status-danger-fg);">최우선 (24시간)</strong></td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '카테고리 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">IMPROVE</code></td>
+                            <td><span class="opn-cat-chip improve">개선 제안</span></td>
+                            <td>해당 부서 SHM</td>
+                            <td>일반</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '카테고리 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">COMPLAIN</code></td>
+                            <td><span class="opn-cat-chip complain">불만 / 신고</span></td>
+                            <td>해당 부서 GM</td>
+                            <td>높음</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '카테고리 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">SUGGEST</code></td>
+                            <td><span class="opn-cat-chip suggest">건의 / 문의</span></td>
+                            <td>해당 부서 SHM</td>
+                            <td>일반</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '카테고리 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">ETC</code></td>
+                            <td><span class="opn-cat-chip etc">기타</span></td>
+                            <td>안전건설과 분류 후 재지정</td>
+                            <td>낮음</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '카테고리 수정')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ② SLA · 단계별 기한 (SLA) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="sla">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">단계별 SLA (서비스 수준 목표)</span>
+                        <span class="settings-card-desc">
+                            의견 처리 4단계(접수 → 조치계획 → 조치경과 → 완료) 각 단계별 SLA를 카테고리에 따라 차등 설정합니다. SLA 초과 시 자동 에스컬레이션 발송.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>카테고리</th>
+                            <th class="col-period">접수</th>
+                            <th class="col-period">조치계획</th>
+                            <th class="col-period">조치경과</th>
+                            <th class="col-period">완료</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="opn-cat-chip danger">위험 신고</span></td>
+                            <td><span class="period-value">1 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">2 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">10 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">1 <span class="period-value-sub">일</span></span></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'SLA 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="opn-cat-chip improve">개선 제안</span></td>
+                            <td><span class="period-value">3 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">7 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">30 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">3 <span class="period-value-sub">일</span></span></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'SLA 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="opn-cat-chip complain">불만 / 신고</span></td>
+                            <td><span class="period-value">2 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">5 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">14 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">2 <span class="period-value-sub">일</span></span></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'SLA 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="opn-cat-chip suggest">건의 / 문의</span></td>
+                            <td><span class="period-value">5 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">14 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">30 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">7 <span class="period-value-sub">일</span></span></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'SLA 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="opn-cat-chip etc">기타</span></td>
+                            <td><span class="period-value">7 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">14 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">30 <span class="period-value-sub">일</span></span></td>
+                            <td><span class="period-value">7 <span class="period-value-sub">일</span></span></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, 'SLA 수정')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">SLA 에스컬레이션 정책</span>
+                        <span class="settings-card-desc">SLA 초과 시 알림 수신자 및 경고 단계를 설정합니다.</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">SLA 초과 50% 시점 (예: 7일 SLA → 3.5일 경과)</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">담당자에게 알림 발송</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">SLA 초과 시점 (당일)</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">담당자 + 부서장(GM) 알림</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">SLA 초과 3일 후</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">담당자 + 부서장 + 안전건설과(전사) 통보</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ③ 익명 · 개인정보 정책 (ANONYMOUS) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="anonymous">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">익명 제출 정책</span>
+                        <span class="settings-card-desc">
+                            의견 등록 시 익명 제출 허용 여부 및 익명 처리 시 정보 보호 정책을 관리합니다.
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">익명 제출 허용</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">의견 등록 폼에 익명 옵션 노출</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">처리 담당자에게 작성자 마스킹</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">담당자가 화면에서 작성자 정보를 볼 수 없도록 함</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">처리 결과 자동 알림</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">익명 제출자에게도 진행 상황 자동 통보 (본인은 추적 가능)</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">위험 신고 카테고리는 익명 강제</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">위험 신고 시 보복 방지를 위해 익명 옵션 자동 활성</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox"><span class="toggle-switch-slider"></span></label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">개인정보 보존 기간</span>
+                        <span class="settings-card-desc">처리 완료 후 의견 원문 및 작성자 정보 보존 기간 (개인정보보호법 §21 의거).</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: grid; grid-template-columns: 200px 1fr; row-gap: 14px; align-items: center;">
+                    <span style="font-size:13px; color:var(--text-gray);">처리 완료 후 보존 기간</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" value="3" min="1" max="10" class="select" style="width:80px; height:34px;">
+                        <span style="font-size:13px;">년 (이후 자동 익명화)</span>
+                    </div>
+                    <span style="font-size:13px; color:var(--text-gray);">위험 신고 보존 기간</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" value="5" min="1" max="10" class="select" style="width:80px; height:34px;">
+                        <span style="font-size:13px;">년 (법적 분쟁 대비 강화)</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ④ 법정 의견청취 사이클 (LEGAL) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="legal">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">법정 의견청취 의무 사이클</span>
+                        <span class="settings-card-desc">
+                            중대재해처벌법 시행령 §4 제7호 · 산업안전보건법 §75 의무 충족을 위한 정기 의견청취 자동 알림 설정입니다.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>의견청취 유형</th>
+                            <th>근거 법령</th>
+                            <th class="col-period">주기</th>
+                            <th>대상</th>
+                            <th class="col-active">활성</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>전 직원 일반 의견청취</strong></td>
+                            <td>산안법 §75</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>전 직원 (군청)</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                        <tr>
+                            <td><strong>위험 작업자 정기 의견청취</strong></td>
+                            <td>산안법 §75</td>
+                            <td><span class="period-value">6 <span class="period-value-sub">개월</span></span></td>
+                            <td>현장직·기능직 (시설·환경·상수도)</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                        <tr>
+                            <td><strong>도급업체 의견청취</strong></td>
+                            <td>중대재해법 시행령 §4-7</td>
+                            <td><span class="period-value">반기 <span class="period-value-sub">1회</span></span></td>
+                            <td>활성 도급계약 업체 전체</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                        <tr>
+                            <td><strong>산업안전보건위원회 안건</strong></td>
+                            <td>산안법 §24</td>
+                            <td><span class="period-value">분기 <span class="period-value-sub">1회</span></span></td>
+                            <td>위원회 위원 12명</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">의무 충족 자동 검증</span>
+                        <span class="settings-card-desc">법정 의견청취 주기 도래 시 자동 알림 및 미이행 통계 발송 정책.</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">주기 도래 30일 전 알림</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">담당자(안전건설과 SHM)에게 의견청취 준비 알림</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">주기 도래 시 자동 캠페인 생성</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">대상자 전원에게 의견청취 캠페인 자동 발송</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox"><span class="toggle-switch-slider"></span></label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">미이행 시 군수(CEO) 보고</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">주기 초과 시 군수 알림함 자동 발송 — 의무 불이행 리스크 관리</div>
+                        </div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label>
+                    </div>
+                </div>
+                <div style="padding: 0 24px 20px; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '취소')">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '설정 저장')">저장</button>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const subtitleMap = {
+            category: '의견 등록 시 선택 가능한 카테고리 및 처리 담당 기본 부서 매핑',
+            sla: '카테고리별 4단계 SLA(처리 기한) 및 에스컬레이션 정책',
+            anonymous: '익명 제출 허용 정책 및 작성자 개인정보 보호 정책',
+            legal: '산안법·중대재해법 의견청취 의무 자동 충족 정책',
+        };
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+
+        window.OpnSettings = {
+            switchTab(name) {
+                document.querySelectorAll('.sub-tab').forEach(b => {
+                    b.classList.toggle('active', b.dataset.panel === name);
+                });
+                document.querySelectorAll('.settings-panel').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.panel === name);
+                });
+                if (subtitleEl && subtitleMap[name]) {
+                    subtitleEl.textContent = subtitleMap[name];
+                }
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

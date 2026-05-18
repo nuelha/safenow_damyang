@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구성원 일괄 등록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-backdrop {
+            min-height: calc(100vh - 64px);
+            background: rgba(15, 23, 42, 0.35);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 30px 20px;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            width: 100%; max-width: 640px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .modal-close:hover { background: var(--gray-100); }
+        .modal-body { padding: 24px; min-height: 320px; }
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-footer .left { font-size: 12px; color: var(--text-gray); }
+        .modal-footer .right { display: flex; gap: 8px; }
+
+        /* Step 인디케이터 */
+        .step-bar {
+            display: flex; align-items: center;
+            margin-bottom: 22px;
+        }
+        .step-item {
+            display: flex; flex-direction: column; align-items: center;
+            flex: 1;
+        }
+        .step-num {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 4px;
+        }
+        .step-item.is-done .step-num { background: var(--status-success-fg); color: white; }
+        .step-item.is-current .step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .step-label { font-size: 11px; color: var(--text-gray); font-weight: 600; }
+        .step-item.is-current .step-label { color: var(--main-dark2); font-weight: 700; }
+        .step-item.is-done .step-label { color: var(--status-success-fg); }
+        .step-connector {
+            flex: 0 0 30px;
+            height: 2px;
+            background: var(--gray-100);
+            margin: 0 4px;
+            margin-bottom: 18px;
+        }
+        .step-connector.is-done { background: var(--status-success-fg); }
+
+        .panel { display: none; }
+        .panel.is-active { display: block; }
+
+        /* STEP 1: 양식 다운로드 */
+        .download-btn-large {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 22px;
+            background: linear-gradient(135deg, #047857, #10b981);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer;
+            margin: 16px 0;
+        }
+        .download-btn-large:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+
+        .guide-box {
+            padding: 14px 18px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--text-black);
+            line-height: 1.8;
+        }
+        .guide-box .title { font-size: 13px; font-weight: 700; color: var(--main-dark2); margin-bottom: 6px; }
+        .guide-box ul { padding-left: 20px; }
+        .guide-box ul li { list-style: disc; }
+
+        /* STEP 2: 업로드 */
+        .upload-zone {
+            border: 2px dashed var(--card-line);
+            border-radius: 12px;
+            padding: 32px 22px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .upload-zone:hover { border-color: var(--main); background: var(--brand-100); }
+        .upload-zone.has-file { border-style: solid; border-color: var(--status-success-border); background: var(--brand-100); }
+        .upload-zone .icon { display: inline-flex; color: var(--main); margin-bottom: 10px; }
+        .upload-zone .text { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .upload-zone .hint { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
+
+        .file-info-card {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 10px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .file-info-card .icon { color: var(--main); }
+        .file-info-card .body { flex: 1; }
+        .file-info-card .name { font-size: 13px; font-weight: 700; color: var(--text-black); }
+        .file-info-card .meta { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* STEP 3: 검증 결과 */
+        .validate-summary {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 18px;
+            background: var(--gray-100);
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+        .validate-stat { display: flex; align-items: baseline; gap: 4px; }
+        .validate-stat .num { font-size: 22px; font-weight: 800; }
+        .validate-stat .label { font-size: 11px; color: var(--text-gray); }
+        .validate-stat .num.ok { color: var(--status-success-fg); }
+        .validate-stat .num.err { color: var(--status-danger-fg); }
+
+        .validate-list {
+            max-height: 240px;
+            overflow-y: auto;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+        }
+        .validate-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--card-line);
+            font-size: 12px;
+        }
+        .validate-row:last-child { border-bottom: none; }
+        .validate-row.ok { background: var(--status-success-bg); }
+        .validate-row.err { background: var(--status-danger-bg); }
+        .validate-row .line { font-family: 'SF Mono', Consolas, monospace; color: var(--text-gray); min-width: 60px; }
+        .validate-row .name { font-weight: 700; flex: 1; }
+        .validate-row .msg { color: var(--status-danger-fg); font-weight: 600; }
+
+        /* STEP 4: 완료 */
+        .complete-msg {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .complete-icon {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: var(--brand-100);
+            color: var(--status-success-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 14px;
+        }
+        .complete-text { font-size: 16px; font-weight: 700; color: var(--text-black); margin-bottom: 6px; }
+        .complete-detail { font-size: 13px; color: var(--text-gray); line-height: 1.7; }
+        .complete-detail strong { color: var(--main-dark2); font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="organization">
+    <main style="padding: 0;">
+        <div class="modal-backdrop">
+            <div class="modal-box" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        구성원 일괄 등록 (ORG02-M2)
+                    </div>
+                    <button class="modal-close" onclick="window.history.back()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- 4-Step 인디케이터 -->
+                    <div class="step-bar">
+                        <div class="step-item is-current" id="step-1"><div class="step-num">1</div><div class="step-label">양식 다운로드</div></div>
+                        <div class="step-connector" id="conn-1"></div>
+                        <div class="step-item" id="step-2"><div class="step-num">2</div><div class="step-label">파일 업로드</div></div>
+                        <div class="step-connector" id="conn-2"></div>
+                        <div class="step-item" id="step-3"><div class="step-num">3</div><div class="step-label">검증 결과</div></div>
+                        <div class="step-connector" id="conn-3"></div>
+                        <div class="step-item" id="step-4"><div class="step-num">4</div><div class="step-label">완료</div></div>
+                    </div>
+
+                    <!-- STEP 1 -->
+                    <div class="panel is-active" data-step="1">
+                        <div style="font-size: 14px; color: var(--text-black); margin-bottom: 8px;">
+                            <strong>구성원 일괄 등록을 위한 엑셀 양식</strong>을 다운로드한 뒤 작성해 주세요.
+                        </div>
+                        <button class="download-btn-large" type="button" onclick="window.DYLayout._soon(event, 'employees_template.xlsx 다운로드')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            양식 다운로드 (employees_template.xlsx)
+                        </button>
+
+                        <div class="guide-box">
+                            <div class="title">📋 양식 작성 가이드</div>
+                            <ul>
+                                <li><strong>이름·이메일·부서명·직급·권한</strong>은 필수 항목입니다</li>
+                                <li>권한 코드: <code>CEO / GM / SM / SHM / WKR</code></li>
+                                <li>직종 코드: 사무직 / 현장직 / 관리감독자 / 안전보건관리자 / 기타</li>
+                                <li><strong>부서명은 시스템 내 부서명과 정확히 일치</strong>해야 합니다</li>
+                                <li>이메일은 시스템 내 UNIQUE — 중복 시 해당 행은 오류 처리됩니다</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 -->
+                    <div class="panel" data-step="2">
+                        <div style="font-size: 14px; color: var(--text-black); margin-bottom: 14px;">
+                            작성 완료된 파일을 업로드하세요. <span style="color: var(--text-gray);">(xlsx만 허용 · 최대 10MB)</span>
+                        </div>
+                        <div class="upload-zone has-file" onclick="window.DYLayout._soon(event, '파일 선택')">
+                            <div class="icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <div class="text">파일이 선택되었습니다</div>
+                            <div class="hint">다시 선택하려면 클릭하세요</div>
+                        </div>
+
+                        <div class="file-info-card">
+                            <span class="icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </span>
+                            <div class="body">
+                                <div class="name">employees_2026-05-11.xlsx</div>
+                                <div class="meta">데이터 행 수: 50건 · 사이즈 24 KB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3 -->
+                    <div class="panel" data-step="3">
+                        <div class="validate-summary">
+                            <div class="validate-stat"><span class="num ok">47</span><span class="label">정상</span></div>
+                            <div class="validate-stat"><span class="num err">3</span><span class="label">오류</span></div>
+                            <div class="validate-stat"><span class="num">50</span><span class="label">총 행</span></div>
+                            <button class="btn btn-outline btn-sm" style="margin-left: auto;" onclick="window.DYLayout._soon(event, '오류 로그 다운로드')">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+                                오류 로그
+                            </button>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">오류 행 목록 (3건)</div>
+                        <div class="validate-list">
+                            <div class="validate-row err">
+                                <span class="line">행 7</span>
+                                <span class="name">박○○ (park@damyang.go.kr)</span>
+                                <span class="msg">이메일 중복 — 시스템 내 이미 존재</span>
+                            </div>
+                            <div class="validate-row err">
+                                <span class="line">행 23</span>
+                                <span class="name">김▲▲ (kim@x.com)</span>
+                                <span class="msg">부서명 "안전보건과" — 일치하는 부서 없음 (안전건설과?)</span>
+                            </div>
+                            <div class="validate-row err">
+                                <span class="line">행 41</span>
+                                <span class="name">이●● (lee@y.com)</span>
+                                <span class="msg">권한 코드 "ADMIN" — 유효하지 않음 (CEO/GM/SM/SHM/WKR)</span>
+                            </div>
+                            <div class="validate-row ok">
+                                <span class="line">행 1</span>
+                                <span class="name">홍길동 (hong@damyang.go.kr)</span>
+                                <span class="msg" style="color: var(--status-success-fg);">정상</span>
+                            </div>
+                            <div class="validate-row ok">
+                                <span class="line">행 2</span>
+                                <span class="name">박안전 (park2@damyang.go.kr)</span>
+                                <span class="msg" style="color: var(--status-success-fg);">정상</span>
+                            </div>
+                            <div class="validate-row ok">
+                                <span class="line">… 외 45행</span>
+                                <span class="name">정상 처리 가능</span>
+                                <span class="msg" style="color: var(--status-success-fg);">정상</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4 -->
+                    <div class="panel" data-step="4">
+                        <div class="complete-msg">
+                            <div class="complete-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="complete-text">일괄 등록이 완료되었습니다</div>
+                            <div class="complete-detail">
+                                정상 <strong>47건</strong> 등록 완료 · 오류 <strong style="color:var(--status-danger-fg);">3건</strong> 제외<br>
+                                <span style="font-size:12px;">audit_logs에 일괄 등록 이력이 기록되었습니다.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="left" id="footer-left">STEP 1 — 양식 다운로드 후 다음 단계로</div>
+                    <div class="right" id="footer-right">
+                        <button class="btn btn-outline" type="button" onclick="window.BulkForm.prev()" id="btn-prev" style="display:none;">이전</button>
+                        <button class="btn btn-primary" type="button" onclick="window.BulkForm.next()" id="btn-next">다음 →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        let currentStep = 1;
+        const totalSteps = 4;
+        const stepMessages = {
+            1: 'STEP 1 — 양식 다운로드 후 다음 단계로',
+            2: 'STEP 2 — 작성 완료된 파일 업로드',
+            3: 'STEP 3 — 정상 47건만 등록하시려면 [정상 행 등록]',
+            4: 'STEP 4 — 일괄 등록 완료',
+        };
+
+        function render() {
+            // 패널
+            document.querySelectorAll('.panel').forEach(p => {
+                p.classList.toggle('is-active', parseInt(p.dataset.step, 10) === currentStep);
+            });
+            // 인디케이터
+            for (let i = 1; i <= totalSteps; i++) {
+                const item = document.getElementById('step-' + i);
+                item.classList.toggle('is-current', i === currentStep);
+                item.classList.toggle('is-done', i < currentStep);
+                if (i < totalSteps) {
+                    document.getElementById('conn-' + i).classList.toggle('is-done', i < currentStep);
+                }
+            }
+            // 푸터
+            document.getElementById('footer-left').textContent = stepMessages[currentStep];
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            btnPrev.style.display = currentStep > 1 && currentStep < 4 ? '' : 'none';
+            if (currentStep === 3) btnNext.textContent = '정상 47건 등록';
+            else if (currentStep === 4) {
+                btnNext.textContent = '완료';
+                btnNext.onclick = () => window.history.back();
+            }
+            else btnNext.textContent = '다음 →';
+        }
+
+        window.BulkForm = {
+            next() { if (currentStep < totalSteps) { currentStep++; render(); } },
+            prev() { if (currentStep > 1) { currentStep--; render(); } }
+        };
+    })();
+    </script>
+</body>
+</html>

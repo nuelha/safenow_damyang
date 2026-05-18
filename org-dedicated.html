@@ -940,9 +940,17 @@
             render();
         };
 
-        /* ─── 선임 모달 ─── */
+        /* ─── 선임 모달 (STF04-M) — 별도 페이지로 라우팅 ─── */
         let currentAppoint = null;
         window.openAppoint = function (deptId, roleKey, isEdit) {
+            // 새 STF04-M 별도 페이지로 라우팅
+            const params = new URLSearchParams();
+            if (deptId) params.set('dept', deptId);
+            if (roleKey) params.set('role', roleKey);
+            if (isEdit) params.set('mode', 'edit');
+            window.location.href = 'stf-assign-modal.html' + (params.toString() ? '?' + params : '');
+            return;
+
             const d = DEPTS.find(x => x.id === deptId);
             if (!d) return;
             const role = d.roles[roleKey];

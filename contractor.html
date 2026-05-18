@@ -105,7 +105,7 @@
                                 <input type="text" class="input w-64" placeholder="공사명 / 수급업체 검색...">
                                 <select class="select"><option>전체 점검상태</option><option>점검완료</option><option>진행중</option><option>미시행</option></select>
                             </div>
-                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="공사">
+                            <button class="btn btn-primary" onclick="window.location.href='con-step1.html'" data-tab-label="공사">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 공사 등록
                             </button>
@@ -124,7 +124,7 @@
                                             <td class="text-right font-medium">85,000,000원</td>
                                             <td>(주)한국안전건설</td>
                                             <td class="text-center"><span class="badge badge-success">점검완료</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-600">담양군청</td>
@@ -133,7 +133,7 @@
                                             <td class="text-right font-medium">12,000,000원</td>
                                             <td>전남소방기술(주)</td>
                                             <td class="text-center"><span class="badge badge-info">진행중</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-600">담양군청</td>
@@ -142,7 +142,7 @@
                                             <td class="text-right font-medium">42,500,000원</td>
                                             <td>광주배관공사(주)</td>
                                             <td class="text-center"><span class="badge badge-gray">미시행</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -154,7 +154,7 @@
                     <div class="tab-pane hidden" data-pane="service">
                         <div class="flex justify-between items-center mb-4">
                             <input type="text" class="input w-64" placeholder="용역명 검색...">
-                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="용역">
+                            <button class="btn btn-primary" onclick="window.location.href='con-step1.html'" data-tab-label="용역">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 용역 등록
                             </button>
@@ -173,7 +173,7 @@
                                             <td class="text-right font-medium">68,000,000원</td>
                                             <td>(주)담양종합관리</td>
                                             <td class="text-center"><span class="badge badge-info">진행중</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-600">담양군청</td>
@@ -182,7 +182,7 @@
                                             <td class="text-right font-medium">28,000,000원</td>
                                             <td>전남전기안전공사</td>
                                             <td class="text-center"><span class="badge badge-success">점검완료</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -194,7 +194,7 @@
                     <div class="tab-pane hidden" data-pane="purchase">
                         <div class="flex justify-between items-center mb-4">
                             <input type="text" class="input w-64" placeholder="품목명 검색...">
-                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="구매설치">
+                            <button class="btn btn-primary" onclick="window.location.href='con-step1.html'" data-tab-label="구매설치">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 구매설치 등록
                             </button>
@@ -213,7 +213,7 @@
                                             <td class="text-right font-medium">155,000,000원</td>
                                             <td>(주)스마트시큐어</td>
                                             <td class="text-center"><span class="badge badge-info">진행중</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-600">담양군청</td>
@@ -222,7 +222,7 @@
                                             <td class="text-right font-medium">22,000,000원</td>
                                             <td>한국전산설비(주)</td>
                                             <td class="text-center"><span class="badge badge-success">점검완료</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -234,7 +234,7 @@
                     <div class="tab-pane hidden" data-pane="trust">
                         <div class="flex justify-between items-center mb-4">
                             <input type="text" class="input w-64" placeholder="사업명 검색...">
-                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="위탁사업">
+                            <button class="btn btn-primary" onclick="window.location.href='con-step1.html'" data-tab-label="위탁사업">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 위탁사업 등록
                             </button>
@@ -253,7 +253,7 @@
                                             <td class="text-right font-medium">320,000,000원</td>
                                             <td>(사)담양문화재단</td>
                                             <td class="text-center"><span class="badge badge-success">점검완료</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-600">담양군청</td>
@@ -262,7 +262,7 @@
                                             <td class="text-right font-medium">540,000,000원</td>
                                             <td>(사)담양복지재단</td>
                                             <td class="text-center"><span class="badge badge-info">진행중</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -274,7 +274,7 @@
                     <div class="tab-pane hidden" data-pane="etc">
                         <div class="flex justify-between items-center mb-4">
                             <input type="text" class="input w-64" placeholder="사업명 검색...">
-                            <button class="btn btn-primary" onclick="openModal('contractor-modal')" data-tab-label="기타">
+                            <button class="btn btn-primary" onclick="window.location.href='con-step1.html'" data-tab-label="기타">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 기타 등록
                             </button>
@@ -292,7 +292,7 @@
                                             <td class="text-gray-600 text-sm">2026.01.01<br>~2026.12.31</td>
                                             <td>대한주차관리(주)</td>
                                             <td class="text-center"><span class="badge badge-info">진행중</span></td>
-                                            <td class="text-center"><button class="btn btn-outline btn-sm">상세</button></td>
+                                            <td class="text-center"><button class="btn btn-outline btn-sm" onclick="window.location.href='con-detail.html'">상세</button></td>
                                         </tr>
                                     </tbody>
                                 </table>

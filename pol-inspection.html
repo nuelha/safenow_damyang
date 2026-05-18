@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경영방침 점검 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── POL04-V 전용 ─── */
+
+        /* KPI 4분할 */
+        .pol-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .pol-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .pol-kpi-cell:last-child { border-right: none; }
+        .pol-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .pol-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .pol-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .pol-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .pol-kpi-icon.danger { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .pol-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .pol-kpi-value { font-size: 28px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .pol-kpi-value .small { font-size: 14px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .pol-kpi-value.success { color: var(--status-success-fg); }
+        .pol-kpi-value.danger { color: var(--status-danger-fg); }
+        .pol-kpi-value.warning { color: var(--status-warning-fg); }
+        .pol-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 시기 도래 알림 */
+        .pol-due-banner {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 18px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-button);
+            margin-top: 16px;
+        }
+        .pol-due-banner .text { flex: 1; font-size: 13px; color: var(--status-warning-fg); }
+        .pol-due-banner .text strong { font-weight: 700; }
+
+        /* 점검 유형 chip */
+        .pol-type-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .pol-type-chip.regular { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .pol-type-chip.ad-hoc  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+
+        /* 결과 chip */
+        .pol-result-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .pol-result-chip.compliant { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .pol-result-chip.non-compliant { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .pol-result-chip.needs-improvement { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+
+        /* 점검 항목 표시 (참고) */
+        .pol-template-card {
+            padding: 18px 22px;
+            background: var(--brand-100);
+            border-radius: var(--radius-card);
+            border: 1px solid var(--status-success-border);
+        }
+        .pol-template-card h3 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 10px;
+        }
+        .pol-template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 16px;
+            font-size: 13px;
+            color: var(--text-black);
+        }
+        .pol-template-grid .item {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pol-template-grid .item .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px;
+            background: white;
+            color: var(--main-dark2);
+            font-size: 11px; font-weight: 700;
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+    </style>
+</head>
+<body data-dy-page="pol-check" data-page-title="경영방침 점검" data-page-subtitle="분기·반기 정기 점검 및 결재 관리 (POL04-V)">
+    <main>
+
+        <!-- ─── 시기 도래 알림 ─── -->
+        <div class="pol-due-banner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--status-warning-fg);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="text">
+                <strong>2026 Q2 정기 점검 시기 도래</strong> — 직전 점검(2026-04-15) 이후 3개월 경과. 점검자 지정 후 점검을 시작하세요.
+            </div>
+            <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '점검자 지정 모달')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                점검자 지정
+            </button>
+        </div>
+
+        <!-- ─── KPI 4분할 ─── -->
+        <section class="pol-kpi-grid">
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">올해 점검 횟수</span>
+                    <span class="pol-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value">2<span class="small">회</span></div>
+                <div class="pol-kpi-sub">2026년 누적 (분기 1회 권장 · 2026 Q1·Q2 진행)</div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">적합</span>
+                    <span class="pol-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value success">5<span class="small">건</span></div>
+                <div class="pol-kpi-sub">전체 7건 중 71%</div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">보완 필요</span>
+                    <span class="pol-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value warning">2<span class="small">건</span></div>
+                <div class="pol-kpi-sub">개선조치 자동 생성 (IMP 연계)</div>
+            </div>
+            <div class="pol-kpi-cell">
+                <div class="pol-kpi-head">
+                    <span class="pol-kpi-title">부적합</span>
+                    <span class="pol-kpi-icon danger">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </span>
+                </div>
+                <div class="pol-kpi-value danger">0<span class="small">건</span></div>
+                <div class="pol-kpi-sub">올해 부적합 없음 (양호)</div>
+            </div>
+        </section>
+
+        <!-- ─── 필터 + 등록 ─── -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">연도</span>
+                <select class="select">
+                    <option>2026년</option>
+                    <option>2025년</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">점검 유형</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>정기</option>
+                    <option>수시</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">결과</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>적합</option>
+                    <option>부적합</option>
+                    <option>보완 필요</option>
+                </select>
+            </div>
+            <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '점검 지정 모달')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                점검 지정
+            </button>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- ─── 점검 이력 테이블 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">점검 이력</h2>
+                <span class="text-muted" style="font-size:13px;">2026년 2회 · 2025년 5회 진행</span>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:130px;"><col><col style="width:100px;"><col style="width:130px;"><col style="width:90px;"><col style="width:120px;"><col style="width:90px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>점검일자</th>
+                        <th>대상 방침</th>
+                        <th style="text-align:center;">점검 유형</th>
+                        <th>점검자</th>
+                        <th style="text-align:center;">결과</th>
+                        <th style="text-align:center;">결재</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '점검 상세 (POL04-D) — 2026 Q1')">
+                        <td>2026-04-15</td>
+                        <td><strong>담양군 안전보건 경영방침</strong> <span style="font-size:11px; color:var(--text-gray);">v2.5</span></td>
+                        <td style="text-align:center;"><span class="pol-type-chip regular">정기 (1Q)</span></td>
+                        <td>김안전 (자치행정과)</td>
+                        <td style="text-align:center;"><span class="pol-result-chip compliant">적합</span></td>
+                        <td style="text-align:center;"><span class="chip-status success">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검 상세')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '점검 상세 — 2026 Q1 보완')">
+                        <td>2026-04-15</td>
+                        <td><strong>담양군 안전보건 경영방침</strong> <span style="font-size:11px; color:var(--text-gray);">v2.5</span></td>
+                        <td style="text-align:center;"><span class="pol-type-chip ad-hoc">수시</span></td>
+                        <td>이안전 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-result-chip needs-improvement">보완 필요</span></td>
+                        <td style="text-align:center;"><span class="chip-status success">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검 상세')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '점검 상세 — 2026 Q4 (2026-01-10)')">
+                        <td>2026-01-10</td>
+                        <td><strong>담양군 안전보건 경영방침</strong> <span style="font-size:11px; color:var(--text-gray);">v2.0</span></td>
+                        <td style="text-align:center;"><span class="pol-type-chip regular">정기 (4Q)</span></td>
+                        <td>이안전 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-result-chip needs-improvement">보완 필요</span></td>
+                        <td style="text-align:center;"><span class="chip-status success">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검 상세')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '점검 상세 — 2025 Q3')">
+                        <td>2025-10-12</td>
+                        <td><strong>담양군 안전보건 경영방침</strong> <span style="font-size:11px; color:var(--text-gray);">v2.0</span></td>
+                        <td style="text-align:center;"><span class="pol-type-chip regular">정기 (3Q)</span></td>
+                        <td>김안전 (자치행정과)</td>
+                        <td style="text-align:center;"><span class="pol-result-chip compliant">적합</span></td>
+                        <td style="text-align:center;"><span class="chip-status success">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검 상세')">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '점검 상세 — 2025 Q2')">
+                        <td>2025-07-08</td>
+                        <td><strong>담양군 안전보건 경영방침</strong> <span style="font-size:11px; color:var(--text-gray);">v2.0</span></td>
+                        <td style="text-align:center;"><span class="pol-type-chip regular">정기 (2Q)</span></td>
+                        <td>박안전 (안전건설과)</td>
+                        <td style="text-align:center;"><span class="pol-result-chip compliant">적합</span></td>
+                        <td style="text-align:center;"><span class="chip-status success">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '점검 상세')">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ─── 점검표 항목 (참고용) ─── -->
+        <section class="pol-template-card">
+            <h3>📋 경영방침 점검표 항목 (5개 영역 · 총 10개 점검 항목)</h3>
+            <div class="pol-template-grid">
+                <div class="item"><span class="num">§1.1</span> KPI 목표값 대비 달성 여부</div>
+                <div class="item"><span class="num">§1.2</span> 미달 KPI 원인 분석 수행</div>
+                <div class="item"><span class="num">§2.1</span> 안전관리자 법정 인원 충족</div>
+                <div class="item"><span class="num">§2.2</span> 안전보건교육 이수율</div>
+                <div class="item"><span class="num">§3.1</span> 정기 위험성평가 시행률</div>
+                <div class="item"><span class="num">§3.2</span> 개선조치 이행률</div>
+                <div class="item"><span class="num">§4.1</span> 도급업체 평가 적격률</div>
+                <div class="item"><span class="num">§4.2</span> 협의체 운영 정기 시행</div>
+                <div class="item"><span class="num">§5.1</span> 의견청취 정기 실시</div>
+                <div class="item"><span class="num">§5.2</span> 산업안전보건위원회 회의</div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--status-success-border); font-size: 12px; color: var(--text-gray);">
+                점검표 마스터는 <a href="pln-settings.html" style="color:var(--main-dark);">안전계획 설정 → 점검표 마스터</a>에서 관리합니다.
+                보완 필요·부적합 항목은 점검 완료 시 <strong style="color:var(--text-black);">개선조치(IMP)</strong>로 자동 등록됩니다.
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

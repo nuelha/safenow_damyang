@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제증명 발급 이력 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .crt-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .crt-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .crt-kpi-cell:last-child { border-right: none; }
+        .crt-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .crt-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .crt-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .crt-kpi-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .crt-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .crt-kpi-value { font-size: 28px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .crt-kpi-value .small { font-size: 14px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .crt-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 증명서 유형 chip */
+        .crt-type-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .crt-type-chip.compliance { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .crt-type-chip.inspection { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+
+        /* 상태 chip */
+        .crt-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .crt-status-chip.pending { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .crt-status-chip.issued  { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .crt-status-chip.revoked { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+    </style>
+</head>
+<body data-dy-page="crt-history" data-page-title="제증명 발급 이력" data-page-subtitle="이행확인서·점검결과 증명서 발급 현황 (CRT01-V · 결정사항 #23)">
+    <main>
+        <!-- 필터 + 발급 버튼 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">연도</span>
+                <select class="select"><option>2026년</option><option>2025년</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">유형</span>
+                <select class="select"><option>전체</option><option>이행확인서</option><option>점검결과 증명서</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select"><option>전체</option><option>발급 중</option><option>발급 완료</option><option>취소</option></select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="신청자·관리대상 검색">
+                <button class="search-submit" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>검색</button>
+            </div>
+            <button class="btn-register" type="button" onclick="window.location.href='crt-form.html'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                증명서 발급
+            </button>
+        </div>
+
+        <!-- KPI -->
+        <section class="crt-kpi-grid">
+            <div class="crt-kpi-cell">
+                <div class="crt-kpi-head">
+                    <span class="crt-kpi-title">이행확인서</span>
+                    <span class="crt-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+                <div class="crt-kpi-value">18<span class="small">건</span></div>
+                <div class="crt-kpi-sub">2026년 누적 · 외부 기관 제출용</div>
+            </div>
+            <div class="crt-kpi-cell">
+                <div class="crt-kpi-head">
+                    <span class="crt-kpi-title">점검결과 증명서</span>
+                    <span class="crt-kpi-icon info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                </div>
+                <div class="crt-kpi-value">9<span class="small">건</span></div>
+                <div class="crt-kpi-sub">시설 안전점검 결과 증명</div>
+            </div>
+            <div class="crt-kpi-cell">
+                <div class="crt-kpi-head">
+                    <span class="crt-kpi-title">총 발급</span>
+                    <span class="crt-kpi-icon success"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+                </div>
+                <div class="crt-kpi-value">27<span class="small">건</span></div>
+                <div class="crt-kpi-sub">발급 완료 25 · 진행 중 2</div>
+            </div>
+        </section>
+
+        <!-- 발급 이력 테이블 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">발급 이력</h2>
+                <span class="text-muted" style="font-size:13px;">최근 10건 표시</span>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:110px;"><col><col style="width:130px;"><col style="width:140px;"><col style="width:90px;"><col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>발급일자</th>
+                        <th>유형 · 발급번호</th>
+                        <th>신청자</th>
+                        <th>대상</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기 — CRT-2026-027')">
+                        <td>2026-05-11</td>
+                        <td><span class="crt-type-chip compliance">이행확인서</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-027</span></td>
+                        <td>홍길동 (개인)</td>
+                        <td>군청 청사 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'PDF 보기')">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기 — CRT-2026-026')">
+                        <td>2026-05-10</td>
+                        <td><span class="crt-type-chip inspection">점검결과</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-026</span></td>
+                        <td>(주)A건설 (법인)</td>
+                        <td>청사 시설 보수공사</td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, 'PDF 보기')">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기 — CRT-2026-025')">
+                        <td>2026-05-08</td>
+                        <td><span class="crt-type-chip compliance">이행확인서</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-025</span></td>
+                        <td>농기계임대 (개인)</td>
+                        <td>농업기술센터</td>
+                        <td style="text-align:center;"><span class="crt-status-chip pending">발급 중 (결재)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '취소')">취소</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기')">
+                        <td>2026-05-05</td>
+                        <td><span class="crt-type-chip inspection">점검결과</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-024</span></td>
+                        <td>군민체육관 운영팀</td>
+                        <td>군민체육관 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation();">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기')">
+                        <td>2026-05-02</td>
+                        <td><span class="crt-type-chip compliance">이행확인서</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-023</span></td>
+                        <td>(주)전남환경 (법인)</td>
+                        <td>환경자원시설</td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation();">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기')">
+                        <td>2026-04-28</td>
+                        <td><span class="crt-type-chip inspection">점검결과</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-022</span></td>
+                        <td>죽녹원 관리사무소</td>
+                        <td>죽녹원 <span class="type-tag">시설</span></td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation();">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기')">
+                        <td>2026-04-22</td>
+                        <td><span class="crt-type-chip compliance">이행확인서</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-021</span></td>
+                        <td>박○○ (개인)</td>
+                        <td>담양읍 행정복지센터</td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation();">보기</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '증명서 PDF 보기')">
+                        <td>2026-04-15</td>
+                        <td><span class="crt-type-chip compliance">이행확인서</span> <span style="font-family:'SF Mono', monospace; font-size:11px; color:var(--text-gray);">CRT-2026-020</span></td>
+                        <td>(주)광주배관공사 (법인)</td>
+                        <td>군민체육관 배관 교체</td>
+                        <td style="text-align:center;"><span class="crt-status-chip issued">발급 완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation();">보기</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="4"></div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

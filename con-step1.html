@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계약 STEP 1 기본정보 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 공통 STEP 인디케이터 */
+        .con-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .con-step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .con-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .con-step-item.is-done .con-step-num { background: var(--status-success-fg); color: white; }
+        .con-step-item.is-current .con-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .con-step-text { display: flex; flex-direction: column; }
+        .con-step-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+        .con-step-name { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .con-step-item.is-done .con-step-name { color: var(--status-success-fg); }
+        .con-step-item.is-current .con-step-name { color: var(--main-dark2); }
+        .con-step-connector { flex: 0 0 30px; height: 2px; background: var(--gray-100); margin: 0 8px; }
+        .con-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 폼 그리드 */
+        .con-form-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            row-gap: 18px;
+            column-gap: 16px;
+            padding: 24px;
+        }
+        .con-form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+            line-height: 36px;
+        }
+        .con-form-grid .label.required::after {
+            content: " *"; color: var(--status-danger-fg);
+        }
+        .con-form-grid .value { display: flex; flex-direction: column; gap: 6px; }
+
+        /* 라디오 그룹 */
+        .con-radio-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .con-radio-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 10px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            transition: all .12s ease;
+        }
+        .con-radio-item:hover { border-color: var(--main); }
+        .con-radio-item.is-selected {
+            background: var(--brand-100);
+            border-color: var(--main);
+            color: var(--main-dark2);
+        }
+        .con-radio-item input { margin: 0; }
+
+        /* 입력 필드 */
+        .con-input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            height: 38px;
+        }
+        .con-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .con-input:disabled { background: var(--gray-100); color: var(--text-gray); }
+        .con-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .con-date-range { display: flex; align-items: center; gap: 8px; }
+        .con-date-range .con-input { max-width: 200px; }
+
+        /* hint */
+        .con-hint { font-size: 12px; color: var(--text-gray); line-height: 1.5; }
+        .con-hint.warn { color: var(--status-warning-fg); }
+        .con-hint.info { color: var(--status-info-fg); }
+
+        /* 관리대상 인라인 정보 */
+        .target-inline-info {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 4px;
+            font-size: 12px; color: var(--text-gray);
+        }
+        .target-inline-info .sep { color: var(--text-lightgray); }
+
+        /* 폼 액션 */
+        .con-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .con-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .con-form-actions .buttons { display: flex; gap: 8px; }
+
+        /* 출처 배지 (e호조 자동 시) */
+        .source-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            font-size: 12px; font-weight: 700;
+            color: var(--status-info-fg);
+        }
+    </style>
+</head>
+<body data-dy-page="contractor" data-page-title="계약 등록 — STEP 1" data-page-subtitle="기본정보 입력 (4-Step Wizard 1단계)">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="contractor.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                도급계약 목록
+            </a>
+        </div>
+
+        <!-- ─── 4-Step 인디케이터 ─── -->
+        <section class="con-step-bar">
+            <div class="con-step-item is-current">
+                <div class="con-step-num">1</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 1</span>
+                    <span class="con-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">2</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 2</span>
+                    <span class="con-step-name">수급업체 평가</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">3</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 3</span>
+                    <span class="con-step-name">선정 + 결재</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">4</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 4</span>
+                    <span class="con-step-name">초대 + 서약</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 폼 ─── -->
+        <section class="card" style="padding: 0;">
+            <div class="card-header" style="padding: 16px 24px;">
+                <h2 class="card-title">청사 시설 보수공사 — 기본정보</h2>
+                <span class="source-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    e호조 자동 #2026-12
+                </span>
+            </div>
+
+            <div class="con-form-grid">
+                <!-- 출처 -->
+                <span class="label required">출처</span>
+                <div class="value">
+                    <div class="con-radio-group">
+                        <label class="con-radio-item">
+                            <input type="radio" name="source"> 수동 등록
+                        </label>
+                        <label class="con-radio-item is-selected">
+                            <input type="radio" name="source" checked> 차세대 e호조 자동 import
+                        </label>
+                    </div>
+                    <span class="con-hint info">
+                        e호조 자동 import — 사업명·발주처·예산은 자동으로 채워졌으며 수정 불가합니다. (마지막 동기화 2026-05-13 06:00)
+                    </span>
+                </div>
+
+                <!-- 관리대상 -->
+                <span class="label required">관리대상</span>
+                <div class="value">
+                    <select class="con-input">
+                        <option>군청 청사 (시설 · 공중이용시설 · 1종)</option>
+                        <option>군민체육관 (시설)</option>
+                        <option>담양읍 행정복지센터 (시설)</option>
+                        <option>환경자원시설 (업무)</option>
+                        <option>죽녹원 (시설)</option>
+                    </select>
+                    <div class="target-inline-info">
+                        담당부서: <strong style="color:var(--text-black);">자치행정과</strong>
+                        <span class="sep">·</span> 유형: <span class="type-tag">시설</span>
+                        <span class="sep">·</span> 중대재해법: 공중이용시설 1종
+                    </div>
+                </div>
+
+                <!-- 계약유형 -->
+                <span class="label required">계약유형</span>
+                <div class="value">
+                    <div class="con-radio-group">
+                        <label class="con-radio-item is-selected">
+                            <input type="radio" name="type" checked> 공사 (CONSTRUCTION)
+                        </label>
+                        <label class="con-radio-item">
+                            <input type="radio" name="type"> 용역 (SERVICE)
+                        </label>
+                        <label class="con-radio-item">
+                            <input type="radio" name="type"> 구매설치 (PURCHASE_INSTALL)
+                        </label>
+                        <label class="con-radio-item">
+                            <input type="radio" name="type"> 위탁사업 (CONSIGNMENT)
+                        </label>
+                        <label class="con-radio-item">
+                            <input type="radio" name="type"> 기타 (OTHER)
+                        </label>
+                    </div>
+                    <span class="con-hint warn">
+                        계약유형 변경 시 STEP 2 평가서(공사 안전관리 평가서)와 STEP 4 서약서가 자동으로 변경됩니다.
+                    </span>
+                </div>
+
+                <!-- 사업명 -->
+                <span class="label required">사업명</span>
+                <div class="value">
+                    <input class="con-input" type="text" value="청사 시설 보수공사" disabled>
+                    <span class="con-hint">e호조 자동 import — 수정 불가 (1~200자)</span>
+                </div>
+
+                <!-- 발주처 -->
+                <span class="label">발주처</span>
+                <div class="value">
+                    <input class="con-input" type="text" value="자치행정과" disabled>
+                    <span class="con-hint">e호조 자동 import — 수정 불가</span>
+                </div>
+
+                <!-- 계약 기간 -->
+                <span class="label required">계약 기간</span>
+                <div class="value">
+                    <div class="con-date-range">
+                        <input class="con-input" type="date" value="2026-04-01">
+                        <span style="color:var(--text-gray);">~</span>
+                        <input class="con-input" type="date" value="2026-08-31">
+                        <span style="font-size:12px; color:var(--text-gray); margin-left:8px;">총 153일</span>
+                    </div>
+                </div>
+
+                <!-- 예산 -->
+                <span class="label">예산</span>
+                <div class="value">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input class="con-input" type="text" value="500,000,000" disabled style="max-width:240px;">
+                        <span style="font-size:14px; color:var(--text-gray); font-weight:600;">원 (5억)</span>
+                    </div>
+                    <span class="con-hint warn">
+                        ⚠ 공사금액 5억 이상 — 산안법 시행령 §16: 안전관리자 1명 / 안전보건관리책임자 1명 필요. STEP 3 결재 진행 시 자동 검증됩니다.
+                    </span>
+                </div>
+
+                <!-- 계약 내용 -->
+                <span class="label">계약 내용</span>
+                <div class="value">
+                    <textarea class="con-textarea" maxlength="2000">군청 본관 외벽 보수, 옥상 방수공사, 1·2층 화장실 리모델링, 노후 전선·배관 교체 작업을 포함하는 종합 시설 보수공사입니다. 작업 기간 중 청사 내 업무는 정상 운영되므로 소음·분진 관리 및 작업 동선 분리가 중요합니다.</textarea>
+                    <span class="con-hint">최대 2000자 · <strong style="color:var(--text-black);">208 / 2000</strong></span>
+                </div>
+
+                <!-- 기본 평가자 -->
+                <span class="label">기본 평가자</span>
+                <div class="value">
+                    <select class="con-input" style="max-width:340px;">
+                        <option>김안전 (안전건설과 · SHM) — 선택됨</option>
+                        <option>박안전 (안전건설과 · SHM)</option>
+                        <option>한시설 (시설관리과 · SHM)</option>
+                        <option>최성호 (안전건설과 · SM)</option>
+                    </select>
+                    <span class="con-hint">시공 시작 후 자동 생성되는 정기·종료평가의 기본 평가자입니다. 업체별로 변경 가능합니다.</span>
+                </div>
+            </div>
+
+            <div class="con-form-actions">
+                <div class="left">필수 항목(*) 입력 후 다음 단계로 진행합니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장 (status=DRAFT)')">임시저장</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='con-step2.html?id=2026-12'">
+                        다음 STEP
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('.con-radio-group').forEach(grp => {
+            grp.querySelectorAll('.con-radio-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    grp.querySelectorAll('.con-radio-item').forEach(x => x.classList.remove('is-selected'));
+                    item.classList.add('is-selected');
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 오류 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        body > main { width: 100%; max-width: 480px; }
+
+        .err-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+            text-align: center;
+        }
+
+        .err-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .err-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .err-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+
+        .err-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-black);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .err-code {
+            display: inline-block;
+            padding: 3px 10px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            margin-bottom: 18px;
+        }
+        .err-desc {
+            font-size: 14px;
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+        .err-desc strong { color: var(--text-black); font-weight: 700; }
+
+        /* 오류 상세 박스 */
+        .err-detail-box {
+            text-align: left;
+            padding: 14px 16px;
+            background: var(--gray-100);
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+        .err-detail-box .label { color: var(--text-lightgray); }
+        .err-detail-box .value { color: var(--text-black); font-weight: 600; font-family: 'SF Mono', monospace; }
+        .err-detail-box .row { display: grid; grid-template-columns: 100px 1fr; gap: 6px; padding: 3px 0; }
+
+        /* 액션 버튼들 */
+        .err-actions {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .err-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .12s ease;
+            border: none;
+            width: 100%;
+        }
+        .err-btn-primary {
+            background: linear-gradient(135deg, #047857, #10b981);
+            color: white;
+        }
+        .err-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+        .err-btn-outline {
+            background: white;
+            color: var(--main-dark);
+            border: 1px solid var(--card-line);
+        }
+        .err-btn-outline:hover { border-color: var(--main); background: var(--brand-100); }
+
+        .err-help {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid var(--card-line);
+            font-size: 12px;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+        .err-help strong { color: var(--text-black); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="err-card">
+            <div class="err-icon" id="err-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+
+            <div class="err-title" id="err-title">세션이 만료되었습니다</div>
+            <div class="err-code" id="err-code">code: session_expired</div>
+            <div class="err-desc" id="err-desc">
+                보안을 위해 일정 시간 동안 사용하지 않은 세션을 자동으로 종료했습니다.<br>
+                <strong>다시 로그인</strong>해 주세요.
+            </div>
+
+            <!-- 오류 상세 -->
+            <div class="err-detail-box">
+                <div class="row"><span class="label">시간</span><span class="value" id="err-time">2026-05-13 14:32:08 KST</span></div>
+                <div class="row"><span class="label">요청 ID</span><span class="value">req_a1b2c3d4e5f6</span></div>
+                <div class="row"><span class="label">사용자</span><span class="value" id="err-user">kim@a.co.kr</span></div>
+            </div>
+
+            <!-- 액션 버튼들 -->
+            <div class="err-actions" id="err-actions">
+                <a class="err-btn err-btn-primary" href="auth-login.html">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    다시 로그인
+                </a>
+                <a class="err-btn err-btn-outline" href="index.html">
+                    홈으로 이동
+                </a>
+            </div>
+
+            <div class="err-help">
+                <strong>문제가 지속되나요?</strong><br>
+                기관 안전건설과 (061-380-XXXX) 또는 시스템 관리자에게 문의하세요.
+            </div>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            'use strict';
+            const ERRORS = {
+                session_expired: {
+                    icon: 'warn',
+                    title: '세션이 만료되었습니다',
+                    desc: '보안을 위해 일정 시간 동안 사용하지 않은 세션을 자동으로 종료했습니다.<br><strong>다시 로그인</strong>해 주세요.',
+                    primary: { text: '다시 로그인', href: 'auth-login.html', icon: 'login' }
+                },
+                sso_failed: {
+                    icon: 'danger',
+                    title: '행정포털 인증에 실패했습니다',
+                    desc: 'SSO 토큰 검증 중 오류가 발생했습니다.<br>잠시 후 다시 시도하거나 행정포털을 통해 재접속해 주세요.',
+                    primary: { text: '행정포털로 이동', href: '#', icon: 'login' }
+                },
+                sso_timeout: {
+                    icon: 'warn',
+                    title: '인증 처리 시간이 초과되었습니다',
+                    desc: '행정포털 응답이 5초 이상 지연되어 인증을 중단했습니다.<br>잠시 후 다시 시도해 주세요.',
+                    primary: { text: '다시 인증', href: 'auth-sso.html', icon: 'retry' }
+                },
+                user_inactive: {
+                    icon: 'danger',
+                    title: '비활성화된 계정입니다',
+                    desc: '본 계정은 관리자에 의해 비활성화되었습니다.<br>안전건설과(061-380-XXXX)에 문의해 주세요.',
+                    primary: { text: '로그인 페이지로', href: 'auth-login.html', icon: 'login' }
+                },
+                invitation_expired: {
+                    icon: 'warn',
+                    title: '초대 링크가 만료되었습니다',
+                    desc: '초대 링크는 발급일로부터 <strong>7일</strong> 동안 유효합니다.<br>담당자에게 재발송을 요청해 주세요.',
+                    primary: { text: '로그인 페이지로', href: 'auth-login.html', icon: 'login' }
+                },
+                invalid_token: {
+                    icon: 'danger',
+                    title: '유효하지 않은 초대 토큰',
+                    desc: '초대 링크가 이미 사용되었거나 회수되었습니다.<br>담당자에게 새 초대를 요청해 주세요.',
+                    primary: { text: '로그인 페이지로', href: 'auth-login.html', icon: 'login' }
+                },
+                permission_denied: {
+                    icon: 'danger',
+                    title: '접근 권한이 없습니다',
+                    desc: '본 화면에 접근할 수 있는 권한이 없습니다.<br>접근이 필요한 경우 관리자에게 권한 변경을 요청해 주세요.',
+                    primary: { text: '홈으로 이동', href: 'index.html', icon: 'home' }
+                },
+            };
+
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code') || 'session_expired';
+            const data = ERRORS[code] || ERRORS.session_expired;
+
+            document.getElementById('err-title').textContent = data.title;
+            document.getElementById('err-code').textContent = 'code: ' + code;
+            document.getElementById('err-desc').innerHTML = data.desc;
+
+            const iconEl = document.getElementById('err-icon');
+            iconEl.className = 'err-icon ' + (data.icon === 'danger' ? '' : data.icon);
+
+            // 현재 시간 표시
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('err-time').textContent =
+                `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} KST`;
+        })();
+    </script>
+</body>
+</html>

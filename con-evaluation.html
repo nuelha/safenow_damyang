@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수급업체 안전평가 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── CON08-D 전용 ─── */
+
+        /* 평가서 정보 헤더 */
+        .eval-info-card {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px;
+            padding: 16px 22px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-card);
+        }
+        .eval-info-body { display: flex; flex-direction: column; gap: 4px; }
+        .eval-info-title { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .eval-info-meta { font-size: 12px; color: var(--text-gray); }
+        .eval-info-meta strong { color: var(--text-black); font-weight: 700; }
+
+        /* 실시간 합계 sticky 헤더 */
+        .eval-total-bar {
+            position: sticky; top: 64px; z-index: 5;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 14px 22px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .eval-total-info { display: flex; align-items: baseline; gap: 8px; }
+        .eval-total-num {
+            font-size: 30px; font-weight: 800;
+            color: var(--main);
+            letter-spacing: -1px;
+        }
+        .eval-total-max { font-size: 16px; color: var(--text-gray); font-weight: 600; }
+        .eval-total-progress-track {
+            flex: 1;
+            height: 10px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .eval-total-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%);
+            border-radius: 999px;
+            transition: width .3s ease;
+        }
+        .eval-result-badge {
+            padding: 6px 14px;
+            border-radius: var(--radius-button);
+            font-size: 13px; font-weight: 700;
+            white-space: nowrap;
+        }
+        .eval-result-badge.qualified {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border: 1px solid var(--status-success-border);
+        }
+        .eval-result-badge.unqualified {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-fg);
+            border: 1px solid var(--status-danger-border);
+        }
+
+        /* 평가 항목 */
+        .eval-item {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .eval-item + .eval-item { margin-top: 12px; }
+
+        .eval-item-head {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .eval-item-no {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            background: var(--brand-100);
+            color: var(--main-dark2);
+            font-size: 14px; font-weight: 700;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .eval-item-body { flex: 1; min-width: 0; }
+        .eval-item-title {
+            font-size: 15px; font-weight: 700; color: var(--text-black);
+            line-height: 1.4;
+        }
+        .eval-item-max {
+            display: inline-block;
+            padding: 1px 8px;
+            background: var(--main);
+            color: white;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            margin-left: 6px;
+        }
+        .eval-item-criteria {
+            font-size: 13px; color: var(--text-gray);
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+
+        .eval-item-input {
+            padding: 14px 22px;
+            background: var(--gray-100);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .eval-score-input {
+            width: 80px;
+            height: 38px;
+            padding: 0 10px;
+            text-align: center;
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .eval-score-input:focus { outline: none; border-color: var(--main); }
+        .eval-score-divider { font-size: 14px; color: var(--text-gray); font-weight: 500; }
+        .eval-score-max { font-size: 16px; color: var(--text-gray); font-weight: 700; }
+
+        /* 평가 의견 */
+        .eval-comment {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* 첨부 영역 */
+        .eval-attach-zone {
+            border: 2px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            padding: 24px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .eval-attach-zone:hover { border-color: var(--main); background: var(--brand-100); }
+        .eval-attach-zone .text { font-size: 13px; color: var(--text-black); font-weight: 600; }
+        .eval-attach-zone .hint { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
+
+        /* 폼 액션 */
+        .eval-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            border-radius: 0 0 var(--radius-card) var(--radius-card);
+        }
+        .eval-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .eval-form-actions .buttons { display: flex; gap: 8px; }
+    </style>
+</head>
+<body data-dy-page="contractor">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="con-step2.html?id=2026-12">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                STEP 2 수급업체 평가
+            </a>
+        </div>
+
+        <!-- ─── 페이지 헤더 ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <h1>A건설(주) — 안전평가</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    청사 시설 보수공사 · 평가자 김안전 (안전건설과 · SHM) · 사업자 123-45-67890
+                </div>
+            </div>
+            <span class="chip-status info detail-header-status">평가 작성 중</span>
+        </section>
+
+        <!-- ─── 평가서 정보 ─── -->
+        <section class="eval-info-card">
+            <div class="eval-info-body">
+                <span class="eval-info-title">📋 공사 안전관리 평가서 (CONSTRUCTION_SAFETY)</span>
+                <span class="eval-info-meta">평가항목 <strong>8개</strong> · 만점 <strong>100점</strong> · 적격기준 <strong>70점 이상</strong></span>
+            </div>
+        </section>
+
+        <!-- ─── 실시간 합계 헤더 (sticky) ─── -->
+        <section class="eval-total-bar">
+            <div class="eval-total-info">
+                <span class="eval-total-num" id="total-num">85</span>
+                <span class="eval-total-max">/ 100점</span>
+            </div>
+            <div class="eval-total-progress-track">
+                <div class="eval-total-progress-fill" id="total-fill" style="width: 85%;"></div>
+            </div>
+            <span class="eval-result-badge qualified" id="total-result">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                적격 (적격기준 70점 ≥ 적합)
+            </span>
+        </section>
+
+        <!-- ─── 평가 항목 ─── -->
+        <section style="margin-top: 16px;">
+            <!-- 항목 1 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">1</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">안전보건관리계획 수립 여부<span class="eval-item-max">20점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 안전관리계획서 제출 + 적정성 검토 (위험요인 분석 + 안전대책 + 비상대응 절차 포함)
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="20" value="18" data-max="20">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">20</span>
+                </div>
+            </div>
+
+            <!-- 항목 2 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">2</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">안전관리자 선임<span class="eval-item-max">15점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 법정 자격 보유 안전관리자 선임 여부 + 경력 (산안법 §17 자격 충족)
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="14" data-max="15">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">15</span>
+                </div>
+            </div>
+
+            <!-- 항목 3 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">3</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">안전교육 이수<span class="eval-item-max">15점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 정기 안전교육 이수 증빙 + 신규 채용자 안전교육 + 특별교육 (위험작업 종사자)
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="13" data-max="15">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">15</span>
+                </div>
+            </div>
+
+            <!-- 항목 4 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">4</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">최근 3년 산재 이력<span class="eval-item-max">15점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 중대재해 0건 + 일반 산재 발생률 (점수 감점 — 1건당 -3점)
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="12" data-max="15">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">15</span>
+                </div>
+            </div>
+
+            <!-- 항목 5 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">5</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">위험성평가 실시 능력<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 사전 위험성평가 실시 사례 + 위험요인 식별 + 감소대책 수립 능력
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="9" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+
+            <!-- 항목 6 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">6</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">개인보호구 (PPE) 지급·관리<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 작업별 적정 PPE 지급 + 사용 점검 기록 + 교체 주기 준수
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="8" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+
+            <!-- 항목 7 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">7</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">비상대응 체계<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 비상연락망 + 응급처치 가능 인력 + 비상장비 비치 + 훈련 실시 이력
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="7" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+
+            <!-- 항목 8 -->
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">8</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">현장 안전관리 인력 보유<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 상시 현장 안전관리 인력 1명 이상 + TBM 진행 능력
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="4" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 평가 의견 ─── -->
+        <section class="card" style="margin-top: 16px;">
+            <div class="card-header">
+                <h2 class="card-title">평가 의견</h2>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <textarea class="eval-comment" maxlength="2000" placeholder="평가 의견·종합 평가·특이사항을 작성하세요">A건설은 최근 3년간 중대재해 발생 이력이 없으며, 안전관리자(산업안전기사 자격) 1명 상주 + 위험성평가 자체 실시 능력 보유. 안전보건관리계획서 적정성 우수.
+
+다만 비상대응 훈련 이력이 최근 2년간 1회로 부족하여 비상대응 체계 항목에서 감점. 시공 시작 전 비상대응 훈련 추가 실시 권고.</textarea>
+                <div style="font-size: 11px; color: var(--text-gray); margin-top: 6px;">최대 2000자 · <strong style="color:var(--text-black);">235 / 2000</strong></div>
+            </div>
+        </section>
+
+        <!-- ─── 첨부 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">평가 증빙 첨부 (선택)</h2>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <div class="eval-attach-zone" onclick="window.DYLayout._soon(event, '파일 선택')">
+                    <div style="margin-bottom: 8px;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div class="text">평가 증빙 자료 첨부</div>
+                    <div class="hint">최대 10개 파일 · 파일당 30MB · 안전관리계획서 / 안전관리자 자격증 / 산재 이력서 / 교육 이수증 등</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 폼 액션 ─── -->
+        <section class="card" style="padding: 0;">
+            <div class="eval-form-actions">
+                <div class="left">평가 완료 후 STEP 2 화면으로 자동 복귀합니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장 (status=IN_PROGRESS)')">임시저장</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '평가 완료 처리 (status=DONE)')">
+                        평가 완료
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const inputs = document.querySelectorAll('.score-input');
+        const totalNum = document.getElementById('total-num');
+        const totalFill = document.getElementById('total-fill');
+        const totalResult = document.getElementById('total-result');
+
+        function recalc() {
+            let total = 0;
+            inputs.forEach(inp => {
+                const v = parseInt(inp.value, 10) || 0;
+                const max = parseInt(inp.dataset.max, 10) || 0;
+                total += Math.min(Math.max(v, 0), max);
+            });
+            totalNum.textContent = total;
+            totalFill.style.width = total + '%';
+            const passed = total >= 70;
+            totalResult.classList.toggle('qualified', passed);
+            totalResult.classList.toggle('unqualified', !passed);
+            totalResult.innerHTML = passed
+                ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>적격 (적격기준 70점 ≥ 적합)'
+                : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>부적격 (적격기준 70점 미달)';
+        }
+
+        inputs.forEach(inp => {
+            inp.addEventListener('input', recalc);
+            inp.addEventListener('blur', recalc);
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -31,6 +31,7 @@
         calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
         coins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>',
         dot: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/></svg>',
+        external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>',
     };
 
     /* --- 네비게이션 데이터 ---
@@ -60,17 +61,17 @@
         { id: 'risk', label: '위험성평가', icon: 'alert', items: [
             { id: 'rsk-status',   label: '현황',                 icon: 'chart', href: 'risk-assessment.html', screen: 'RSK01-V' },
             { id: 'rsk-list',     label: '평가 목록',            icon: 'list',  href: 'risk-list.html',        screen: 'RSK02-L' },
-            { id: 'rsk-improve',  label: '개선조치 (위험성평가)', icon: 'check', href: 'imp-status.html?source=risk_assessment', screen: 'RSK03-L' },
+            { id: 'rsk-improve',  label: '개선조치 (위험성평가)', icon: 'check', href: 'imp-status.html?source=risk_assessment', screen: 'RSK03-L', external: true },
             { id: 'rsk-settings', label: '설정',                 icon: 'cog',   href: 'risk-settings.html',    screen: 'RSK04-S' },
         ]},
 
         // GNB 2. 점검·진단 (INS + DOC / SFR-012)
         { id: 'inspect', label: '점검·진단', icon: 'check', items: [
             { id: 'ins-status',     label: '안전점검 현황', icon: 'check', href: 'ins-status.html',  screen: 'INS01-V' },
-            { id: 'ins-list',       label: '점검 목록',     icon: 'list',  soon: '점검 목록 (INS02-L)', screen: 'INS02-L' },
-            { id: 'ins-settings',   label: '안전점검 설정', icon: 'cog',   soon: '안전점검 설정 (INS03-S)', screen: 'INS03-S' },
-            { id: 'doc-manual',     label: '매뉴얼',        icon: 'file',  href: 'doc-manual.html',   screen: 'DOC01-L' },
-            { id: 'doc-checklist',  label: '점검표',        icon: 'file',  soon: '점검표 (DOC02-L)', screen: 'DOC02-L' },
+            { id: 'ins-list',       label: '점검 목록',     icon: 'list',  href: 'ins-list.html',     screen: 'INS02-L' },
+            { id: 'ins-settings',   label: '안전점검 설정', icon: 'cog',   href: 'ins-settings.html', screen: 'INS03-S' },
+            // 업무문서 (DOC) — DOC01-L 내부 탭으로 [매뉴얼]·[점검표] 통합
+            { id: 'doc-manual',     label: '업무문서',      icon: 'file',  href: 'doc-manual.html',   screen: 'DOC01-L' },
         ]},
 
         // GNB 3. 도급 관리 (CON / SFR-013) — 외부 사용자(SUB) 협업 워크플로우
@@ -84,28 +85,28 @@
 
         // GNB 4. 종사자 참여 (OPN / SFR-011·019)
         { id: 'opinion', label: '종사자 참여', icon: 'bell', items: [
-            { id: 'opn-status',    label: '현황',                icon: 'chart', soon: '의견 현황 (OPN01-V)', screen: 'OPN01-V' },
+            { id: 'opn-status',    label: '현황',                icon: 'chart', href: 'opn-status.html',     screen: 'OPN01-V' },
             { id: 'opinion',       label: '의견 목록',           icon: 'list',  href: 'opinion.html',         screen: 'OPN01-L' },
-            { id: 'opn-committee', label: '산업안전보건위원회', icon: 'users', soon: '산안위 (OPN03-L · 결정사항 #20)', screen: 'OPN03-L' },
-            { id: 'opn-settings',  label: '설정',                icon: 'cog',   soon: '의견청취 설정 (OPN04-S)', screen: 'OPN04-S' },
+            { id: 'opn-committee', label: '산업안전보건위원회', icon: 'users', href: 'opn-committee.html',   screen: 'OPN03-L' },
+            { id: 'opn-settings',  label: '설정',                icon: 'cog',   href: 'opn-settings.html',    screen: 'OPN04-S' },
         ]},
 
         // GNB 5. 이행·증명 (IMP + CMP + STA + CRT / SFR-003·014·018·021) — 사후 추적·집계·증명
         { id: 'comply', label: '이행·증명', icon: 'check', items: [
-            // 개선조치 (IMP / SFR-003)
-            { id: 'imp-status',   label: '개선조치 현황',  icon: 'check', href: 'imp-status.html', screen: 'IMP01-V' },
-            { id: 'imp-list',     label: '개선조치 목록',  icon: 'list',  href: 'imp-list.html',   screen: 'IMP01-L' },
-            { id: 'imp-prevent',  label: '재발방지대책',    icon: 'check', soon: '재발방지대책 (IMP01-L /incident_prevention)', screen: 'IMP01-L' },
+            // 개선조치 (IMP / SFR-003) — IMP01-V 내부 탭으로 [전체 목록]·[재발방지대책] 통합
+            { id: 'imp-status',   label: '개선조치',       icon: 'check', href: 'imp-status.html', screen: 'IMP01-V' },
             // 이행 관리 (CMP / SFR-014)
-            { id: 'cmp-status',   label: '이행 현황',       icon: 'check', soon: '이행 현황 (CMP01-V)', screen: 'CMP01-V' },
-            { id: 'cmp-list',     label: '이행 목록',       icon: 'list',  soon: '이행 목록 (CMP02-L)', screen: 'CMP02-L' },
-            { id: 'cmp-settings', label: '법령 마스터',     icon: 'cog',   soon: '법령 마스터 (CMP03-S)', screen: 'CMP03-S' },
+            { id: 'cmp-status',   label: '이행 현황',       icon: 'check', href: 'cmp-status.html',   screen: 'CMP01-V' },
+            { id: 'cmp-list',     label: '이행 목록',       icon: 'list',  href: 'cmp-list.html',     screen: 'CMP02-L' },
+            { id: 'cmp-settings', label: '법령 마스터',     icon: 'cog',   href: 'cmp-settings.html', screen: 'CMP03-S' },
             // 통계 (STA / SFR-018)
-            { id: 'sta-status',   label: '종합 통계',       icon: 'chart', soon: '종합 통계 (STA01-V)', screen: 'STA01-V' },
-            { id: 'sta-module',   label: '모듈별 통계',     icon: 'chart', soon: '모듈별 통계 (STA02-V)', screen: 'STA02-V' },
+            { id: 'sta-status',   label: '종합 통계',       icon: 'chart', href: 'sta-status.html',   screen: 'STA01-V' },
+            { id: 'sta-module',   label: '모듈별 통계',     icon: 'chart', href: 'sta-module.html',   screen: 'STA02-V' },
+            { id: 'sta-settings', label: '통계 설정',       icon: 'cog',   href: 'sta-settings.html', screen: 'STA03-S' },
             // 제증명 (CRT / SFR-021)
-            { id: 'crt-history',  label: '제증명 발급 이력', icon: 'file', soon: '발급 이력 (CRT01-V)', screen: 'CRT01-V' },
-            { id: 'crt-issue',    label: '증명서 발급',      icon: 'file', soon: '증명서 발급 (CRT02-F)', screen: 'CRT02-F' },
+            { id: 'crt-history',  label: '제증명 발급 이력', icon: 'file',  href: 'crt-status.html',   screen: 'CRT01-V' },
+            { id: 'crt-issue',    label: '증명서 발급',      icon: 'file',  href: 'crt-form.html',     screen: 'CRT02-F' },
+            { id: 'crt-settings', label: '제증명 설정',      icon: 'cog',   href: 'crt-settings.html', screen: 'CRT03-S' },
         ]},
 
         // GNB 6. 안전보건 경영 (POL + PLN + BGT + EVL / SFR-005·004·008·009) — 연간 사이클
@@ -113,7 +114,7 @@
             // 안전보건 방침 (POL / SFR-005)
             { id: 'safety-policy', label: '방침 관리',      icon: 'shield',   href: 'safety-policy.html', screen: 'POL01-L' },
             { id: 'pol-history',   label: '방침 이력',      icon: 'file',     href: 'pol-history.html',   screen: 'POL01-L' },
-            { id: 'pol-check',     label: '경영방침 점검',  icon: 'check',    soon: '경영방침 점검 (POL04-V)', screen: 'POL04-V' },
+            { id: 'pol-check',     label: '경영방침 점검',  icon: 'check',    href: 'pol-inspection.html',  screen: 'POL04-V' },
             // 안전보건 계획 (PLN / SFR-004)
             { id: 'pln-status',    label: '계획 현황',      icon: 'chart',    href: 'pln-status.html',    screen: 'PLN01-V' },
             { id: 'pln-list',      label: '계획 목록',      icon: 'list',     href: 'pln-list.html',      screen: 'PLN01-L' },
@@ -123,9 +124,8 @@
             { id: 'bgt-status',    label: '예산 현황',      icon: 'coins',    href: 'bgt-status.html',    screen: 'BGT01-V' },
             { id: 'bgt-tree',      label: '예방 항목 트리', icon: 'list',     href: 'bgt-tree.html',      screen: 'BGT02-V' },
             { id: 'bgt-settings',  label: '예산 설정',      icon: 'cog',      href: 'bgt-settings.html',  screen: 'BGT05-S' },
-            // 인력 평가 (EVL / SFR-009)
+            // 인력 평가 (EVL / SFR-009) — EVL01-V 내부 탭으로 [평가 목록]·[설정] 통합
             { id: 'evl-list',      label: '인력 평가',      icon: 'user',     href: 'evl-list.html',      screen: 'EVL01-V' },
-            { id: 'evl-settings',  label: '평가 설정',      icon: 'cog',      href: 'evl-settings.html',  screen: 'EVL03-S' },
         ]},
 
         // GNB 7. 기반 관리 (TGT + ORG + STF / SFR-002·006·010) — 초기 셋팅·가끔 업데이트
@@ -147,9 +147,9 @@
         //    결정사항 #24: 외부 시스템 연동 단일 진실 공급원(SSoT) = SYS01-S.
         { id: 'system', label: '시스템 관리', icon: 'cog', items: [
             { id: 'sys-integration', label: '외부 시스템 연동', icon: 'cog',    href: 'sys-integration.html', screen: 'SYS01-S' },
-            { id: 'sys-ext-users',   label: '외부 사용자 관리', icon: 'users',  soon: '외부 사용자 (AUTH06-S)', screen: 'AUTH06-S' },
+            { id: 'sys-ext-users',   label: '외부 사용자 관리', icon: 'users',  href: 'auth-external-users.html', screen: 'AUTH06-S' },
             { id: 'sys-notif',       label: '알림 운영',        icon: 'bell',   href: 'ntf-admin.html',       screen: 'NTF03-S' },
-            { id: 'sys-audit',       label: '감사 로그',        icon: 'shield', soon: '감사 로그' },
+            { id: 'sys-audit',       label: '감사 로그',        icon: 'shield', href: 'audit-log.html', screen: 'AUDIT-L' },
         ]},
     ];
 
@@ -176,14 +176,81 @@
                         <span class="dy-brand-name"><strong>담양군</strong><span>중대재해예방 시스템</span></span>
                     </a>
                 </div>
-                <button class="dy-user-pill" type="button" aria-label="사용자 메뉴">
-                    <span class="dy-user-avatar">박</span>
-                    <span class="dy-user-text">
-                        <span class="dy-user-name">박안전 님</span>
-                        <span class="dy-user-org">담양군청 · 안전건설과</span>
-                    </span>
-                    ${ICON.chevron}
-                </button>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="dy-ntf-wrap" id="dy-ntf-wrap" style="position:relative;">
+                        <button class="dy-ntf-btn" id="dy-ntf-btn" type="button" aria-label="알림">
+                            ${ICON.bell}
+                            <span class="dy-ntf-badge" id="dy-ntf-badge">3</span>
+                        </button>
+                        <div class="dy-ntf-dropdown" id="dy-ntf-dropdown" role="dialog" aria-hidden="true">
+                            <div class="dy-ntf-dropdown-head">
+                                <span class="dy-ntf-dropdown-title">알림 <span class="dy-ntf-count">(안 읽음 3건)</span></span>
+                                <button class="dy-ntf-read-all" type="button" onclick="window.DYLayout._soon(event, '모두 읽음 처리')">모두 읽음</button>
+                            </div>
+                            <div class="dy-ntf-dropdown-list">
+                                <a class="dy-ntf-item is-unread" href="safety-policy.html">
+                                    <span class="dy-ntf-dot approval"></span>
+                                    <div class="dy-ntf-item-body">
+                                        <div class="dy-ntf-item-head">
+                                            <span class="dy-ntf-item-cat approval">결재</span>
+                                        </div>
+                                        <div class="dy-ntf-item-title">안전경영방침 v2.5 결재 요청</div>
+                                        <div class="dy-ntf-item-time">14:23</div>
+                                    </div>
+                                </a>
+                                <a class="dy-ntf-item is-unread" href="target-detail.html">
+                                    <span class="dy-ntf-dot assignment"></span>
+                                    <div class="dy-ntf-item-body">
+                                        <div class="dy-ntf-item-head">
+                                            <span class="dy-ntf-item-cat assignment">지정</span>
+                                        </div>
+                                        <div class="dy-ntf-item-title">군청 청사 관리책임자로 자동 지정</div>
+                                        <div class="dy-ntf-item-time">09:15</div>
+                                    </div>
+                                </a>
+                                <a class="dy-ntf-item is-unread" href="cmp-detail.html">
+                                    <span class="dy-ntf-dot compliance"></span>
+                                    <div class="dy-ntf-item-body">
+                                        <div class="dy-ntf-item-head">
+                                            <span class="dy-ntf-item-cat compliance">이행</span>
+                                        </div>
+                                        <div class="dy-ntf-item-title">화학물질 정기 검사 기한 초과 (D+8)</div>
+                                        <div class="dy-ntf-item-time">08:00</div>
+                                    </div>
+                                </a>
+                                <a class="dy-ntf-item" href="ins-detail.html">
+                                    <span class="dy-ntf-dot inspection"></span>
+                                    <div class="dy-ntf-item-body">
+                                        <div class="dy-ntf-item-head">
+                                            <span class="dy-ntf-item-cat inspection">점검</span>
+                                        </div>
+                                        <div class="dy-ntf-item-title">청사 소방설비 분기 점검 D-1</div>
+                                        <div class="dy-ntf-item-time">어제 18:00</div>
+                                    </div>
+                                </a>
+                                <a class="dy-ntf-item" href="risk-detail.html">
+                                    <span class="dy-ntf-dot risk"></span>
+                                    <div class="dy-ntf-item-body">
+                                        <div class="dy-ntf-item-head">
+                                            <span class="dy-ntf-item-cat risk">위험성평가</span>
+                                        </div>
+                                        <div class="dy-ntf-item-title">청사 위험성평가 2026 평가자 지정</div>
+                                        <div class="dy-ntf-item-time">어제 14:30</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <a class="dy-ntf-dropdown-foot" href="ntf-list.html">전체 보기 (42건) →</a>
+                        </div>
+                    </div>
+                    <button class="dy-user-pill" type="button" aria-label="사용자 메뉴">
+                        <span class="dy-user-avatar">박</span>
+                        <span class="dy-user-text">
+                            <span class="dy-user-name">박안전 님</span>
+                            <span class="dy-user-org">담양군청 · 안전건설과</span>
+                        </span>
+                        ${ICON.chevron}
+                    </button>
+                </div>
             </header>
         `;
     }
@@ -215,10 +282,14 @@
                             const onclick = it.soon
                                 ? `onclick="return window.DYLayout._soon(event, '${it.soon}')"`
                                 : '';
+                            const externalIcon = it.external
+                                ? `<span class="dy-sidebar-item-external" aria-label="다른 메뉴로 이동" title="다른 GNB로 이동">${ICON.external}</span>`
+                                : '';
                             return html`
-                                <a class="dy-sidebar-item ${isActive ? 'is-active' : ''}" href="${href}" ${onclick}>
+                                <a class="dy-sidebar-item ${isActive ? 'is-active' : ''} ${it.external ? 'is-external' : ''}" href="${href}" ${onclick}>
                                     <span class="dy-sidebar-item-icon">${ICON[it.icon] || ICON.dot}</span>
                                     <span>${it.label}</span>
+                                    ${externalIcon}
                                 </a>
                             `;
                         }).join('')}
@@ -318,6 +389,7 @@
             }
 
             wireMobileMenu();
+            wireNotification();
         } finally {
             // 마운트 성공/실패와 무관하게 화면 표시 — visibility:hidden 잠금 해제
             document.body.classList.add('dy-mounted');
@@ -390,6 +462,40 @@
             const temp = document.createElement('div');
             temp.innerHTML = html;
             el.replaceWith(temp.firstElementChild);
+        });
+    }
+
+    function wireNotification() {
+        const wrap = document.getElementById('dy-ntf-wrap');
+        const btn = document.getElementById('dy-ntf-btn');
+        const dropdown = document.getElementById('dy-ntf-dropdown');
+        if (!wrap || !btn || !dropdown) return;
+
+        const close = () => {
+            dropdown.classList.remove('is-open');
+            dropdown.setAttribute('aria-hidden', 'true');
+        };
+        const open = () => {
+            dropdown.classList.add('is-open');
+            dropdown.setAttribute('aria-hidden', 'false');
+        };
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.contains('is-open') ? close() : open();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!wrap.contains(e.target)) close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') close();
+        });
+
+        /* 알림 아이템 클릭 시 드롭다운 닫기 (기본 링크 동작은 유지) */
+        dropdown.querySelectorAll('.dy-ntf-item, .dy-ntf-dropdown-foot').forEach(item => {
+            item.addEventListener('click', () => close());
         });
     }
 

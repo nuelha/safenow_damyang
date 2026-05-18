@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>담당자 추가·변경 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-backdrop {
+            min-height: calc(100vh - 64px);
+            background: rgba(15, 23, 42, 0.35);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 30px 20px;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            width: 100%; max-width: 540px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .modal-close:hover { background: var(--gray-100); }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        /* 컨텍스트 카드 */
+        .context-card {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .context-card .icon {
+            width: 32px; height: 32px;
+            background: white;
+            border-radius: 8px;
+            color: var(--main-dark2);
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .context-card .body { flex: 1; }
+        .context-card .name { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .context-card .meta { font-size: 11px; color: var(--text-gray); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            row-gap: 14px;
+            column-gap: 12px;
+            align-items: center;
+        }
+        .form-grid .label { font-size: 13px; color: var(--text-gray); font-weight: 600; }
+        .form-grid .label.required::after { content: " *"; color: var(--status-danger-fg); }
+        .form-input, .form-grid select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            height: 36px;
+        }
+        .form-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            min-height: 60px;
+            line-height: 1.5;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* 역할 chip */
+        .role-options { display: flex; gap: 6px; flex-wrap: wrap; }
+        .role-option {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            font-size: 12px; color: var(--text-gray);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .role-option:hover { border-color: var(--main); }
+        .role-option.is-selected { background: var(--main); color: white; border-color: var(--main-dark); }
+        .role-option:disabled { background: var(--gray-100); color: var(--text-lightgray); cursor: not-allowed; }
+
+        /* 구성원 검색 */
+        .user-search-card {
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .user-search-card .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--main-dark);
+            color: white;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+        }
+        .user-search-card .body { flex: 1; }
+        .user-search-card .name { font-size: 14px; font-weight: 700; color: var(--text-black); }
+        .user-search-card .meta { font-size: 11px; color: var(--text-gray); }
+        .user-search-card .actions { display: flex; gap: 6px; }
+
+        /* 자격증 보유 배지 */
+        .qual-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px; font-weight: 700;
+            margin-top: 6px;
+        }
+        .qual-badge.met {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border: 1px solid var(--status-success-border);
+        }
+        .qual-badge.warn {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border: 1px solid var(--status-warning-border);
+        }
+
+        .role-hint {
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+    </style>
+</head>
+<body data-dy-page="target-status">
+    <main style="padding: 0;">
+        <div class="modal-backdrop">
+            <div class="modal-box" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        담당자 추가·변경 (TGT03-M)
+                    </div>
+                    <button class="modal-close" onclick="window.history.back()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- 컨텍스트 -->
+                    <div class="context-card">
+                        <div class="icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0H5"/><line x1="9" y1="9" x2="15" y2="9"/></svg>
+                        </div>
+                        <div class="body">
+                            <div class="name">군청 청사 관리</div>
+                            <div class="meta">시설 · 공중이용시설 1종 · 자치행정과</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- 역할 -->
+                        <span class="label required">역할</span>
+                        <div>
+                            <div class="role-options" id="role-options">
+                                <button class="role-option" type="button" data-role="SAFETY_MGR">안전관리자</button>
+                                <button class="role-option is-selected" type="button" data-role="HEALTH_MGR">안전보건관리책임자</button>
+                                <button class="role-option" type="button" data-role="SUPERVISOR">관리감독자</button>
+                                <button class="role-option" type="button" data-role="HEALTH_DOCTOR">산업보건의</button>
+                                <button class="role-option" type="button" data-role="WORKER">근로자</button>
+                            </div>
+                            <div class="role-hint" id="role-hint">
+                                💡 안전보건관리책임자는 자격증 검증이 수행됩니다.
+                                <span style="color:var(--text-lightgray);">(RESPONSIBLE 역할은 AUTO 전용이라 본 모달에서 제외)</span>
+                            </div>
+                        </div>
+
+                        <!-- 대상자 -->
+                        <span class="label required">대상자</span>
+                        <div class="user-search-card">
+                            <div class="avatar">김</div>
+                            <div class="body">
+                                <div class="name">김안전 <span style="color: var(--text-gray); font-weight: 500;">(자치행정과 7급)</span></div>
+                                <div class="meta">k.an@damyang.go.kr · 산업안전기사 보유</div>
+                                <div class="qual-badge met">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    자격증 보유 (산업안전기사 2018)
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '구성원 검색 모달')">변경</button>
+                                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '대상자 해제')">해제</button>
+                            </div>
+                        </div>
+
+                        <!-- 선임일 -->
+                        <span class="label required">선임일</span>
+                        <input class="form-input" type="date" value="2026-05-13" style="max-width: 200px;">
+
+                        <!-- 비고 -->
+                        <span class="label">비고</span>
+                        <textarea class="form-textarea" maxlength="500" placeholder="선임 사유·특이사항"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '담당자 지정 → target_assignees INSERT')">지정</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const ROLE_QUAL = {
+            SAFETY_MGR: '💡 안전관리자는 자격증 검증이 수행됩니다 (산업안전기사 등).',
+            HEALTH_MGR: '💡 안전보건관리책임자는 자격증 검증이 수행됩니다.',
+            HEALTH_DOCTOR: '💡 산업보건의는 의사 면허 검증이 수행됩니다.',
+            SUPERVISOR: 'ℹ 관리감독자는 자격증 검증이 생략됩니다.',
+            WORKER: 'ℹ 근로자는 자격증 검증이 생략됩니다.',
+        };
+        const roleHint = document.getElementById('role-hint');
+        document.querySelectorAll('#role-options .role-option').forEach(o => {
+            o.addEventListener('click', () => {
+                document.querySelectorAll('#role-options .role-option').forEach(x => x.classList.remove('is-selected'));
+                o.classList.add('is-selected');
+                if (roleHint && ROLE_QUAL[o.dataset.role]) {
+                    roleHint.innerHTML = ROLE_QUAL[o.dataset.role];
+                }
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

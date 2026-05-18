@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모듈별 통계 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 모듈 선택 탭 */
+        .module-tabs {
+            display: flex; gap: 6px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow-x: auto;
+        }
+        .module-tab {
+            padding: 8px 14px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            border: 1px solid transparent;
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .12s ease;
+        }
+        .module-tab:hover { color: var(--main-dark); }
+        .module-tab.is-active {
+            background: var(--main);
+            color: white;
+            border-color: var(--main-dark);
+        }
+
+        /* 도넛 (간이) */
+        .module-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .stat-block {
+            padding: 18px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .stat-block h3 {
+            font-size: 14px; font-weight: 700;
+            color: var(--main-dark2);
+            margin-bottom: 12px;
+        }
+
+        /* 분포 카드 */
+        .dist-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0;
+        }
+        .dist-row .label { min-width: 120px; font-size: 13px; color: var(--text-black); font-weight: 600; }
+        .dist-row .bar-track { flex: 1; height: 18px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
+        .dist-row .bar-fill { height: 100%; border-radius: 999px; transition: width .3s ease; }
+        .dist-row .bar-fill.green { background: var(--main); }
+        .dist-row .bar-fill.blue  { background: var(--status-info-fg); }
+        .dist-row .bar-fill.red   { background: var(--status-danger-fg); }
+        .dist-row .bar-fill.orange { background: var(--status-warning-fg); }
+        .dist-row .bar-fill.purple { background: var(--status-purple-fg); }
+        .dist-row .count { font-size: 13px; color: var(--text-black); font-weight: 700; min-width: 60px; text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* 미니 KPI 카드 */
+        .mini-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .mini-kpi {
+            padding: 12px 14px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+        }
+        .mini-kpi-title { font-size: 11px; color: var(--text-gray); font-weight: 600; }
+        .mini-kpi-value { font-size: 22px; font-weight: 800; color: var(--main-dark2); line-height: 1.2; }
+        .mini-kpi-value .small { font-size: 12px; color: var(--text-gray); font-weight: 600; margin-left: 2px; }
+    </style>
+</head>
+<body data-dy-page="sta-module" data-page-title="모듈별 통계" data-page-subtitle="위험성평가·점검·도급·이행 등 모듈별 세부 통계 (STA02-V)">
+    <main>
+        <!-- 모듈 선택 -->
+        <div class="module-tabs">
+            <button class="module-tab is-active" data-mod="rsk">위험성평가</button>
+            <button class="module-tab" data-mod="ins">안전점검</button>
+            <button class="module-tab" data-mod="con">도급관리</button>
+            <button class="module-tab" data-mod="imp">개선조치</button>
+            <button class="module-tab" data-mod="opn">의견청취</button>
+            <button class="module-tab" data-mod="cmp">이행관리</button>
+            <button class="module-tab" data-mod="bgt">예산</button>
+            <button class="module-tab" data-mod="evl">인력평가</button>
+        </div>
+
+        <!-- 위험성평가 통계 (기본 활성) -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">위험성평가 모듈 통계</h2>
+                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+                    엑셀
+                </button>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <!-- 미니 KPI -->
+                <div class="mini-kpi-grid">
+                    <div class="mini-kpi"><div class="mini-kpi-title">전체 평가</div><div class="mini-kpi-value">152<span class="small">건</span></div></div>
+                    <div class="mini-kpi"><div class="mini-kpi-title">완료</div><div class="mini-kpi-value">132<span class="small">건</span></div></div>
+                    <div class="mini-kpi"><div class="mini-kpi-title">진행률</div><div class="mini-kpi-value">87<span class="small">%</span></div></div>
+                    <div class="mini-kpi"><div class="mini-kpi-title">자동 생성</div><div class="mini-kpi-value">68<span class="small">%</span></div></div>
+                </div>
+
+                <div class="module-stat-grid">
+                    <div class="stat-block">
+                        <h3>평가 유형별 분포</h3>
+                        <div class="dist-row"><span class="label">정기 평가</span><div class="bar-track"><div class="bar-fill green" style="width:70%;"></div></div><span class="count">106 (70%)</span></div>
+                        <div class="dist-row"><span class="label">최초 평가</span><div class="bar-track"><div class="bar-fill blue" style="width:15%;"></div></div><span class="count">23 (15%)</span></div>
+                        <div class="dist-row"><span class="label">수시 평가</span><div class="bar-track"><div class="bar-fill orange" style="width:15%;"></div></div><span class="count">23 (15%)</span></div>
+                    </div>
+
+                    <div class="stat-block">
+                        <h3>위험요인 등급별 분포</h3>
+                        <div class="dist-row"><span class="label">상 (위험)</span><div class="bar-track"><div class="bar-fill red" style="width:22%;"></div></div><span class="count">42 (22%)</span></div>
+                        <div class="dist-row"><span class="label">중 (주의)</span><div class="bar-track"><div class="bar-fill orange" style="width:48%;"></div></div><span class="count">92 (48%)</span></div>
+                        <div class="dist-row"><span class="label">하 (양호)</span><div class="bar-track"><div class="bar-fill green" style="width:30%;"></div></div><span class="count">58 (30%)</span></div>
+                    </div>
+
+                    <div class="stat-block">
+                        <h3>진행 단계별</h3>
+                        <div class="dist-row"><span class="label">사전준비</span><div class="bar-track"><div class="bar-fill blue" style="width:6%;"></div></div><span class="count">9 (6%)</span></div>
+                        <div class="dist-row"><span class="label">진행중</span><div class="bar-track"><div class="bar-fill orange" style="width:7%;"></div></div><span class="count">11 (7%)</span></div>
+                        <div class="dist-row"><span class="label">완료</span><div class="bar-track"><div class="bar-fill green" style="width:87%;"></div></div><span class="count">132 (87%)</span></div>
+                    </div>
+
+                    <div class="stat-block">
+                        <h3>생성 출처별</h3>
+                        <div class="dist-row"><span class="label">정기 자동</span><div class="bar-track"><div class="bar-fill green" style="width:52%;"></div></div><span class="count">79 (52%)</span></div>
+                        <div class="dist-row"><span class="label">e호조 자동</span><div class="bar-track"><div class="bar-fill blue" style="width:16%;"></div></div><span class="count">24 (16%)</span></div>
+                        <div class="dist-row"><span class="label">수동 등록</span><div class="bar-track"><div class="bar-fill purple" style="width:32%;"></div></div><span class="count">49 (32%)</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 부서별 시행 현황 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">부서별 위험성평가 시행 현황</h2>
+                <span class="text-muted" style="font-size:13px;">2026년 누적 152건</span>
+            </div>
+            <div class="card-body">
+                <div class="dept-bar-list">
+                    <div class="dept-bar-item"><span class="dept-bar-name">시설관리과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:96%;"></div></div><span class="dept-bar-value">48건 (96%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">안전건설과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:92%;"></div></div><span class="dept-bar-value">35건 (92%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">상수도사업소</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:90%;"></div></div><span class="dept-bar-value">22건 (90%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">자치행정과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:88%;"></div></div><span class="dept-bar-value">14건 (88%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">환경과</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:75%;"></div></div><span class="dept-bar-value">12건 (75%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">문화관광과</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:72%;"></div></div><span class="dept-bar-value">8건 (72%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">담양읍사무소</span><div class="dept-bar-track"><div class="dept-bar-fill danger" style="width:65%;"></div></div><span class="dept-bar-value">8건 (65%)</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">보건소</span><div class="dept-bar-track"><div class="dept-bar-fill danger" style="width:50%;"></div></div><span class="dept-bar-value">5건 (50%)</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 안내 -->
+        <section class="card" style="padding: 14px 22px; background: var(--brand-100); border-color: var(--status-success-border);">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--main-dark2);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                상단 모듈 탭을 클릭하여 다른 모듈(안전점검·도급관리·개선조치·의견청취·이행관리·예산·인력평가)의 통계를 확인할 수 있습니다.
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const tabs = document.querySelectorAll('.module-tab');
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+        const subtitleMap = {
+            rsk: '위험성평가 모듈 — 유형/등급/단계/출처별 분포 및 부서별 시행',
+            ins: '안전점검 모듈 — 유형/주기/결과/매뉴얼별 분포',
+            con: '도급관리 모듈 — 계약 유형/단계/평가 결과/TBM 시행률',
+            imp: '개선조치 모듈 — 출처별/카테고리/이행률/평균 처리 시간',
+            opn: '의견청취 모듈 — 카테고리/SLA 준수율/처리 시간',
+            cmp: '이행관리 모듈 — 법령별/주기별/이행률',
+            bgt: '예산 모듈 — 항목별 편성/집행/잔액',
+            evl: '인력평가 모듈 — 역할별 점수/이행률',
+        };
+        tabs.forEach(t => {
+            t.addEventListener('click', () => {
+                tabs.forEach(x => x.classList.remove('is-active'));
+                t.classList.add('is-active');
+                if (subtitleMap[t.dataset.mod]) subtitleEl.textContent = subtitleMap[t.dataset.mod];
+                window.DYLayout._soon({preventDefault:()=>{}}, '모듈별 통계 — ' + (t.textContent.trim()) + ' (데이터 모듈에 따라 변경)');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

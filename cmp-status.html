@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이행 현황 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .cmp-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .cmp-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 124px; justify-content: center;
+        }
+        .cmp-kpi-cell:last-child { border-right: none; }
+        .cmp-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .cmp-kpi-title { font-size: 15px; font-weight: 600; color: var(--text-black); }
+        .cmp-kpi-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100); color: var(--main-dark);
+        }
+        .cmp-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .cmp-kpi-icon.danger { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .cmp-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .cmp-kpi-value { font-size: 28px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .cmp-kpi-value .small { font-size: 14px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .cmp-kpi-value.success { color: var(--status-success-fg); }
+        .cmp-kpi-value.danger { color: var(--status-danger-fg); }
+        .cmp-kpi-value.warning { color: var(--status-warning-fg); }
+        .cmp-kpi-sub { font-size: 12px; color: var(--text-gray); }
+        .cmp-kpi-sub strong { color: var(--text-black); font-weight: 700; }
+
+        /* 카테고리별 진행률 */
+        .cmp-cat-list { padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; }
+        .cmp-cat-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 70px;
+            align-items: center;
+            gap: 12px;
+        }
+        .cmp-cat-label { font-size: 13px; font-weight: 700; color: var(--text-black); }
+        .cmp-cat-track { position: relative; height: 22px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
+        .cmp-cat-fill {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            border-radius: 999px;
+            display: flex; align-items: center;
+            padding-left: 10px;
+            font-size: 11px; font-weight: 700; color: white;
+        }
+        .cmp-cat-fill.ok { background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%); }
+        .cmp-cat-fill.warn { background: linear-gradient(90deg, var(--status-warning-fg) 0%, #f4c97e 100%); }
+        .cmp-cat-fill.danger { background: linear-gradient(90deg, var(--status-danger-fg) 0%, #f08a8a 100%); }
+        .cmp-cat-count { font-size: 13px; font-weight: 700; color: var(--text-black); text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* 이행 단계 카드 */
+        .cmp-stage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 16px 22px;
+        }
+        .cmp-stage-cell {
+            padding: 14px 12px;
+            border-radius: var(--radius-button);
+            background: var(--gray-100);
+            text-align: center;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .cmp-stage-cell:hover { transform: translateY(-1px); }
+        .cmp-stage-cell.danger { background: var(--status-danger-bg); border: 1px solid var(--status-danger-border); }
+        .cmp-stage-cell.warn { background: var(--status-warning-bg); border: 1px solid var(--status-warning-border); }
+        .cmp-stage-cell.info { background: var(--status-info-bg); border: 1px solid var(--status-info-border); }
+        .cmp-stage-cell.success { background: var(--status-success-bg); border: 1px solid var(--status-success-border); }
+        .cmp-stage-num { font-size: 22px; font-weight: 800; line-height: 1; }
+        .cmp-stage-cell.danger .cmp-stage-num { color: var(--status-danger-fg); }
+        .cmp-stage-cell.warn .cmp-stage-num { color: var(--status-warning-fg); }
+        .cmp-stage-cell.info .cmp-stage-num { color: var(--status-info-fg); }
+        .cmp-stage-cell.success .cmp-stage-num { color: var(--status-success-fg); }
+        .cmp-stage-label { font-size: 11px; color: var(--text-gray); margin-top: 4px; font-weight: 600; }
+    </style>
+</head>
+<body data-dy-page="cmp-status" data-page-title="이행 현황" data-page-subtitle="법령·자체 의무 이행 종합 현황 (CMP01-V · SFR-014)">
+    <main>
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">기준연도</span>
+                <select class="select"><option>2026년</option><option>2025년</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select">
+                    <option>전체</option><option>안전건설과</option><option>시설관리과</option><option>환경과</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">카테고리</span>
+                <select class="select">
+                    <option>전체</option><option>중대재해법 §4</option><option>산안법</option><option>화학물질안전관리법</option>
+                </select>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- KPI 4분할 -->
+        <section class="cmp-kpi-grid">
+            <div class="cmp-kpi-cell">
+                <div class="cmp-kpi-head">
+                    <span class="cmp-kpi-title">전체 의무</span>
+                    <span class="cmp-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+                </div>
+                <div class="cmp-kpi-value">142<span class="small">건</span></div>
+                <div class="cmp-kpi-sub">법령 65건 · 자체 77건 · <strong>2026년</strong> 도래</div>
+            </div>
+            <div class="cmp-kpi-cell">
+                <div class="cmp-kpi-head">
+                    <span class="cmp-kpi-title">이행률</span>
+                    <span class="cmp-kpi-icon success"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+                <div class="cmp-kpi-value success">82<span class="small">%</span></div>
+                <div class="progress" style="height:6px; margin-top:2px;"><div class="progress-bar" style="width:82%;"></div></div>
+                <div class="cmp-kpi-sub">완료 117 / 미이행 25</div>
+            </div>
+            <div class="cmp-kpi-cell">
+                <div class="cmp-kpi-head">
+                    <span class="cmp-kpi-title">기한 임박</span>
+                    <span class="cmp-kpi-icon warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                </div>
+                <div class="cmp-kpi-value warning">14<span class="small">건</span></div>
+                <div class="cmp-kpi-sub">7일 이내 마감 · 주간 알림 발송</div>
+            </div>
+            <div class="cmp-kpi-cell">
+                <div class="cmp-kpi-head">
+                    <span class="cmp-kpi-title">기한초과</span>
+                    <span class="cmp-kpi-icon danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></span>
+                </div>
+                <div class="cmp-kpi-value danger">3<span class="small">건</span></div>
+                <div class="cmp-kpi-sub">CEO 통보 대상 — 즉시 시정 필요</div>
+            </div>
+        </section>
+
+        <!-- 단계별 분포 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">이행 단계별 분포</h2>
+                <a class="text-muted" href="cmp-list.html" style="font-size:13px;">전체 목록 →</a>
+            </div>
+            <div class="cmp-stage-grid">
+                <div class="cmp-stage-cell danger" onclick="window.location.href='cmp-list.html'">
+                    <div class="cmp-stage-num">3</div>
+                    <div class="cmp-stage-label">기한초과</div>
+                </div>
+                <div class="cmp-stage-cell warn" onclick="window.location.href='cmp-list.html'">
+                    <div class="cmp-stage-num">14</div>
+                    <div class="cmp-stage-label">기한 임박 (7일)</div>
+                </div>
+                <div class="cmp-stage-cell info" onclick="window.location.href='cmp-list.html'">
+                    <div class="cmp-stage-num">8</div>
+                    <div class="cmp-stage-label">진행중</div>
+                </div>
+                <div class="cmp-stage-cell success" onclick="window.location.href='cmp-list.html'">
+                    <div class="cmp-stage-num">117</div>
+                    <div class="cmp-stage-label">완료</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 카테고리별 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">법령 카테고리별 이행률</h2>
+                <span class="text-muted" style="font-size:13px;">2026년 누적</span>
+            </div>
+            <div class="cmp-cat-list">
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">중대재해법 §4 (9대 의무)</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill ok" style="width:89%;">89%</div></div>
+                    <span class="cmp-cat-count">8 / 9</span>
+                </div>
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">산업안전보건법</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill ok" style="width:85%;">85%</div></div>
+                    <span class="cmp-cat-count">34 / 40</span>
+                </div>
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">화학물질안전관리법</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill warn" style="width:67%;">67%</div></div>
+                    <span class="cmp-cat-count">8 / 12</span>
+                </div>
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">시설물안전특별법</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill ok" style="width:75%;">75%</div></div>
+                    <span class="cmp-cat-count">6 / 8</span>
+                </div>
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">담양군 안전조례</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill ok" style="width:83%;">83%</div></div>
+                    <span class="cmp-cat-count">5 / 6</span>
+                </div>
+                <div class="cmp-cat-row">
+                    <span class="cmp-cat-label">자체 안전관리계획 항목</span>
+                    <div class="cmp-cat-track"><div class="cmp-cat-fill ok" style="width:79%;">79%</div></div>
+                    <span class="cmp-cat-count">56 / 71</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 부서별 이행률 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">부서별 이행률</h2>
+                <span class="text-muted" style="font-size:13px;">전체 9개 부서</span>
+            </div>
+            <div class="card-body">
+                <div class="dept-bar-list">
+                    <div class="dept-bar-item"><span class="dept-bar-name">안전건설과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:95%;"></div></div><span class="dept-bar-value">95%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">시설관리과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:90%;"></div></div><span class="dept-bar-value">90%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">상수도사업소</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:88%;"></div></div><span class="dept-bar-value">88%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">자치행정과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:85%;"></div></div><span class="dept-bar-value">85%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">농업기술센터</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:80%;"></div></div><span class="dept-bar-value">80%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">문화관광과</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:78%;"></div></div><span class="dept-bar-value">78%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">환경과</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:68%;"></div></div><span class="dept-bar-value">68%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">담양읍사무소</span><div class="dept-bar-track"><div class="dept-bar-fill warning" style="width:65%;"></div></div><span class="dept-bar-value">65%</span></div>
+                    <div class="dept-bar-item"><span class="dept-bar-name">보건소</span><div class="dept-bar-track"><div class="dept-bar-fill danger" style="width:55%;"></div></div><span class="dept-bar-value">55%</span></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

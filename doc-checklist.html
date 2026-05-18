@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>점검표 마스터 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── DOC02-L 전용 ─── */
+
+        /* KPI 4분할 */
+        .doc-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .doc-kpi-cell {
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-right: 1px solid var(--card-line);
+            min-height: 120px; justify-content: center;
+        }
+        .doc-kpi-cell:last-child { border-right: none; }
+        .doc-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .doc-kpi-title { font-size: 14px; font-weight: 600; color: var(--text-black); }
+        .doc-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-100);
+            color: var(--main-dark);
+        }
+        .doc-kpi-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .doc-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .doc-kpi-icon.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .doc-kpi-value {
+            font-size: 28px; font-weight: 800; color: var(--main);
+            line-height: 1; letter-spacing: -0.8px;
+        }
+        .doc-kpi-value .small {
+            font-size: 14px; font-weight: 600; color: var(--text-gray);
+            margin-left: 2px;
+        }
+        .doc-kpi-value.info { color: var(--status-info-fg); }
+        .doc-kpi-value.warning { color: var(--status-warning-fg); }
+        .doc-kpi-value.success { color: var(--status-success-fg); }
+        .doc-kpi-sub { font-size: 12px; color: var(--text-gray); }
+
+        /* 카테고리 chip */
+        .doc-cat {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .doc-cat.EDU  { background: #e0eefb; color: #3e7bc7; border-color: #b0d3f0; }
+        .doc-cat.RSK  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .doc-cat.INS  { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .doc-cat.CON  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .doc-cat.ORG  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .doc-cat.PLN  { background: #ddf0ed; color: var(--main); border-color: #99d5cc; }
+        .doc-cat.HLT  { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .doc-cat.CDPA { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+
+        /* 상태 chip */
+        .doc-status {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .doc-status.active { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .doc-status.revising { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .doc-status.draft { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+
+        /* 코드 */
+        .doc-code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .doc-meta-row { display: flex; align-items: center; gap: 12px; }
+        .doc-meta-count { font-size: 14px; color: var(--text-gray); }
+        .doc-meta-count strong { color: var(--main); font-weight: 700; }
+
+        /* 점검표 상세 모달 */
+        .doc-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .doc-modal-backdrop.is-open { display: flex; }
+        .doc-modal {
+            background: white;
+            border-radius: var(--radius-card);
+            width: 100%; max-width: 780px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+        .doc-modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .doc-modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .doc-modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .doc-modal-close:hover { background: var(--gray-100); color: var(--text-black); }
+        .doc-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .doc-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            display: flex; justify-content: space-between; gap: 8px;
+            align-items: center;
+        }
+        .doc-info-section + .doc-info-section { margin-top: 18px; }
+        .doc-info-section h4 {
+            font-size: 13px; font-weight: 700;
+            color: var(--main-dark);
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .doc-info-section h4::before {
+            content: ""; display: block;
+            width: 3px; height: 14px;
+            background: var(--main);
+            border-radius: 2px;
+        }
+        .doc-info-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 8px; column-gap: 12px;
+            font-size: 13px;
+        }
+        .doc-info-grid .k { color: var(--text-gray); font-weight: 500; line-height: 22px; }
+        .doc-info-grid .v { color: var(--text-black); font-weight: 600; line-height: 22px; }
+
+        /* 점검 항목 리스트 (모달) */
+        .doc-item-section {
+            display: flex; flex-direction: column;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            overflow: hidden;
+        }
+        .doc-item-group-head {
+            padding: 10px 14px;
+            background: var(--brand-100);
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark2);
+            border-bottom: 1px solid var(--card-line);
+        }
+        .doc-item-row {
+            display: grid;
+            grid-template-columns: 30px 1fr 60px;
+            align-items: flex-start;
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-line);
+            gap: 8px;
+        }
+        .doc-item-row:last-child { border-bottom: none; }
+        .doc-item-row .no {
+            color: var(--text-gray);
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .doc-item-row .q { color: var(--text-black); line-height: 1.5; }
+        .doc-item-row .type {
+            font-size: 11px; color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 1px 6px;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        @media (max-width: 1023px) {
+            .doc-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body data-dy-page="doc-manual" data-page-title="점검표 마스터" data-page-subtitle="매뉴얼별 점검표 마스터 및 점검 항목 관리 (DOC02-L)">
+    <main>
+
+        <!-- KPI -->
+        <section class="doc-kpi-grid">
+            <div class="doc-kpi-cell">
+                <div class="doc-kpi-head">
+                    <span class="doc-kpi-title">전체 점검표</span>
+                    <span class="doc-kpi-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </span>
+                </div>
+                <div class="doc-kpi-value">14<span class="small">건</span></div>
+                <div class="doc-kpi-sub">10개 매뉴얼 ↔ 14개 점검표</div>
+            </div>
+            <div class="doc-kpi-cell">
+                <div class="doc-kpi-head">
+                    <span class="doc-kpi-title">총 점검 항목</span>
+                    <span class="doc-kpi-icon info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    </span>
+                </div>
+                <div class="doc-kpi-value info">218<span class="small">개</span></div>
+                <div class="doc-kpi-sub">점검표 평균 <strong style="color:var(--text-black);">15.6</strong>개 항목</div>
+            </div>
+            <div class="doc-kpi-cell">
+                <div class="doc-kpi-head">
+                    <span class="doc-kpi-title">활용 점검</span>
+                    <span class="doc-kpi-icon success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                </div>
+                <div class="doc-kpi-value success">39<span class="small">건</span></div>
+                <div class="doc-kpi-sub">2026년 점검표 적용 건수</div>
+            </div>
+            <div class="doc-kpi-cell">
+                <div class="doc-kpi-head">
+                    <span class="doc-kpi-title">미연결 매뉴얼</span>
+                    <span class="doc-kpi-icon warn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.29 3.86-8.4 14.74A2 2 0 0 0 3.62 22h16.76a2 2 0 0 0 1.73-3.4L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                </div>
+                <div class="doc-kpi-value warning">3<span class="small">건</span></div>
+                <div class="doc-kpi-sub">ORG·HLT·LOCAL 매뉴얼 미연결</div>
+            </div>
+        </section>
+
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">카테고리</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>EDU · 교육</option>
+                    <option>RSK · 위험성평가</option>
+                    <option>INS · 점검</option>
+                    <option>CON · 도급</option>
+                    <option>CDPA · 중대재해법</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">연결 매뉴얼</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>INS-M-001 일반 시설 점검</option>
+                    <option>INS-M-002 청사 정기 점검</option>
+                    <option>INS-M-005 소방설비 점검</option>
+                    <option>INS-M-008 화학물질 취급</option>
+                    <option>INS-M-011 정수장 점검</option>
+                    <option>RSK-M-001 위험성평가</option>
+                    <option>EDU-M-001 정기교육</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>시행중</option>
+                    <option>개정 진행</option>
+                    <option>초안</option>
+                </select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="점검표명·코드 검색">
+                <button class="search-submit" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    검색
+                </button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <div class="doc-meta-row">
+            <span class="doc-meta-count">전체 <strong>14</strong>건 표시 중</span>
+            <a href="doc-manual.html" class="text-muted" style="font-size:13px;">← 매뉴얼 목록</a>
+        </div>
+
+        <!-- 점검표 테이블 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">점검표 목록</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '점검표 등록 (DOC02-F)')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    점검표 등록
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:130px;"><col><col style="width:210px;"><col style="width:80px;"><col style="width:90px;"><col style="width:100px;"><col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>점검표명</th>
+                        <th>연결 매뉴얼</th>
+                        <th style="text-align:center;">항목 수</th>
+                        <th style="text-align:center;">활용</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-001')">
+                        <td><span class="doc-code">INS-CL-001</span></td>
+                        <td><strong>일반 시설 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-001 v3.1</td>
+                        <td style="text-align:center; font-weight:700;">25</td>
+                        <td style="text-align:center; color:var(--text-gray);">5회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-001');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-002')">
+                        <td><span class="doc-code">INS-CL-002</span></td>
+                        <td><strong>청사 정기 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-002 v2.0</td>
+                        <td style="text-align:center; font-weight:700;">18</td>
+                        <td style="text-align:center; color:var(--text-gray);">2회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-002');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-005')">
+                        <td><span class="doc-code">INS-CL-005</span></td>
+                        <td><strong>소방설비 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-005 v1.4</td>
+                        <td style="text-align:center; font-weight:700;">22</td>
+                        <td style="text-align:center; color:var(--text-gray);">4회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-005');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-008')">
+                        <td><span class="doc-code">INS-CL-008</span></td>
+                        <td><strong>화학물질 취급 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-008 v2.3-draft</td>
+                        <td style="text-align:center; font-weight:700;">30</td>
+                        <td style="text-align:center; color:var(--text-gray);">3회</td>
+                        <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-008');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-008-2')">
+                        <td><span class="doc-code">INS-CL-008-2</span></td>
+                        <td><strong>화학물질 보관 일일 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-008 v2.3-draft</td>
+                        <td style="text-align:center; font-weight:700;">12</td>
+                        <td style="text-align:center; color:var(--text-gray);">15회</td>
+                        <td style="text-align:center;"><span class="doc-status revising">개정 진행</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-008-2');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-011')">
+                        <td><span class="doc-code">INS-CL-011</span></td>
+                        <td><strong>정수장 안전점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-011 v1.0</td>
+                        <td style="text-align:center; font-weight:700;">28</td>
+                        <td style="text-align:center; color:var(--text-gray);">2회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-011');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-013')">
+                        <td><span class="doc-code">INS-CL-013</span></td>
+                        <td><strong>집중호우 대비 시설 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-013 v1.1</td>
+                        <td style="text-align:center; font-weight:700;">15</td>
+                        <td style="text-align:center; color:var(--text-gray);">1회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-013');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('RSK-CL-001')">
+                        <td><span class="doc-code">RSK-CL-001</span></td>
+                        <td><strong>위험성평가 표준 점검표</strong></td>
+                        <td><span class="doc-cat RSK">RSK</span> RSK-M-001 v4.0</td>
+                        <td style="text-align:center; font-weight:700;">12</td>
+                        <td style="text-align:center; color:var(--text-gray);">8회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('RSK-CL-001');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('EDU-CL-001')">
+                        <td><span class="doc-code">EDU-CL-001</span></td>
+                        <td><strong>교육 이수 확인 점검표</strong></td>
+                        <td><span class="doc-cat EDU">EDU</span> EDU-M-001 v2.5</td>
+                        <td style="text-align:center; font-weight:700;">6</td>
+                        <td style="text-align:center; color:var(--text-gray);">320회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('EDU-CL-001');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('CON-CL-001')">
+                        <td><span class="doc-code">CON-CL-001</span></td>
+                        <td><strong>TBM 일일 점검표</strong></td>
+                        <td><span class="doc-cat CON">CON</span> CON-M-001 v1.0</td>
+                        <td style="text-align:center; font-weight:700;">8</td>
+                        <td style="text-align:center; color:var(--text-gray);">42회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('CON-CL-001');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('CDPA-CL-001')">
+                        <td><span class="doc-code">CDPA-CL-001</span></td>
+                        <td><strong>중대재해법 의무이행 체크리스트</strong></td>
+                        <td><span class="doc-cat CDPA">CDPA</span> CDPA-M-001 v3.0</td>
+                        <td style="text-align:center; font-weight:700;">35</td>
+                        <td style="text-align:center; color:var(--text-gray);">9회</td>
+                        <td style="text-align:center;"><span class="doc-status active">시행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('CDPA-CL-001');">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.openChecklistModal('INS-CL-001-2')">
+                        <td><span class="doc-code">INS-CL-001-2</span></td>
+                        <td><strong>일반 시설 보강 점검표</strong></td>
+                        <td><span class="doc-cat INS">INS</span> INS-M-001 v3.1</td>
+                        <td style="text-align:center; font-weight:700;">7</td>
+                        <td style="text-align:center; color:var(--text-gray);">0회</td>
+                        <td style="text-align:center;"><span class="doc-status draft">초안</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openChecklistModal('INS-CL-001-2');">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="2"></div>
+        </section>
+    </main>
+
+    <!-- 점검표 상세 모달 -->
+    <div class="doc-modal-backdrop" id="checklist-modal">
+        <div class="doc-modal" role="dialog" aria-modal="true">
+            <div class="doc-modal-header">
+                <div class="doc-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span id="checklist-modal-name">점검표 상세</span>
+                </div>
+                <button type="button" class="doc-modal-close" onclick="window.closeChecklistModal()" aria-label="닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="doc-modal-body" id="checklist-modal-body">
+                <!-- JS 렌더 -->
+            </div>
+            <div class="doc-modal-footer">
+                <div style="font-size:12px; color:var(--text-gray);" id="checklist-modal-meta"></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '항목 추가')">+ 항목 추가</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '점검표 개정 (DOC02-F)')">개정 시작</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        const CHECKLISTS = {
+            'INS-CL-005': {
+                name: '소방설비 점검표',
+                cat: 'INS', manual: 'INS-M-005 소방설비 분기 점검 매뉴얼 v1.4',
+                items: 22, usage: '4회', status: 'active',
+                updated: '2025-11-22 · 한시설',
+                groups: [
+                    { name: '옥내 소화전', items: [
+                        '옥내 소화전함 외관에 균열·파손이 없는가?',
+                        '소화전 호스의 부식·곰팡이·찢어짐이 없는가?',
+                        '소화전 펌프 정상 작동 (압력·유량)',
+                        '소화전 주위 장애물 없음 + 표지판 식별 가능',
+                        '소화전 점검 표지 부착 여부',
+                    ]},
+                    { name: '자동 화재 탐지 설비', items: [
+                        '수신기 전원 정상 표시등 점등 확인',
+                        '감지기 외관 점검 (오염·이물질·도색)',
+                        '발신기 작동 시험 (각 층 1개소 표본)',
+                        '경종 작동 음량 정상 (각 구역 90dB 이상)',
+                        '중계기·연동제어반 정상 통신',
+                        '예비전원 충전 상태 및 자동 절체 시험',
+                    ]},
+                    { name: '스프링클러 설비', items: [
+                        '스프링클러 헤드 외관 정상',
+                        '알람밸브 작동 시험',
+                        '유수검지장치 표시등 정상',
+                        '송수구·연결송수관 외관 점검',
+                        '물탱크 수위 및 외관',
+                        '물탱크 수질 점검',
+                    ]},
+                    { name: '피난·방화 설비', items: [
+                        '피난계단 장애물 없음',
+                        '비상조명등 점등 확인',
+                        '유도등·유도표지 식별 가능',
+                        '방화문 자동 폐쇄 작동',
+                        '방화 셔터 작동 시험',
+                    ]},
+                ]
+            },
+            'INS-CL-008': {
+                name: '화학물질 취급 점검표',
+                cat: 'INS', manual: 'INS-M-008 화학물질 취급 점검 매뉴얼 v2.3-draft',
+                items: 30, usage: '3회', status: 'revising',
+                updated: '2026-05-08 · 오환경 (개정 중)',
+                groups: [
+                    { name: '취급 일반', items: [
+                        'MSDS 비치 및 최신 버전 확인',
+                        '취급자 안전교육 이수 확인',
+                        '취급량 등록 및 기록 일치',
+                        '취급 장소 환기 시설 가동 상태',
+                    ]},
+                    { name: '저장·보관', items: [
+                        '보관실 시건장치 잠금',
+                        '용기 표시 및 라벨링 적정',
+                        '저장 용량 한도 준수',
+                        '인화성 물질 분리 보관',
+                        '보관 온도·습도 모니터링',
+                    ]},
+                    { name: '방재·비상대응', items: [
+                        '비상샤워·세안설비 작동',
+                        '누출 흡착재 비치 위치 적정',
+                        '소화 약제 종류·유효기한',
+                        '비상연락망 게시',
+                    ]},
+                ]
+            },
+        };
+
+        const CAT_LABEL = { INS: '점검', RSK: '위험성평가', EDU: '교육', CON: '도급', CDPA: '중대재해법' };
+        const STATUS_LABEL = { active: '시행중', revising: '개정 진행', draft: '초안' };
+
+        const DEFAULT_DATA = {
+            name: '점검표', cat: 'INS', manual: '-', items: 0, usage: '-',
+            status: 'active', updated: '-',
+            groups: [{ name: '점검 항목', items: ['점검 항목 데이터를 준비 중입니다.'] }]
+        };
+
+        window.openChecklistModal = function (code) {
+            const c = CHECKLISTS[code] || { ...DEFAULT_DATA, name: code };
+            document.getElementById('checklist-modal-name').innerHTML =
+                `<span class="doc-code" style="margin-right:8px;">${code}</span> ${c.name}`;
+            document.getElementById('checklist-modal-meta').innerHTML =
+                `최근 개정 <strong style="color:var(--text-black);">${c.updated}</strong>`;
+
+            let groupNo = 0;
+            const groupsHtml = c.groups.map(g => {
+                const rows = g.items.map(q => {
+                    groupNo++;
+                    return `
+                        <div class="doc-item-row">
+                            <span class="no">${groupNo}</span>
+                            <span class="q">${q}</span>
+                            <span class="type">4지선다</span>
+                        </div>
+                    `;
+                }).join('');
+                return `
+                    <div class="doc-item-section" style="margin-bottom: 12px;">
+                        <div class="doc-item-group-head">${g.name} (${g.items.length}개 항목)</div>
+                        ${rows}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('checklist-modal-body').innerHTML = `
+                <div class="doc-info-section">
+                    <h4>기본 정보</h4>
+                    <div class="doc-info-grid">
+                        <span class="k">카테고리</span>
+                        <span class="v"><span class="doc-cat ${c.cat}">${c.cat}</span> ${CAT_LABEL[c.cat] || c.cat}</span>
+                        <span class="k">연결 매뉴얼</span>
+                        <span class="v">${c.manual}</span>
+                        <span class="k">총 항목 수</span>
+                        <span class="v">${c.items}개</span>
+                        <span class="k">활용 점검</span>
+                        <span class="v">${c.usage}</span>
+                        <span class="k">상태</span>
+                        <span class="v"><span class="doc-status ${c.status}">${STATUS_LABEL[c.status]}</span></span>
+                    </div>
+                </div>
+
+                <div class="doc-info-section">
+                    <h4>점검 항목 (${c.items}개)</h4>
+                    ${groupsHtml}
+                </div>
+            `;
+
+            document.getElementById('checklist-modal').classList.add('is-open');
+        };
+
+        window.closeChecklistModal = function () {
+            document.getElementById('checklist-modal').classList.remove('is-open');
+        };
+
+        document.querySelectorAll('.doc-modal-backdrop').forEach(bd => {
+            bd.addEventListener('click', (e) => {
+                if (e.target === bd) bd.classList.remove('is-open');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

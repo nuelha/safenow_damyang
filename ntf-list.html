@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 알림 내역 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── NTF01-L 전용 ─── */
+
+        /* 그룹 헤더 */
+        .ntf-group-head {
+            font-size: 12px; font-weight: 700;
+            color: var(--text-gray);
+            padding: 14px 4px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .ntf-group-head:first-child { padding-top: 4px; }
+
+        /* 알림 행 */
+        .ntf-row {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 18px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all .12s ease;
+            position: relative;
+        }
+        .ntf-row:hover { border-color: var(--main); background: var(--brand-100); }
+        .ntf-row.is-unread {
+            background: var(--brand-100);
+            border-left: 3px solid var(--main);
+            padding-left: 16px;
+        }
+        .ntf-row.is-unread .ntf-row-title { font-weight: 700; }
+
+        .ntf-row-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .ntf-row-dot.approval   { background: #ef4444; }
+        .ntf-row-dot.assignment { background: #10b981; }
+        .ntf-row-dot.compliance { background: #f59e0b; }
+        .ntf-row-dot.inspection { background: #3b82f6; }
+        .ntf-row-dot.risk       { background: #eab308; }
+        .ntf-row-dot.opinion    { background: #9333ea; }
+        .ntf-row-dot.contract   { background: #92400e; }
+        .ntf-row-dot.system     { background: #94a3b8; }
+
+        .ntf-row-body { flex: 1; min-width: 0; }
+        .ntf-row-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        .ntf-row-cat {
+            display: inline-flex; align-items: center;
+            padding: 1px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+        }
+        .ntf-row-cat.approval   { background: #fee2e2; color: #b91c1c; }
+        .ntf-row-cat.assignment { background: #d1fae5; color: #047857; }
+        .ntf-row-cat.compliance { background: #fef3c7; color: #b45309; }
+        .ntf-row-cat.inspection { background: #dbeafe; color: #1d4ed8; }
+        .ntf-row-cat.risk       { background: #fef9c3; color: #a16207; }
+        .ntf-row-cat.opinion    { background: #f3e8ff; color: #7e22ce; }
+        .ntf-row-cat.contract   { background: #fef3c7; color: #92400e; }
+        .ntf-row-cat.system     { background: #f1f5f9; color: #64748b; }
+
+        .ntf-row-title { font-size: 14px; color: var(--text-black); line-height: 1.4; }
+        .ntf-row-meta { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+        .ntf-row-time { font-size: 11px; color: var(--text-lightgray); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+        .ntf-row-action {
+            display: inline-flex; align-items: center; gap: 2px;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            margin-top: 6px;
+            text-decoration: none;
+        }
+        .ntf-row-action:hover { background: var(--brand-100); border-color: var(--main); }
+
+        /* 안 읽음 인디케이터 dot */
+        .ntf-unread-dot {
+            position: absolute;
+            top: 14px; right: 14px;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--main);
+        }
+
+        /* 빈 상태 */
+        .ntf-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-lightgray);
+        }
+        .ntf-empty svg { width: 56px; height: 56px; margin-bottom: 12px; opacity: 0.4; }
+
+        /* KPI 줄 */
+        .ntf-summary {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .ntf-summary-stats { display: flex; gap: 16px; font-size: 13px; }
+        .ntf-summary-stats .stat { display: flex; align-items: baseline; gap: 4px; }
+        .ntf-summary-stats .num { font-size: 22px; font-weight: 800; color: var(--main); }
+        .ntf-summary-stats .num.warn { color: var(--status-warning-fg); }
+        .ntf-summary-stats .label { font-size: 12px; color: var(--text-gray); }
+    </style>
+</head>
+<body data-dy-page="notifications" data-page-title="내 알림" data-page-subtitle="결재·지정·이행·점검 등 본인 알림 내역 (NTF01-L)">
+    <main>
+        <!-- 요약 -->
+        <div class="ntf-summary">
+            <div class="ntf-summary-stats">
+                <div class="stat"><span class="num warn">3</span><span class="label">안 읽음</span></div>
+                <div class="stat"><span class="num">42</span><span class="label">전체</span></div>
+                <div class="stat"><span class="num">12</span><span class="label">이번 주</span></div>
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '모두 읽음 처리 (본인 알림 일괄 read_at=NOW)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                모두 읽음 처리
+            </button>
+        </div>
+
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">카테고리</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>결재 (approval)</option>
+                    <option>지정·매핑 (assignment)</option>
+                    <option>이행 (compliance)</option>
+                    <option>점검 (inspection)</option>
+                    <option>위험성평가 (risk)</option>
+                    <option>의견청취 (opinion)</option>
+                    <option>도급계약 (contract)</option>
+                    <option>시스템 (system)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select"><option>전체</option><option>오늘</option><option>어제</option><option>1주</option><option>30일</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select"><option>전체</option><option>안 읽음</option><option>읽음</option></select>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- 알림 목록 -->
+        <section style="margin-top: 8px;">
+            <!-- 오늘 -->
+            <div class="ntf-group-head">오늘 — 2026-05-13 (월)</div>
+
+            <div class="ntf-row is-unread" onclick="window.location.href='safety-policy.html'">
+                <span class="ntf-row-dot approval"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat approval">결재</span>
+                    </div>
+                    <div class="ntf-row-title">안전경영방침 v2.5 결재 요청</div>
+                    <div class="ntf-row-meta">박안전 · 자치행정과 · 온나라에서 결재 진행하세요</div>
+                    <a class="ntf-row-action" href="safety-policy.html" onclick="event.stopPropagation();">바로가기 →</a>
+                </div>
+                <span class="ntf-row-time">14:23</span>
+                <span class="ntf-unread-dot"></span>
+            </div>
+
+            <div class="ntf-row is-unread" onclick="window.location.href='target-detail.html'">
+                <span class="ntf-row-dot assignment"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat assignment">지정</span>
+                    </div>
+                    <div class="ntf-row-title">군청 청사 관리의 관리책임자로 자동 지정되었습니다</div>
+                    <div class="ntf-row-meta">행정포털 SSO 동기화 · 권한 SHM</div>
+                    <a class="ntf-row-action" href="target-detail.html" onclick="event.stopPropagation();">관리대상 보기 →</a>
+                </div>
+                <span class="ntf-row-time">09:15</span>
+                <span class="ntf-unread-dot"></span>
+            </div>
+
+            <div class="ntf-row is-unread" onclick="window.location.href='cmp-detail.html'">
+                <span class="ntf-row-dot compliance"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat compliance">이행</span>
+                    </div>
+                    <div class="ntf-row-title">화학물질 정기 검사 기한 초과 (D+8)</div>
+                    <div class="ntf-row-meta">환경자원시설 · 오환경 담당 · 즉시 시정 필요</div>
+                    <a class="ntf-row-action" href="cmp-detail.html" onclick="event.stopPropagation();">이행관리 보기 →</a>
+                </div>
+                <span class="ntf-row-time">08:00</span>
+                <span class="ntf-unread-dot"></span>
+            </div>
+
+            <!-- 어제 -->
+            <div class="ntf-group-head">어제 — 2026-05-12 (일)</div>
+
+            <div class="ntf-row" onclick="window.location.href='ins-detail.html'">
+                <span class="ntf-row-dot inspection"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat inspection">점검</span>
+                    </div>
+                    <div class="ntf-row-title">군청 청사 소방설비 분기 점검 — D-1 (내일 마감)</div>
+                    <div class="ntf-row-meta">한시설 담당 · 매뉴얼 INS-M-005</div>
+                    <a class="ntf-row-action" href="ins-detail.html" onclick="event.stopPropagation();">점검 실시 →</a>
+                </div>
+                <span class="ntf-row-time">어제 18:00</span>
+            </div>
+
+            <div class="ntf-row" onclick="window.location.href='risk-detail.html'">
+                <span class="ntf-row-dot risk"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat risk">위험성평가</span>
+                    </div>
+                    <div class="ntf-row-title">청사 위험성평가 2026 평가자로 지정되었습니다</div>
+                    <div class="ntf-row-meta">평가 기간 2026-04-01 ~ 2026-05-31 (D-19)</div>
+                    <a class="ntf-row-action" href="risk-detail.html" onclick="event.stopPropagation();">평가 진행 →</a>
+                </div>
+                <span class="ntf-row-time">어제 14:30</span>
+            </div>
+
+            <div class="ntf-row" onclick="window.location.href='opn-detail.html'">
+                <span class="ntf-row-dot opinion"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat opinion">의견청취</span>
+                    </div>
+                    <div class="ntf-row-title">위험 신고 — 주차장 야간 조명 부족 (시설관리과)</div>
+                    <div class="ntf-row-meta">SLA 14일 · 한시설 담당자 지정됨</div>
+                    <a class="ntf-row-action" href="opn-detail.html" onclick="event.stopPropagation();">의견 처리 →</a>
+                </div>
+                <span class="ntf-row-time">어제 10:08</span>
+            </div>
+
+            <!-- 이번 주 -->
+            <div class="ntf-group-head">이번 주</div>
+
+            <div class="ntf-row" onclick="window.location.href='con-detail.html'">
+                <span class="ntf-row-dot contract"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat contract">도급계약</span>
+                    </div>
+                    <div class="ntf-row-title">청사 시설 보수공사 STEP 3 결재 진행 대기</div>
+                    <div class="ntf-row-meta">자치행정과 · 김도급 · 평가 완료 → 결재 요청 필요</div>
+                    <a class="ntf-row-action" href="con-step3.html" onclick="event.stopPropagation();">결재 진행 →</a>
+                </div>
+                <span class="ntf-row-time">2026-05-10 16:45</span>
+            </div>
+
+            <div class="ntf-row" onclick="window.location.href='imp-detail.html'">
+                <span class="ntf-row-dot compliance"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat compliance">이행</span>
+                    </div>
+                    <div class="ntf-row-title">개선조치 imp-32 진행 사항 업데이트 요청</div>
+                    <div class="ntf-row-meta">누출 흡착재 보충 — 마감 5/20</div>
+                    <a class="ntf-row-action" href="imp-detail.html" onclick="event.stopPropagation();">개선조치 보기 →</a>
+                </div>
+                <span class="ntf-row-time">2026-05-09 11:20</span>
+            </div>
+
+            <div class="ntf-row" onclick="window.location.href='opn-committee.html'">
+                <span class="ntf-row-dot opinion"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat opinion">의견청취</span>
+                    </div>
+                    <div class="ntf-row-title">산업안전보건위원회 Q2 회의 안건 등록 알림</div>
+                    <div class="ntf-row-meta">2026-06-12 14:00 개최 (D-30) · 위원 12명</div>
+                    <a class="ntf-row-action" href="opn-committee.html" onclick="event.stopPropagation();">안건 등록 →</a>
+                </div>
+                <span class="ntf-row-time">2026-05-08 09:00</span>
+            </div>
+
+            <!-- 이전 -->
+            <div class="ntf-group-head">이전</div>
+
+            <div class="ntf-row" onclick="window.location.href='sys-integration.html'">
+                <span class="ntf-row-dot system"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat system">시스템</span>
+                    </div>
+                    <div class="ntf-row-title">행정포털 조직도 동기화 완료 — 신규 부서 1개 추가</div>
+                    <div class="ntf-row-meta">정기 동기화 (매일 06:00)</div>
+                    <a class="ntf-row-action" href="sys-integration.html" onclick="event.stopPropagation();">연동 보기 →</a>
+                </div>
+                <span class="ntf-row-time">2026-05-05 06:02</span>
+            </div>
+
+            <div class="ntf-row" onclick="window.location.href='evl-detail.html'">
+                <span class="ntf-row-dot assignment"></span>
+                <div class="ntf-row-body">
+                    <div class="ntf-row-head">
+                        <span class="ntf-row-cat assignment">지정</span>
+                    </div>
+                    <div class="ntf-row-title">2026 상반기 인력평가자로 지정 — 8명 평가 대상</div>
+                    <div class="ntf-row-meta">평가 기간 2026-04-01 ~ 2026-06-30 (D-48)</div>
+                    <a class="ntf-row-action" href="evl-list.html" onclick="event.stopPropagation();">평가 시작 →</a>
+                </div>
+                <span class="ntf-row-time">2026-04-15 09:00</span>
+            </div>
+        </section>
+
+        <!-- 페이지네이션 -->
+        <div data-pagination data-current="1" data-total="4"></div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

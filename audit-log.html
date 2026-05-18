@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감사 로그 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── 감사 로그 전용 ─── */
+
+        /* KPI 4분할 */
+        .audit-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .audit-kpi-cell {
+            padding: 18px 22px;
+            display: flex; flex-direction: column; gap: 6px;
+            border-right: 1px solid var(--card-line);
+            min-height: 112px; justify-content: center;
+        }
+        .audit-kpi-cell:last-child { border-right: none; }
+        .audit-kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .audit-kpi-title { font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .audit-kpi-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--brand-100);
+            color: var(--main-dark);
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .audit-kpi-icon.danger { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+        .audit-kpi-icon.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .audit-kpi-icon.info { background: var(--status-info-bg); color: var(--status-info-fg); }
+        .audit-kpi-value { font-size: 26px; font-weight: 800; color: var(--main); line-height: 1; letter-spacing: -0.8px; }
+        .audit-kpi-value .small { font-size: 13px; font-weight: 600; color: var(--text-gray); margin-left: 2px; }
+        .audit-kpi-value.danger { color: var(--status-danger-fg); }
+        .audit-kpi-value.warning { color: var(--status-warning-fg); }
+        .audit-kpi-value.info { color: var(--status-info-fg); }
+        .audit-kpi-sub { font-size: 11px; color: var(--text-gray); }
+
+        /* 액션 chip */
+        .audit-action-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            font-family: 'SF Mono', Consolas, monospace;
+            white-space: nowrap;
+        }
+        .audit-action-chip.login     { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .audit-action-chip.logout    { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+        .audit-action-chip.fail      { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .audit-action-chip.create    { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .audit-action-chip.update    { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .audit-action-chip.delete    { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .audit-action-chip.role      { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .audit-action-chip.approval  { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+        .audit-action-chip.sync      { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .audit-action-chip.export    { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 사용자 셀 */
+        .audit-user {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .audit-user-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--main-dark);
+            color: white;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .audit-user-avatar.system { background: var(--text-gray); }
+        .audit-user-avatar.external { background: #c47a07; }
+        .audit-user-info { display: flex; flex-direction: column; min-width: 0; }
+        .audit-user-name { font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .audit-user-role {
+            font-size: 10px;
+            color: var(--text-gray);
+            font-family: 'SF Mono', Consolas, monospace;
+        }
+
+        /* IP 셀 */
+        .audit-ip {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            background: var(--gray-100);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        /* 시각 셀 */
+        .audit-time {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 12px;
+            color: var(--text-black);
+            white-space: nowrap;
+        }
+        .audit-time .ms { color: var(--text-lightgray); }
+
+        /* 변경 전/후 미리보기 */
+        .audit-diff {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+        .audit-diff .from { color: var(--status-danger-fg); text-decoration: line-through; }
+        .audit-diff .to   { color: var(--status-success-fg); font-weight: 700; }
+        .audit-diff .arrow { color: var(--text-lightgray); }
+
+        /* 상태 chip */
+        .audit-status {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 6px;
+            font-size: 10px; font-weight: 700;
+            border-radius: 4px;
+        }
+        .audit-status.success { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .audit-status.fail    { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+
+        /* 보안 안내 배너 */
+        .audit-security-notice {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--status-info-fg);
+            line-height: 1.6;
+        }
+        .audit-security-notice .icon { flex-shrink: 0; }
+        .audit-security-notice strong { font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="sys-audit" data-page-title="감사 로그" data-page-subtitle="시스템 액션 이력 — 사용자·자동 작업·외부 연동 추적 (CEO 전용)">
+    <main>
+        <!-- CEO 전용 안내 -->
+        <div class="audit-security-notice">
+            <span class="icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--status-info-fg);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span>
+                <strong>CEO 전용 화면</strong> — 본 화면 접근 자체도 감사 로그에 기록됩니다.
+                <span style="color: var(--text-gray);">audit_logs 테이블 기반 · 7년 보존 (법령 의무 준수)</span>
+            </span>
+        </div>
+
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">기간</span>
+                <select class="select">
+                    <option>오늘</option>
+                    <option>어제</option>
+                    <option>최근 7일</option>
+                    <option>최근 30일</option>
+                    <option>사용자 지정</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">액션</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>LOGIN_SUCCESS / FAIL</option>
+                    <option>USER_CREATE / UPDATE / DELETE</option>
+                    <option>PERMISSION_CHANGE</option>
+                    <option>APPROVAL_REQUEST / RESPONSE</option>
+                    <option>EXTERNAL_SYNC</option>
+                    <option>DATA_EXPORT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">사용자</span>
+                <select class="select">
+                    <option>전체</option>
+                    <option>군수·부군수 (CEO)</option>
+                    <option>실·과·단·소장 (GM)</option>
+                    <option>안전관리자 (SHM)</option>
+                    <option>외부 사용자 (SUB/CON)</option>
+                    <option>시스템 자동 (SYSTEM)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">결과</span>
+                <select class="select"><option>전체</option><option>성공</option><option>실패</option></select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="사용자명·IP·대상 검색">
+                <button class="search-submit" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>검색</button>
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '엑셀 다운로드 — audit_logs_2026-05-13.xlsx')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                엑셀
+            </button>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <!-- KPI 4분할 -->
+        <section class="audit-kpi-grid">
+            <div class="audit-kpi-cell">
+                <div class="audit-kpi-head">
+                    <span class="audit-kpi-title">오늘 로그</span>
+                    <span class="audit-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></span>
+                </div>
+                <div class="audit-kpi-value">1,247<span class="small">건</span></div>
+                <div class="audit-kpi-sub">전일 대비 +8% (115건 ↑)</div>
+            </div>
+            <div class="audit-kpi-cell">
+                <div class="audit-kpi-head">
+                    <span class="audit-kpi-title">로그인 실패</span>
+                    <span class="audit-kpi-icon danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></span>
+                </div>
+                <div class="audit-kpi-value danger">12<span class="small">건</span></div>
+                <div class="audit-kpi-sub">계정 잠금 <strong style="color:var(--status-danger-fg);">1</strong>건 발생</div>
+            </div>
+            <div class="audit-kpi-cell">
+                <div class="audit-kpi-head">
+                    <span class="audit-kpi-title">권한 변경</span>
+                    <span class="audit-kpi-icon warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="11" r="3"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/></svg></span>
+                </div>
+                <div class="audit-kpi-value warning">3<span class="small">건</span></div>
+                <div class="audit-kpi-sub">최근 7일 누적</div>
+            </div>
+            <div class="audit-kpi-cell">
+                <div class="audit-kpi-head">
+                    <span class="audit-kpi-title">외부 연동</span>
+                    <span class="audit-kpi-icon info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+                </div>
+                <div class="audit-kpi-value info">42<span class="small">건</span></div>
+                <div class="audit-kpi-sub">SSO·FMS·e호조·새올 동기화</div>
+            </div>
+        </section>
+
+        <!-- 로그 테이블 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">감사 로그 (audit_logs)</h2>
+                <span class="text-muted" style="font-size:13px;">1,247건 중 최근 15건 표시 · 자동 갱신 30초</span>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:160px;">
+                    <col style="width:200px;">
+                    <col style="width:180px;">
+                    <col>
+                    <col style="width:120px;">
+                    <col style="width:70px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>시각</th>
+                        <th>사용자</th>
+                        <th>액션</th>
+                        <th>대상·세부</th>
+                        <th>IP / User-Agent</th>
+                        <th style="text-align:center;">결과</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 권한 변경 (가장 민감) -->
+                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '감사 로그 상세 — id 2026-1247')">
+                        <td><span class="audit-time">14:32:08<span class="ms">.123</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">홍</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">홍길동 (군수)</span>
+                                    <span class="audit-user-role">CEO · uid 1</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip role">PERMISSION_CHANGE</span></td>
+                        <td>
+                            <strong>박○○</strong> 권한 변경
+                            <div class="audit-diff">
+                                <span class="from">SHM</span><span class="arrow">→</span><span class="to">GM</span>
+                                <span style="color:var(--text-lightgray); margin-left:6px;">· 시설관리과장 보임 발령</span>
+                            </div>
+                        </td>
+                        <td><span class="audit-ip">172.16.10.5</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · macOS</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 로그인 실패 -->
+                    <tr class="row-link row-highlight-danger" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">14:18:42<span class="ms">.891</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar external">?</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">kim@b-const.co.kr</span>
+                                    <span class="audit-user-role">EXTERNAL · attempt</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip fail">LOGIN_FAIL</span></td>
+                        <td>
+                            5회 연속 실패 — <strong style="color:var(--status-danger-fg);">계정 잠금 (30분)</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">사유: 비밀번호 불일치</div>
+                        </td>
+                        <td><span class="audit-ip">211.231.45.92</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Safari · iOS 17</div></td>
+                        <td style="text-align:center;"><span class="audit-status fail">실패</span></td>
+                    </tr>
+
+                    <!-- 결재 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">14:23:15<span class="ms">.044</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">박</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">박안전</span>
+                                    <span class="audit-user-role">SHM · 안전건설과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip approval">APPROVAL_REQUEST</span></td>
+                        <td>
+                            <strong>안전경영방침 v2.5</strong> 결재 요청
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">policies/12 · 결재선: 군수</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.20.42</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Edge · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 데이터 삭제 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">13:45:02<span class="ms">.617</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">김</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">김도급</span>
+                                    <span class="audit-user-role">SHM · 자치행정과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip delete">INVITATION_REVOKE</span></td>
+                        <td>
+                            <strong>C건설 박사장</strong> 초대 회수
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">계약 종료 · external_user_access deactivated</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.10.18</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- SSO 로그인 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">13:32:18<span class="ms">.205</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">홍</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">홍자치</span>
+                                    <span class="audit-user-role">GM · 자치행정과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip login">LOGIN_SUCCESS</span></td>
+                        <td>
+                            SSO 로그인 (행정포털)
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">portal_user_id: 20240315-001 · auth_source: SSO</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.20.5</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Edge · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 외부 사용자 초대 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">13:08:47<span class="ms">.339</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">김</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">김도급</span>
+                                    <span class="audit-user-role">SHM · 자치행정과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip create">INVITATION_CREATE</span></td>
+                        <td>
+                            <strong>A건설 김도급</strong> 외부 사용자 초대
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">SUB · 도급계약 #2026-12 · 만료 2026-05-20</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.10.18</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- e호조 동기화 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">06:00:00<span class="ms">.014</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar system">⚙</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">시스템 (배치)</span>
+                                    <span class="audit-user-role">SYSTEM · cron</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip sync">EXTERNAL_SYNC</span></td>
+                        <td>
+                            차세대 e호조 정기 동기화
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">신규 계약 3건 import · 위험성평가 자동 생성 3건</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.0.1</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">node-sched · server</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 데이터 변경 (방침 수정) -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">11:42:33<span class="ms">.706</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">김</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">김안전</span>
+                                    <span class="audit-user-role">SHM · 자치행정과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip update">POLICY_UPDATE</span></td>
+                        <td>
+                            <strong>안전경영방침 v2.5</strong> 본문 수정
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">policies/12 · §3 조직 책임 단락 수정</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.20.42</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Edge · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 엑셀 다운로드 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">10:55:19<span class="ms">.482</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">홍</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">홍길동 (군수)</span>
+                                    <span class="audit-user-role">CEO · uid 1</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip export">DATA_EXPORT</span></td>
+                        <td>
+                            <strong>종합 통계 엑셀 다운로드</strong>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">2026 Q1 · 5 sheets · 통합관리시스템_종합통계_2026Q1.xlsx</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.10.5</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · macOS</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 위험성평가 등록 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">09:18:55<span class="ms">.219</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">김</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">김안전</span>
+                                    <span class="audit-user-role">SHM · 자치행정과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip create">RISK_ASSESS_CREATE</span></td>
+                        <td>
+                            <strong>청사 위험성평가 2026 Q2</strong> 등록
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">risk_assessments/153 · 정기 평가 · 위험요인 8개</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.20.42</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Edge · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 자동 알림 발송 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">09:00:00<span class="ms">.001</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar system">⚙</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">시스템 (배치)</span>
+                                    <span class="audit-user-role">SYSTEM · cron</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip sync">NOTIFY_BATCH</span></td>
+                        <td>
+                            기한 임박/초과 알림 일괄 발송
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">새올 포틀릿 156건 · 이메일 42건 · 실패 0건</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.0.1</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">node-sched · server</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- SSO 첫 로그인 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">08:42:11<span class="ms">.557</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">이</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">이신입</span>
+                                    <span class="audit-user-role">WKR · 환경과 (신규)</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip create">SSO_FIRST_LOGIN</span></td>
+                        <td>
+                            행정포털 SSO 최초 로그인 — 사용자 자동 생성
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">users INSERT · permission_role: WKR 자동 매핑</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.30.7</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 외부 사용자 로그인 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">08:15:23<span class="ms">.802</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar external">김</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">김도급 (A건설)</span>
+                                    <span class="audit-user-role">SUB · external</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip login">LOGIN_SUCCESS</span></td>
+                        <td>
+                            외부 사용자 로그인 (LOCAL)
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">auth_source: LOCAL · contract: #2026-12</div>
+                        </td>
+                        <td><span class="audit-ip">211.231.45.92</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Chrome 120 · Android</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 어제 로그아웃 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">어제 18:32<span class="ms">:14.331</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar">박</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">박안전</span>
+                                    <span class="audit-user-role">SHM · 안전건설과</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip logout">LOGOUT</span></td>
+                        <td>
+                            로그아웃 (사용자 명시적)
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">세션 유효시간 6시간 14분</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.20.42</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">Edge · Windows 11</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+
+                    <!-- 행정포털 조직도 동기화 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '감사 로그 상세')">
+                        <td><span class="audit-time">어제 06:00<span class="ms">:00.024</span></span></td>
+                        <td>
+                            <div class="audit-user">
+                                <span class="audit-user-avatar system">⚙</span>
+                                <div class="audit-user-info">
+                                    <span class="audit-user-name">시스템 (배치)</span>
+                                    <span class="audit-user-role">SYSTEM · cron</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="audit-action-chip sync">ORG_SYNC</span></td>
+                        <td>
+                            행정포털 조직도 동기화
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:2px;">사용자 312명 갱신 · 신규 1명 · 부서 1개 신설</div>
+                        </td>
+                        <td><span class="audit-ip">172.16.0.1</span><div style="font-size:10px; color:var(--text-lightgray); margin-top:2px;">node-sched · server</div></td>
+                        <td style="text-align:center;"><span class="audit-status success">성공</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="84"></div>
+        </section>
+
+        <!-- 보존 정책 안내 -->
+        <section class="card" style="padding: 14px 18px; background: var(--gray-100); border-color: var(--card-line);">
+            <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--text-gray); line-height: 1.7;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 2px; color: var(--text-gray);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>
+                    <strong style="color:var(--text-black);">감사 로그 보존 정책</strong> — audit_logs는 <strong>7년 보존</strong> (개인정보보호법 §21 · 산업안전보건법 §62 의무 준수).
+                    7년 경과 시 자동 익명화 (사용자 ID 마스킹) 후 통계 목적으로만 보존. CEO 외 접근은 불가능하며 본 화면 접근 자체가 audit_logs에 기록됩니다.
+                    하루 평균 약 <strong style="color:var(--text-black);">1,200~1,500건</strong> 누적되며 월별로 압축 보관됩니다.
+                </span>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전점검 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 서브 탭 패널 전환 */
+        .settings-panel { display: none; }
+        .settings-panel.is-active { display: block; }
+
+        /* 사이클(주기) 표 */
+        .cycle-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .cycle-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        .cycle-table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .cycle-table tbody tr:last-child td { border-bottom: none; }
+        .cycle-table .col-period { width: 110px; }
+        .cycle-table .col-action { width: 80px; text-align: right; }
+        .cycle-table .col-active { width: 80px; }
+        .cycle-table .col-code { width: 130px; }
+
+        .period-value {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-weight: 700; color: var(--main-dark2);
+        }
+        .period-value-sub { color: var(--text-gray); font-size: 12px; font-weight: 500; }
+
+        /* 점검 유형 chip (INS01-V 동일) */
+        .ins-type-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .ins-type-chip.regular { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .ins-type-chip.ad-hoc  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .ins-type-chip.special { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+    </style>
+</head>
+<body data-dy-page="ins-settings" data-page-title="안전점검 설정" data-page-subtitle="점검 주기·자동 생성 정책·알림 정책 콘텐츠 마스터">
+    <main>
+
+        <!-- ─── 화면 내부 서브 탭 ─── -->
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="cycle" onclick="window.InsSettings.switchTab('cycle')">점검 주기</button>
+            <button class="sub-tab" type="button" data-panel="autogen" onclick="window.InsSettings.switchTab('autogen')">자동 생성 정책</button>
+            <button class="sub-tab" type="button" data-panel="notify" onclick="window.InsSettings.switchTab('notify')">알림 정책</button>
+            <button class="sub-tab" type="button" data-panel="result" onclick="window.InsSettings.switchTab('result')">결과 처리 정책</button>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ① 점검 주기 (CYCLE) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel is-active" data-panel="cycle">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">정기 점검 주기</span>
+                        <span class="settings-card-desc">
+                            점검 유형 · 관리대상 type별로 정기 점검 자동 생성 주기를 설정합니다. 변경 시 다음 자동 생성 배치(매일 00:00)부터 즉시 반영됩니다.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>점검 유형</th>
+                            <th>관리대상 type</th>
+                            <th class="col-period">주기</th>
+                            <th>최근 변경</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="ins-type-chip regular">정기</span> 일반 시설점검</td>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td><span class="period-value">3 <span class="period-value-sub">개월</span></span></td>
+                            <td>2026-01-15 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip regular">정기</span> 소방설비 분기점검</td>
+                            <td><span class="type-tag">시설</span> 공중이용시설</td>
+                            <td><span class="period-value">3 <span class="period-value-sub">개월</span></span></td>
+                            <td>2025-11-22 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip regular">정기</span> 화학물질 취급점검</td>
+                            <td><span class="type-tag">업무</span> 업무형</td>
+                            <td><span class="period-value">1 <span class="period-value-sub">개월</span></span></td>
+                            <td>2026-03-08 · 오환경</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip regular">정기</span> 정수장 안전점검</td>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td><span class="period-value">6 <span class="period-value-sub">개월</span></span></td>
+                            <td>2026-03-01 · 신상수</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip regular">정기</span> 일반 청사점검</td>
+                            <td><span class="type-tag">시설</span> 시설형</td>
+                            <td><span class="period-value">12 <span class="period-value-sub">개월</span></span></td>
+                            <td>2025-08-22 · 박안전</td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정 모달')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">특별 점검 트리거</span>
+                        <span class="settings-card-desc">
+                            특정 사건 발생 시 자동으로 특별 점검을 생성하는 규칙입니다. 안전건설과 SHM만 수정 가능합니다.
+                        </span>
+                    </div>
+                    <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '특별 점검 트리거 추가')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        트리거 추가
+                    </button>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">코드</th>
+                            <th>트리거 사건</th>
+                            <th>점검 자동 생성</th>
+                            <th class="col-active">활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">FLOOD</code></td>
+                            <td><strong>집중호우 경보 발효</strong></td>
+                            <td>전 시설 대상 특별 점검 (24시간 내)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '트리거 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">EQUAKE</code></td>
+                            <td><strong>지진 발생 (규모 3.0 이상)</strong></td>
+                            <td>1종 시설 대상 특별 점검 (12시간 내)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '트리거 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">CHEM-INC</code></td>
+                            <td><strong>화학물질 누출 사고</strong></td>
+                            <td>해당 시설 + 동일 종류 시설 전체 (즉시)</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '트리거 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">HEATWAVE</code></td>
+                            <td><strong>폭염 경보 발효</strong></td>
+                            <td>야외 작업장 특별 점검</td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-switch-slider"></span>
+                                </label>
+                            </td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '트리거 수정')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ② 자동 생성 정책 (AUTOGEN) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="autogen">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">정기 점검 자동 생성 정책</span>
+                        <span class="settings-card-desc">
+                            매뉴얼 등록 후 점검표가 자동 연결되며, 점검 주기에 따라 정기 점검이 자동 생성됩니다.
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">매뉴얼 ↔ 점검표 자동 연결</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">신규 매뉴얼 등록 시 동일 코드의 점검표가 자동 매핑됩니다.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-switch-slider"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">점검 기한 자동 산정</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">정기 점검 생성일 + 주기 × N개월 = 자동 기한</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-switch-slider"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">담당자 자동 매핑</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">관리대상의 1차 SHM 담당자를 점검 담당자로 자동 지정</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-switch-slider"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px; border:1px solid var(--card-line); border-radius: var(--radius-button); background:white;">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-black);">부적합·보완 → 개선조치(IMP) 자동 생성</div>
+                            <div style="font-size:12px; color:var(--text-gray); margin-top:2px;">점검 결과 부적합·보완 항목이 있을 경우 개선조치를 자동 등록합니다.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">자동 생성 배치 스케줄</span>
+                        <span class="settings-card-desc">
+                            자동 점검 생성 배치 실행 시간 및 다음 실행 예정.
+                        </span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '배치 수동 실행')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        지금 실행
+                    </button>
+                </div>
+                <div style="padding: 16px 24px;">
+                    <div style="display:grid; grid-template-columns: 140px 1fr; row-gap: 10px; font-size: 13px;">
+                        <span style="color:var(--text-gray);">실행 주기</span>
+                        <span style="font-weight: 600;">매일 00:00 (KST)</span>
+                        <span style="color:var(--text-gray);">최근 실행</span>
+                        <span style="font-weight: 600;">2026-05-13 00:00:23 · <span style="color:var(--status-success-fg);">성공</span> · 신규 점검 7건 생성</span>
+                        <span style="color:var(--text-gray);">다음 실행</span>
+                        <span style="font-weight: 600;">2026-05-14 00:00 · D-1</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ③ 알림 정책 (NOTIFY) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="notify">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">점검 알림 발송 정책</span>
+                        <span class="settings-card-desc">
+                            알림 채널·발송 일정은 본 화면에서 관리합니다. 새올 포틀릿·SMTP 연결 자체는 <a href="sys-integration.html" style="color:var(--main-dark); font-weight:600;">SYS01-S 외부 시스템 연동</a>에서 관리합니다.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>알림 시점</th>
+                            <th>대상</th>
+                            <th>채널</th>
+                            <th>활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>점검 생성 시</td>
+                            <td>담당자 (SHM)</td>
+                            <td>새올 포틀릿 + 이메일</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '알림 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>점검 기한 7일 전</td>
+                            <td>담당자 (SHM)</td>
+                            <td>새올 포틀릿</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '알림 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>점검 기한 1일 전</td>
+                            <td>담당자 (SHM) + 부서장 (GM)</td>
+                            <td>새올 포틀릿 + 이메일</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '알림 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>점검 기한 초과 (D+1)</td>
+                            <td>담당자 + 부서장 + 안전건설과</td>
+                            <td>새올 포틀릿 + 이메일</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '알림 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>점검 완료 시</td>
+                            <td>부서장 (GM)</td>
+                            <td>새올 포틀릿</td>
+                            <td><label class="toggle-switch"><input type="checkbox"><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '알림 수정')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ④ 결과 처리 정책 (RESULT) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="settings-panel" data-panel="result">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">결과 분류별 후속 처리</span>
+                        <span class="settings-card-desc">
+                            점검 항목별 결과(적합·부적합·보완·미해당)에 따른 자동 후속 처리 규칙입니다.
+                        </span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">결과 분류</th>
+                            <th>자동 후속 조치</th>
+                            <th>개선조치 자동 생성</th>
+                            <th>알림 발송</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="ins-type-chip regular" style="background:var(--status-success-bg); color:var(--status-success-fg); border-color:var(--status-success-border);">적합</span></td>
+                            <td>처리 없음 (이력 보존만)</td>
+                            <td><span style="color:var(--text-lightgray);">—</span></td>
+                            <td><span style="color:var(--text-lightgray);">—</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip" style="background:var(--status-danger-bg); color:var(--status-danger-fg); border-color:var(--status-danger-border);">부적합</span></td>
+                            <td>즉시 개선조치 등록 + 부서장 통보</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip" style="background:var(--status-warning-bg); color:var(--status-warning-fg); border-color:var(--status-warning-border);">보완</span></td>
+                            <td>개선조치 등록 (30일 내 완료)</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                        </tr>
+                        <tr>
+                            <td><span class="ins-type-chip" style="background:var(--gray-100); color:var(--text-gray); border-color:var(--card-line);">미해당</span></td>
+                            <td>이력만 기록</td>
+                            <td><span style="color:var(--text-lightgray);">—</span></td>
+                            <td><span style="color:var(--text-lightgray);">—</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card" style="margin-top:16px;">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">개선조치 자동 생성 기본값</span>
+                        <span class="settings-card-desc">
+                            점검에서 자동 생성되는 개선조치의 기본 마감일·담당자 매핑 정책입니다.
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 20px 24px; display: grid; grid-template-columns: 160px 1fr; row-gap: 14px; align-items: center;">
+                    <span style="font-size:13px; color:var(--text-gray);">부적합 기본 마감일</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" value="7" min="1" max="30" class="select" style="width:80px; height:34px;">
+                        <span style="font-size:13px;">일 이내</span>
+                    </div>
+                    <span style="font-size:13px; color:var(--text-gray);">보완 기본 마감일</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" value="30" min="1" max="90" class="select" style="width:80px; height:34px;">
+                        <span style="font-size:13px;">일 이내</span>
+                    </div>
+                    <span style="font-size:13px; color:var(--text-gray);">담당자 기본값</span>
+                    <select class="select" style="max-width:300px;">
+                        <option>점검 담당자 (SHM) 본인</option>
+                        <option>부서장 (GM)</option>
+                        <option>관리대상 1차 SHM</option>
+                    </select>
+                </div>
+                <div style="padding: 0 24px 20px; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '취소')">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '설정 저장')">저장</button>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const subtitleMap = {
+            cycle: '점검 유형별 자동 생성 주기 + 특별 점검 트리거 규칙',
+            autogen: '매뉴얼·점검표 매핑 및 자동 점검 생성 배치 정책',
+            notify: '점검 생성·기한·완료 시 알림 발송 규칙',
+            result: '점검 결과별 후속 조치 + 개선조치 기본값',
+        };
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+
+        window.InsSettings = {
+            switchTab(name) {
+                document.querySelectorAll('.sub-tab').forEach(b => {
+                    b.classList.toggle('active', b.dataset.panel === name);
+                });
+                document.querySelectorAll('.settings-panel').forEach(p => {
+                    p.classList.toggle('is-active', p.dataset.panel === name);
+                });
+                if (subtitleEl && subtitleMap[name]) {
+                    subtitleEl.textContent = subtitleMap[name];
+                }
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

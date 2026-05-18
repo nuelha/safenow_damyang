@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계약 STEP 4 초대+서약 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 공통 STEP 인디케이터 */
+        .con-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .con-step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .con-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+        }
+        .con-step-item.is-done .con-step-num { background: var(--status-success-fg); color: white; }
+        .con-step-item.is-current .con-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .con-step-text { display: flex; flex-direction: column; }
+        .con-step-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+        .con-step-name { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .con-step-item.is-done .con-step-name { color: var(--status-success-fg); }
+        .con-step-item.is-current .con-step-name { color: var(--main-dark2); }
+        .con-step-connector { flex: 0 0 30px; height: 2px; background: var(--gray-100); margin: 0 8px; }
+        .con-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 서약서 정보 카드 */
+        .agreement-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 22px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-card);
+        }
+        .agreement-card-info { display: flex; flex-direction: column; gap: 4px; }
+        .agreement-card-title { font-size: 14px; font-weight: 700; color: var(--main-dark2); }
+        .agreement-card-meta { font-size: 12px; color: var(--text-gray); }
+
+        /* 업체 초대 카드 */
+        .invite-card {
+            padding: 18px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .invite-card + .invite-card { margin-top: 14px; }
+        .invite-card.is-pending { border-color: var(--status-warning-border); }
+        .invite-card.is-accepted { background: var(--status-success-bg); border-color: var(--status-success-border); }
+        .invite-card.is-empty { background: var(--gray-100); }
+
+        .invite-card-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            margin-bottom: 14px;
+        }
+        .invite-card-name {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 16px; font-weight: 700; color: var(--text-black);
+        }
+        .invite-card-name input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--main); }
+
+        /* 초대 상태 chip */
+        .invite-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid transparent;
+        }
+        .invite-status-chip.pending  { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .invite-status-chip.accepted { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .invite-status-chip.expired  { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+        .invite-status-chip.revoked  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .invite-status-chip.empty    { background: var(--gray-100); color: var(--text-lightgray); border-color: var(--card-line); }
+
+        .invite-card-info {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            row-gap: 8px;
+            column-gap: 12px;
+            font-size: 13px;
+        }
+        .invite-card-info .k { color: var(--text-gray); font-weight: 500; }
+        .invite-card-info .v { color: var(--text-black); font-weight: 600; }
+        .invite-card-info .v code {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            background: var(--gray-100);
+            padding: 1px 6px;
+            border-radius: 3px;
+            color: var(--text-gray);
+        }
+
+        .invite-card-actions {
+            display: flex; gap: 8px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--card-line);
+        }
+        .invite-card-actions.empty {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* 진행 상태 알림 */
+        .signing-progress {
+            padding: 14px 18px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .signing-progress-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--status-info-fg);
+        }
+        .signing-progress-text strong { font-weight: 700; }
+
+        /* 폼 액션 */
+        .con-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .con-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .con-form-actions .buttons { display: flex; gap: 8px; }
+
+        /* 푸터 일괄 액션 */
+        .batch-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 22px;
+            background: var(--gray-100);
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            margin-top: 14px;
+        }
+        .batch-actions-left { font-size: 13px; color: var(--text-gray); }
+        .batch-actions-right { display: flex; gap: 8px; }
+    </style>
+</head>
+<body data-dy-page="contractor" data-page-title="계약 STEP 4 — 초대 + 서약" data-page-subtitle="선정 업체 SUB 초대 발급 + 서약서 작성 모니터링 + 시공 시작 전환">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="con-detail.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                도급계약 상세
+            </a>
+        </div>
+
+        <!-- ─── 4-Step 인디케이터 ─── -->
+        <section class="con-step-bar">
+            <div class="con-step-item is-done">
+                <div class="con-step-num"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 1</span>
+                    <span class="con-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-done">
+                <div class="con-step-num"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 2</span>
+                    <span class="con-step-name">수급업체 평가</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-done">
+                <div class="con-step-num"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 3</span>
+                    <span class="con-step-name">선정 + 결재</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-current">
+                <div class="con-step-num">4</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 4</span>
+                    <span class="con-step-name">초대 + 서약</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 서약서 정보 ─── -->
+        <section class="agreement-card">
+            <div class="agreement-card-info">
+                <span class="agreement-card-title">📜 공사 안전관리 서약서 (CONSTRUCTION_SAFETY_AGREEMENT)</span>
+                <span class="agreement-card-meta">9개 조항 · 도급업체 대표자 서명 필수 · 안전관리계획서·MSDS 첨부 의무</span>
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '서약서 본문 보기')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                서약서 보기
+            </button>
+        </section>
+
+        <!-- ─── 진행 상태 ─── -->
+        <section class="card" style="padding: 16px 22px;">
+            <div class="signing-progress">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--status-info-fg);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="signing-progress-text">
+                    <strong>1 / 2개 업체 서약 완료 대기 중</strong> — 모든 업체의 서약 완료 시 시공 시작(<code style="background:white; padding:1px 6px; border-radius:3px;">IN_PROGRESS</code>)으로 자동 전환됩니다.
+                </span>
+            </div>
+
+            <!-- 업체 1 — 초대 발송됨 -->
+            <div class="invite-card is-pending">
+                <div class="invite-card-head">
+                    <div class="invite-card-name">
+                        <input type="checkbox">
+                        A건설(주)
+                        <span style="font-size: 11px; color: var(--text-gray); font-weight: 500;">사업자 123-45-67890</span>
+                    </div>
+                    <span class="invite-status-chip pending">초대 발송</span>
+                </div>
+                <div class="invite-card-info">
+                    <span class="k">담당자</span>
+                    <span class="v">김도급</span>
+                    <span class="k">이메일</span>
+                    <span class="v">kim@a.co.kr</span>
+                    <span class="k">연락처</span>
+                    <span class="v">010-1234-5678</span>
+                    <span class="k">발송일</span>
+                    <span class="v">2026-04-01 09:30 · 만료 <code>2026-04-08</code> (D-2 남음)</span>
+                    <span class="k">서약 상태</span>
+                    <span class="v" style="color: var(--status-warning-fg);">미완료 — 도급업체 측 서약서 작성 대기</span>
+                </div>
+                <div class="invite-card-actions">
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '초대 재발송')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 3 21 3 21 8"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        재발송
+                    </button>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '초대 회수 확인')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        초대 회수
+                    </button>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '담당자 정보 수정')">
+                        담당자 수정
+                    </button>
+                </div>
+            </div>
+
+            <!-- 업체 2 — 미입력 -->
+            <div class="invite-card is-empty">
+                <div class="invite-card-head">
+                    <div class="invite-card-name">
+                        <input type="checkbox">
+                        B건설(주)
+                        <span style="font-size: 11px; color: var(--text-gray); font-weight: 500;">사업자 234-56-78901</span>
+                    </div>
+                    <span class="invite-status-chip empty">초대 정보 미입력</span>
+                </div>
+                <div class="invite-card-info">
+                    <span class="k">담당자</span>
+                    <span class="v" style="color: var(--text-lightgray); font-weight: 500;">미입력</span>
+                    <span class="k">이메일</span>
+                    <span class="v" style="color: var(--text-lightgray); font-weight: 500;">미입력</span>
+                    <span class="k">서약 상태</span>
+                    <span class="v" style="color: var(--text-lightgray); font-weight: 500;">초대 정보 입력 후 발송 가능</span>
+                </div>
+                <div class="invite-card-actions empty" style="margin-top: 14px;">
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.location.href='auth-invite.html'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        초대 정보 입력
+                    </button>
+                </div>
+            </div>
+
+            <!-- 일괄 액션 -->
+            <div class="batch-actions">
+                <div class="batch-actions-left">
+                    선택된 업체에 대해 일괄 처리할 수 있습니다.
+                </div>
+                <div class="batch-actions-right">
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '선택 항목 재발송')">선택 재발송</button>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '전체 초대 발송 (미발송 업체 일괄)')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        전체 초대 발송
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 폼 액션 ─── -->
+        <section class="card" style="padding: 0;">
+            <div class="con-form-actions">
+                <div class="left">모든 업체의 서약 완료 시 시공 시작(IN_PROGRESS)으로 자동 전환됩니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.location.href='con-step3.html?id=2026-12'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+                        이전
+                    </button>
+                    <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='con-detail.html?id=2026-12'">
+                        저장
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전계획 상세 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── PLN02-D 전용 ─── */
+
+        /* 진행률 큰 카드 */
+        .pln-progress-card {
+            display: flex; align-items: center; gap: 18px;
+            padding: 18px 24px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-card);
+        }
+        .pln-progress-info { display: flex; align-items: baseline; gap: 8px; min-width: 180px; }
+        .pln-progress-num {
+            font-size: 36px; font-weight: 800;
+            color: var(--main);
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .pln-progress-num .unit { font-size: 16px; color: var(--text-gray); font-weight: 600; margin-left: 2px; }
+        .pln-progress-track {
+            flex: 1;
+            height: 12px;
+            background: white;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .pln-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%);
+            border-radius: 999px;
+        }
+        .pln-progress-stats {
+            display: flex; gap: 12px;
+            font-size: 12px;
+        }
+        .pln-progress-stats .stat {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 4px 12px;
+            background: white;
+            border-radius: 8px;
+        }
+        .pln-progress-stats .stat .num { font-size: 16px; font-weight: 800; color: var(--text-black); }
+        .pln-progress-stats .stat .label { font-size: 10px; color: var(--text-gray); }
+
+        /* 카테고리 chip */
+        .pln-cat-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .pln-cat-chip.education      { background: #e0eefb; color: #3e7bc7; border-color: #b0d3f0; }
+        .pln-cat-chip.inspection     { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .pln-cat-chip.risk           { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .pln-cat-chip.budget         { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .pln-cat-chip.contract       { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .pln-cat-chip.etc            { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 항목 상태 chip */
+        .pln-item-status {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .pln-item-status.pending   { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+        .pln-item-status.progress  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .pln-item-status.done      { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .pln-item-status.delayed   { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+
+        /* 결재 카드 */
+        .pln-approval-card {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            background: var(--status-success-bg);
+            border: 1px solid var(--status-success-border);
+            border-radius: var(--radius-button);
+            margin: 0 22px 16px;
+        }
+        .pln-approval-text { font-size: 13px; color: var(--status-success-fg); }
+        .pln-approval-text strong { font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="pln-list">
+    <main>
+        <!-- 상단 툴바 -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="pln-list.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                계획 목록
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.location.href='pln-form.html?id=2026-cheongsa&mode=edit'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    수정
+                </button>
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    PDF
+                </button>
+                <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '계획 완료 처리')">완료 처리</button>
+            </div>
+        </div>
+
+        <!-- 페이지 헤더 -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <span class="pln-cat-chip etc">2026</span>
+                    <h1>2026 군청 청사 안전관리계획</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    군청 청사 <span class="type-tag" style="margin-left:6px;">시설</span> · 자치행정과 · 담당자 김안전 · 수립일 2026-01-15
+                </div>
+            </div>
+            <span class="chip-status success detail-header-status">진행중 (75%)</span>
+        </section>
+
+        <!-- 진행률 -->
+        <section class="pln-progress-card">
+            <div class="pln-progress-info">
+                <span class="pln-progress-num">75<span class="unit">%</span></span>
+            </div>
+            <div class="pln-progress-track">
+                <div class="pln-progress-fill" style="width: 75%;"></div>
+            </div>
+            <div class="pln-progress-stats">
+                <div class="stat"><span class="num">9</span><span class="label">완료</span></div>
+                <div class="stat"><span class="num">2</span><span class="label">진행중</span></div>
+                <div class="stat"><span class="num">1</span><span class="label">예정</span></div>
+                <div class="stat"><span class="num">12</span><span class="label">총 항목</span></div>
+            </div>
+        </section>
+
+        <!-- 기본정보 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">기본정보</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-grid-row">
+                    <span class="info-grid-label">관리대상</span>
+                    <span class="info-grid-value">
+                        <a href="target-detail.html" style="color:var(--main-dark); font-weight:600;">군청 청사</a>
+                        <span class="type-tag">시설</span>
+                        <span class="type-tag">공중이용시설 · 1종</span>
+                    </span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">연도</span>
+                    <span class="info-grid-value">2026년 (2026-01-01 ~ 2026-12-31)</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">수립일</span>
+                    <span class="info-grid-value">2026-01-15</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">담당자</span>
+                    <span class="info-grid-value">김안전 <span class="text-gray">(자치행정과 · SHM)</span></span>
+                </div>
+                <div class="info-grid-row last-row">
+                    <span class="info-grid-label">결재 상태</span>
+                    <span class="info-grid-value">
+                        <span class="chip-status success">결재 완료</span>
+                        <span class="text-gray" style="margin-left:8px;">2026-01-20 · 자치행정과장 홍자치</span>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '결재 문서 다운로드')" style="margin-left:8px;">
+                            결재 문서
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 계획 항목 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">계획 항목 (12개)</h2>
+                <button class="btn btn-primary btn-sm" type="button" onclick="window.DYLayout._soon(event, '+ 계획 항목 추가 모달')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    항목 추가
+                </button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col style="width:90px;"><col><col style="width:110px;"><col style="width:120px;"><col style="width:90px;"><col style="width:90px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th style="text-align:center;">카테고리</th>
+                        <th>제목</th>
+                        <th>마감일</th>
+                        <th>담당자</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">실시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 교육 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip education">교육</span></td>
+                        <td><strong>전직원 안전보건 정기교육 (상반기)</strong></td>
+                        <td>2026-06-30</td>
+                        <td>김안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="doc-manual.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip education">교육</span></td>
+                        <td>전직원 안전보건 정기교육 (하반기)</td>
+                        <td>2026-12-15</td>
+                        <td>김안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status pending">예정</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="doc-manual.html" onclick="event.stopPropagation();">대기</a></td>
+                    </tr>
+                    <!-- 점검 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip inspection">점검</span></td>
+                        <td><strong>분기 정기 안전점검 (1Q)</strong></td>
+                        <td>2026-03-31</td>
+                        <td>이안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip inspection">점검</span></td>
+                        <td>분기 정기 안전점검 (2Q)</td>
+                        <td>2026-06-30</td>
+                        <td>이안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip inspection">점검</span></td>
+                        <td>소방설비 분기 점검</td>
+                        <td>분기별</td>
+                        <td>한시설</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 평가 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip risk">평가</span></td>
+                        <td><strong>위험성평가 정기 (연 1회)</strong></td>
+                        <td>2026-04-30</td>
+                        <td>김안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="risk-list.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 예산 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip budget">예산</span></td>
+                        <td><strong>안전관리 예산 편성·집행</strong></td>
+                        <td>분기별</td>
+                        <td>박재무</td>
+                        <td style="text-align:center;"><span class="pln-item-status progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="bgt-status.html" onclick="event.stopPropagation();">실시</a></td>
+                    </tr>
+                    <!-- 도급사업 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip contract">도급</span></td>
+                        <td>청사 시설 보수공사 안전관리</td>
+                        <td>2026-08-31</td>
+                        <td>김도급</td>
+                        <td style="text-align:center;"><span class="pln-item-status progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="contractor.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 점검 (완료된 것들) -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip inspection">점검</span></td>
+                        <td>전기설비 안전점검</td>
+                        <td>2026-05-31</td>
+                        <td>한시설</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip inspection">점검</span></td>
+                        <td>옥상·외벽 시설물 점검</td>
+                        <td>2026-04-30</td>
+                        <td>한시설</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <!-- 기타 -->
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip etc">기타</span></td>
+                        <td>응급처치 훈련 (반기 1회)</td>
+                        <td>2026-06-30</td>
+                        <td>강보건</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:11px;">완료</span></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.DYLayout._soon(event, '항목 편집 모달')">
+                        <td style="text-align:center;"><span class="pln-cat-chip etc">기타</span></td>
+                        <td>안전 슬로건 캠페인</td>
+                        <td>2026-12-31</td>
+                        <td>김안전</td>
+                        <td style="text-align:center;"><span class="pln-item-status done">완료</span></td>
+                        <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:11px;">완료</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 결재 흐름 안내 -->
+        <section class="card" style="padding-bottom: 0;">
+            <div class="card-header">
+                <h2 class="card-title">완료 처리 조건</h2>
+            </div>
+            <div class="pln-approval-card">
+                <div class="pln-approval-text">
+                    <strong>완료 처리 가능</strong> — 12개 항목 중 9건 완료. 모든 항목 DONE/SKIPPED 시 [완료 처리] 활성 (현재 진행중 2건 · 예정 1건).
+                </div>
+                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '완료 처리 조건 확인')">
+                    조건 보기
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

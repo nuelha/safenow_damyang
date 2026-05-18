@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부서별 전담인력 선임 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-backdrop {
+            min-height: calc(100vh - 64px);
+            background: rgba(15, 23, 42, 0.35);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 30px 20px;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            width: 100%; max-width: 560px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .modal-close:hover { background: var(--gray-100); }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-footer .left { font-size: 12px; color: var(--text-gray); }
+        .modal-footer .right { display: flex; gap: 8px; }
+
+        /* 대상 정보 (readonly) */
+        .target-info-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            padding: 16px 18px;
+            background: var(--brand-100);
+            border: 1px solid var(--status-success-border);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .target-info-block .label { font-size: 11px; color: var(--text-gray); font-weight: 600; margin-bottom: 2px; }
+        .target-info-block .value { font-size: 15px; font-weight: 700; color: var(--main-dark2); }
+
+        /* 선임 대상자 카드 */
+        .selected-user-card {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 10px;
+        }
+        .selected-user-card .avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--main-dark);
+            color: white;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .selected-user-card .body { flex: 1; }
+        .selected-user-card .name { font-size: 15px; font-weight: 700; color: var(--text-black); }
+        .selected-user-card .name .position { color: var(--text-gray); font-weight: 500; font-size: 13px; margin-left: 6px; }
+        .selected-user-card .meta { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
+        .selected-user-card .actions { display: flex; gap: 6px; }
+
+        /* 자격증 카드 */
+        .qual-card {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px; font-weight: 700;
+            margin-top: 8px;
+        }
+        .qual-card.met {
+            background: var(--status-success-bg);
+            color: var(--status-success-fg);
+            border: 1px solid var(--status-success-border);
+        }
+        .qual-card.warn {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-fg);
+            border: 1px solid var(--status-warning-border);
+        }
+
+        /* 선임 정보 폼 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 14px;
+            column-gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .form-grid .label { font-size: 13px; color: var(--text-gray); font-weight: 600; }
+        .form-grid .label.required::after { content: " *"; color: var(--status-danger-fg); }
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            height: 36px;
+        }
+        .form-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            min-height: 60px;
+            line-height: 1.5;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .file-upload {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 12px;
+            background: white;
+            border: 1px dashed var(--card-line);
+            border-radius: 6px;
+            font-size: 12px; font-weight: 600;
+            color: var(--main-dark);
+            cursor: pointer;
+        }
+        .file-upload:hover { background: var(--brand-100); border-color: var(--main); }
+
+        /* 필수 자격증 안내 */
+        .qual-req-box {
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--status-info-fg);
+            line-height: 1.6;
+        }
+        .qual-req-box strong { font-weight: 700; }
+    </style>
+</head>
+<body data-dy-page="org-dedicated">
+    <main style="padding: 0;">
+        <div class="modal-backdrop">
+            <div class="modal-box" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+                        전담인력 선임 (STF04-M)
+                    </div>
+                    <button class="modal-close" onclick="window.history.back()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- 대상 정보 -->
+                    <div class="target-info-card">
+                        <div class="target-info-block">
+                            <div class="label">대상 부서</div>
+                            <div class="value">자치행정과</div>
+                        </div>
+                        <div class="target-info-block">
+                            <div class="label">대상 역할</div>
+                            <div class="value">안전관리자 (SAFETY_MGR)</div>
+                        </div>
+                    </div>
+
+                    <!-- 필수 자격증 안내 -->
+                    <div class="qual-req-box">
+                        <strong>📋 필수 자격증 (SAFETY_MGR)</strong><br>
+                        산업안전기사 / 산업안전산업기사 / 전문대학 이상 산업안전공학과 졸업 + 실무 경력 등<br>
+                        <span style="color: var(--text-gray);">자격 미보유 시 강제 선임 가능 (경고 모달 노출)</span>
+                    </div>
+
+                    <!-- 선임 대상자 -->
+                    <div style="font-size: 13px; color: var(--text-gray); font-weight: 600; margin-bottom: 8px;">선임 대상자 <span style="color:var(--status-danger-fg);">*</span></div>
+                    <div class="selected-user-card">
+                        <div class="avatar">김</div>
+                        <div class="body">
+                            <div class="name">김안전<span class="position">자치행정과 7급</span></div>
+                            <div class="meta">k.an@damyang.go.kr · 010-1234-5678</div>
+                            <div class="qual-card met">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                자격증 보유 (산업안전기사 2018-03)
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '구성원 검색 모달 재오픈')">변경</button>
+                            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '대상자 해제')">해제</button>
+                        </div>
+                    </div>
+
+                    <!-- 선임 정보 -->
+                    <div class="form-grid">
+                        <span class="label required">선임일</span>
+                        <input class="form-input" type="date" value="2026-05-13" style="max-width: 200px;">
+
+                        <span class="label">선임 근거</span>
+                        <div>
+                            <button class="file-upload" type="button" onclick="window.DYLayout._soon(event, '선임공문 첨부')">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                선임공문 첨부 (PDF·이미지)
+                            </button>
+                            <div style="font-size: 11px; color: var(--text-gray); margin-top: 4px;">appointment_doc_url에 저장됩니다.</div>
+                        </div>
+
+                        <span class="label">비고</span>
+                        <textarea class="form-textarea" maxlength="500" placeholder="선임 사유·이전 담당자 인수인계 사항"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="left">자격증 보유 — 정상 선임 가능 ✓</div>
+                    <div class="right">
+                        <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                        <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '전담인력 선임 (dedicated_personnel INSERT)')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                            선임
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

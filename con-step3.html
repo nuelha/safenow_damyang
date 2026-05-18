@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계약 STEP 3 선정+결재 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 공통 STEP 인디케이터 */
+        .con-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .con-step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .con-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+        }
+        .con-step-item.is-done .con-step-num { background: var(--status-success-fg); color: white; }
+        .con-step-item.is-current .con-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .con-step-text { display: flex; flex-direction: column; }
+        .con-step-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+        .con-step-name { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .con-step-item.is-done .con-step-name { color: var(--status-success-fg); }
+        .con-step-item.is-current .con-step-name { color: var(--main-dark2); }
+        .con-step-connector { flex: 0 0 30px; height: 2px; background: var(--gray-100); margin: 0 8px; }
+        .con-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 업체 카드 (평가 결과 요약) */
+        .vendor-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+        .vendor-card:hover { border-color: var(--main); }
+        .vendor-card.is-selected {
+            background: var(--brand-100);
+            border-color: var(--main);
+        }
+        .vendor-card.is-disqualified {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            opacity: 0.85;
+        }
+        .vendor-card-info { display: flex; align-items: center; gap: 12px; }
+        .vendor-card-name { font-size: 14px; font-weight: 700; color: var(--text-black); }
+        .vendor-card-score { font-size: 13px; font-weight: 700; color: var(--main); }
+        .vendor-card-score.bad { color: var(--status-danger-fg); }
+        .vendor-card-reason { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 안전관리 인력 검증 */
+        .safety-check-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius-button);
+            background: var(--status-success-bg);
+            border: 1px solid var(--status-success-border);
+        }
+        .safety-check-card.is-short {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+        }
+        .safety-check-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px;
+            background: white;
+            border-radius: 50%;
+            color: var(--status-success-fg);
+            flex-shrink: 0;
+        }
+        .safety-check-card.is-short .safety-check-icon { color: var(--status-danger-fg); }
+        .safety-check-body { flex: 1; }
+        .safety-check-title { font-size: 14px; font-weight: 700; color: var(--text-black); }
+        .safety-check-detail { font-size: 12px; color: var(--text-gray); margin-top: 4px; }
+        .safety-check-result {
+            padding: 4px 10px;
+            background: var(--status-success-fg);
+            color: white;
+            border-radius: 6px;
+            font-size: 12px; font-weight: 700;
+        }
+        .safety-check-card.is-short .safety-check-result { background: var(--status-danger-fg); }
+
+        /* 결재 영역 */
+        .approval-section {
+            padding: 18px 22px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+        }
+        .approval-status-line {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px;
+            color: var(--status-info-fg);
+            margin-bottom: 12px;
+        }
+        .approval-status-line .label {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 12px; font-weight: 700;
+            color: var(--status-info-fg);
+        }
+
+        /* 결재 결과 등록 폼 */
+        .approval-form {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            row-gap: 14px;
+            column-gap: 12px;
+            padding-top: 14px;
+            border-top: 1px solid var(--status-info-border);
+            font-size: 13px;
+        }
+        .approval-form .label { color: var(--text-gray); font-weight: 600; line-height: 36px; }
+        .approval-form .value { display: flex; flex-direction: column; gap: 6px; }
+        .approval-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 13px;
+            background: white;
+            height: 36px;
+        }
+
+        /* 폼 액션 */
+        .con-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .con-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .con-form-actions .buttons { display: flex; gap: 8px; }
+    </style>
+</head>
+<body data-dy-page="contractor" data-page-title="계약 STEP 3 — 선정 + 결재" data-page-subtitle="평가 결과 검토 + 업체 선정 + 안전관리자 검증 + 온나라 결재">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="con-detail.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                도급계약 상세
+            </a>
+        </div>
+
+        <!-- ─── 4-Step 인디케이터 ─── -->
+        <section class="con-step-bar">
+            <div class="con-step-item is-done">
+                <div class="con-step-num"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 1</span>
+                    <span class="con-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-done">
+                <div class="con-step-num"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 2</span>
+                    <span class="con-step-name">수급업체 평가</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-current">
+                <div class="con-step-num">3</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 3</span>
+                    <span class="con-step-name">선정 + 결재</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">4</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 4</span>
+                    <span class="con-step-name">초대 + 서약</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 평가 결과 요약 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">평가 결과 요약</h2>
+                <span class="text-muted" style="font-size:13px;">적격기준 70점 · 3개 업체 평가 완료</span>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <div style="font-size: 13px; color: var(--text-gray); font-weight: 600; margin-bottom: 8px;">적격 업체 (2)</div>
+                <div class="vendor-card is-selected" onclick="this.classList.toggle('is-selected')">
+                    <div class="vendor-card-info">
+                        <input type="checkbox" checked style="width:18px; height:18px; accent-color: var(--main);">
+                        <div>
+                            <div class="vendor-card-name">A건설(주)</div>
+                            <div class="vendor-card-reason">대표자 홍사장 · 사업자 123-45-67890 · 평가자 김안전</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="vendor-card-score">85점 / 100</span>
+                        <span class="chip-status success">적격</span>
+                    </div>
+                </div>
+                <div class="vendor-card" onclick="this.classList.toggle('is-selected')">
+                    <div class="vendor-card-info">
+                        <input type="checkbox" style="width:18px; height:18px; accent-color: var(--main);">
+                        <div>
+                            <div class="vendor-card-name">B건설(주)</div>
+                            <div class="vendor-card-reason">대표자 이사장 · 사업자 234-56-78901 · 평가자 김안전</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="vendor-card-score">72점 / 100</span>
+                        <span class="chip-status success">적격</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 13px; color: var(--text-gray); font-weight: 600; margin: 16px 0 8px;">부적격 업체 (1) — 선정 불가</div>
+                <div class="vendor-card is-disqualified">
+                    <div class="vendor-card-info">
+                        <input type="checkbox" disabled style="width:18px; height:18px;">
+                        <div>
+                            <div class="vendor-card-name" style="color: var(--status-danger-fg);">C건설(주)</div>
+                            <div class="vendor-card-reason" style="color: var(--status-danger-fg);">적격기준 70점 미달 (5점 부족) · 평가자 김안전</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="vendor-card-score bad">65점 / 100</span>
+                        <span class="chip-status danger">부적격</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 최종 선정 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">최종 선정 (1개 업체)</h2>
+                <span class="text-muted" style="font-size:13px;">최종 선정된 업체에게 STEP 4에서 서약 초대를 발송합니다.</span>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <div class="vendor-card is-selected" style="cursor: default;">
+                    <div class="vendor-card-info">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main-dark2);"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div>
+                            <div class="vendor-card-name">A건설(주)</div>
+                            <div class="vendor-card-reason">최고 점수 · 평가 우수</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '선정 해제')">선정 해제</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 안전관리자 인력 검증 (D-3) ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">⚠ 안전관리자 인력 검증 (산안법 시행령 §16)</h2>
+                <span class="text-muted" style="font-size:13px;">공사 규모(예산 5억) 기준 법정 필요 인력 자동 검증</span>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <div class="safety-check-card">
+                    <div class="safety-check-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="safety-check-body">
+                        <div class="safety-check-title">안전관리자 + 안전보건관리책임자 인력 충족</div>
+                        <div class="safety-check-detail">
+                            공사금액 5억 (50억 미만) — 법정 필요: 안전관리자 1명 · 안전보건관리책임자 1명<br>
+                            현재 배치: 안전관리자 <strong style="color:var(--text-black);">1명</strong> (김안전 · 안전건설과) · 안전보건관리책임자 <strong style="color:var(--text-black);">1명</strong> (홍자치 · 자치행정과장)
+                        </div>
+                    </div>
+                    <span class="safety-check-result">충족 ✓</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 11px; color: var(--text-gray); line-height: 1.6;">
+                    참고 — 50억 이상: 안전관리자 1명 / 120억 이상: 2명 / 800억 이상: 3명 / 1500억 이상: 4명. <br>
+                    인력 미충족 시 결재 진행이 차단됩니다. 인력 추가 선임은 <a href="org-dedicated.html" style="color:var(--main-dark);">부서별 전담인력</a>에서 진행하세요.
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 결재 영역 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">온나라 결재 진행</h2>
+                <span class="chip-status info">결재 요청 대기</span>
+            </div>
+            <div class="card-body" style="padding: 16px 22px;">
+                <div class="approval-section">
+                    <div class="approval-status-line">
+                        <span class="label">현재 결재 상태</span>
+                        <strong>NOT_REQUESTED — 미요청</strong>
+                    </div>
+                    <p style="font-size: 13px; color: var(--status-info-fg); line-height: 1.6; margin-bottom: 14px;">
+                        담양군청 온나라 시스템에서 결재 진행 후, 결재 결과를 본 시스템에 등록해 주세요. 결재 승인 후 STEP 4로 자동 이동합니다.
+                    </p>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '온나라 결재 요청')" style="margin-bottom: 14px;">
+                        온나라 결재 요청하기
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </button>
+
+                    <!-- 결재 결과 등록 폼 -->
+                    <div class="approval-form">
+                        <span class="label">결재일자</span>
+                        <div class="value">
+                            <input class="approval-input" type="date" style="max-width: 200px;">
+                        </div>
+                        <span class="label">결재자명</span>
+                        <div class="value">
+                            <input class="approval-input" type="text" placeholder="홍길동 (군수)" style="max-width: 300px;">
+                        </div>
+                        <span class="label">결재 문서</span>
+                        <div class="value">
+                            <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '결재 문서 첨부')" style="align-self: flex-start;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                파일 첨부
+                            </button>
+                        </div>
+                        <span class="label">결재 결과</span>
+                        <div class="value">
+                            <div style="display:flex; gap:8px; padding-top: 6px;">
+                                <label style="display:flex; align-items:center; gap:6px; padding: 6px 12px; border:1px solid var(--card-line); border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="approval-result"> 승인
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; padding: 6px 12px; border:1px solid var(--card-line); border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="approval-result"> 반려
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+                        <button class="btn btn-secondary btn-sm" type="button" onclick="window.DYLayout._soon(event, '결재 결과 저장')">결재 결과 저장</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 폼 액션 ─── -->
+        <section class="card" style="padding: 0;">
+            <div class="con-form-actions">
+                <div class="left">결재 승인 완료 후 STEP 4 초대·서약으로 진행합니다.</div>
+                <div class="buttons">
+                    <button class="btn btn-outline" type="button" onclick="window.location.href='con-step2.html?id=2026-12'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+                        이전
+                    </button>
+                    <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                    <button class="btn btn-primary" type="button" onclick="window.location.href='con-step4.html?id=2026-12'">
+                        다음 STEP
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>점검 실시 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── INS02-D 전용 ─── */
+
+        /* 진행률 헤더 (체크리스트 작성 중 상단 sticky) */
+        .ins-progress-bar {
+            position: sticky; top: 64px; z-index: 5;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            padding: 14px 22px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .ins-progress-text {
+            font-size: 13px; color: var(--text-gray);
+            white-space: nowrap;
+        }
+        .ins-progress-text strong { color: var(--main); font-weight: 700; font-size: 16px; }
+        .ins-progress-track {
+            flex: 1;
+            height: 8px;
+            background: var(--gray-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .ins-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%);
+            border-radius: 999px;
+            transition: width .3s ease;
+        }
+        .ins-progress-counts {
+            display: flex; gap: 8px;
+            font-size: 11px;
+        }
+        .ins-result-pill {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .ins-result-pill.ok   { background: var(--status-success-bg); color: var(--status-success-fg); }
+        .ins-result-pill.bad  { background: var(--status-danger-bg);  color: var(--status-danger-fg); }
+        .ins-result-pill.fix  { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+        .ins-result-pill.skip { background: var(--gray-100); color: var(--text-gray); }
+
+        /* 체크리스트 섹션 */
+        .ins-check-section {
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+        }
+        .ins-check-section + .ins-check-section { margin-top: 16px; }
+        .ins-check-section-head {
+            padding: 14px 22px;
+            background: var(--brand-100);
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .ins-check-section-title {
+            font-size: 15px; font-weight: 700;
+            color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .ins-check-section-title .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 24px; height: 24px;
+            background: var(--main);
+            color: white;
+            font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+            padding: 0 6px;
+        }
+        .ins-check-section-meta {
+            font-size: 12px; color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        /* 체크리스트 항목 */
+        .ins-check-item {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--card-line);
+            display: grid;
+            grid-template-columns: 40px 1fr 200px;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .ins-check-item:last-child { border-bottom: none; }
+        .ins-check-item.is-bad { background: var(--status-danger-bg); }
+        .ins-check-item.is-fix { background: var(--status-warning-bg); }
+        .ins-check-item.is-ok  { background: var(--status-success-bg); }
+
+        .ins-check-no {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px;
+            background: var(--gray-100);
+            color: var(--text-black);
+            font-size: 13px; font-weight: 700;
+            border-radius: 8px;
+        }
+        .ins-check-body { min-width: 0; }
+        .ins-check-q {
+            font-size: 14px; font-weight: 600; color: var(--text-black);
+            line-height: 1.5;
+        }
+        .ins-check-q-hint {
+            font-size: 12px; color: var(--text-gray);
+            margin-top: 4px; line-height: 1.5;
+        }
+        .ins-check-result-input {
+            margin-top: 10px;
+        }
+        .ins-check-comment {
+            display: block; width: 100%;
+            margin-top: 8px;
+            padding: 8px 10px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 12px;
+            color: var(--text-black);
+            resize: vertical;
+            min-height: 40px;
+            background: white;
+        }
+        .ins-check-attach {
+            margin-top: 8px;
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px;
+            color: var(--main-dark);
+            cursor: pointer;
+        }
+        .ins-check-attach:hover { text-decoration: underline; }
+
+        /* 결과 라디오 (적합/부적합/보완/미해당) */
+        .ins-radio-group {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .ins-radio-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            transition: all .12s ease;
+        }
+        .ins-radio-item input { margin: 0; }
+        .ins-radio-item:hover { border-color: var(--main); }
+        .ins-radio-item.is-selected.ok {
+            background: var(--status-success-bg);
+            border-color: var(--status-success-border);
+            color: var(--status-success-fg);
+        }
+        .ins-radio-item.is-selected.bad {
+            background: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            color: var(--status-danger-fg);
+        }
+        .ins-radio-item.is-selected.fix {
+            background: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            color: var(--status-warning-fg);
+        }
+        .ins-radio-item.is-selected.skip {
+            background: var(--gray-100);
+            border-color: var(--text-lightgray);
+            color: var(--text-black);
+        }
+
+        /* 부적합·보완 시 개선조치 자동 생성 안내 */
+        .ins-auto-imp-notice {
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            font-size: 11px;
+            color: var(--status-info-fg);
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        /* 최종 액션 버튼 영역 */
+        .ins-final-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .ins-final-status {
+            font-size: 13px; color: var(--text-gray);
+        }
+        .ins-final-status strong { color: var(--text-black); font-weight: 700; }
+        .ins-final-buttons {
+            display: flex; gap: 8px;
+        }
+    </style>
+</head>
+<body data-dy-page="ins-list">
+    <main>
+
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="ins-list.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                점검 목록
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    임시저장
+                </button>
+                <button class="btn btn-secondary" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── 페이지 헤더 ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <span class="chip-cat cat-regular">정기</span>
+                    <h1>군청 청사 소방설비 분기 점검</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    군청 청사 · 시설 · 시설관리과 · 매뉴얼 INS-M-005 v1.4 · 점검표 INS-CL-005 (22개 항목)
+                </div>
+            </div>
+            <span class="chip-status info detail-header-status">진행중</span>
+        </section>
+
+        <!-- ─── 기본정보 카드 ─── -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">기본정보</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-grid-row">
+                    <span class="info-grid-label">관리대상</span>
+                    <span class="info-grid-value">
+                        군청 청사 <span class="type-tag">시설</span> <span class="type-tag">공중이용시설</span>
+                    </span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">점검 유형</span>
+                    <span class="info-grid-value"><span class="chip-cat cat-regular">정기</span> 분기 (Q2 2026)</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">근거 매뉴얼</span>
+                    <span class="info-grid-value">
+                        <a href="doc-manual.html" style="color:var(--main-dark); font-weight:600;">INS-M-005 소방설비 분기 점검 매뉴얼 v1.4</a>
+                    </span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">점검표</span>
+                    <span class="info-grid-value">
+                        <a href="doc-checklist.html" style="color:var(--main-dark); font-weight:600;">INS-CL-005 소방설비 점검표</a> (22개 항목)
+                    </span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">점검 기한</span>
+                    <span class="info-grid-value"><strong style="color:var(--status-warning-fg);">오늘 2026-05-13</strong> 까지</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">점검자</span>
+                    <span class="info-grid-value">한시설 <span class="text-gray">(시설관리과 · SHM)</span></span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">동행자</span>
+                    <span class="info-grid-value">이시설, 박설비</span>
+                </div>
+                <div class="info-grid-row last-row">
+                    <span class="info-grid-label">실시일</span>
+                    <span class="info-grid-value">2026-05-13 09:00 ~ <span class="text-gray">(작성 중)</span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 진행률 ─── -->
+        <section class="ins-progress-bar">
+            <div class="ins-progress-text">
+                진행률 <strong>14</strong> / 22 항목
+            </div>
+            <div class="ins-progress-track">
+                <div class="ins-progress-fill" style="width:64%;"></div>
+            </div>
+            <div class="ins-progress-counts">
+                <span class="ins-result-pill ok">적합 12</span>
+                <span class="ins-result-pill fix">보완 2</span>
+                <span class="ins-result-pill bad">부적합 0</span>
+                <span class="ins-result-pill skip">미해당 0</span>
+            </div>
+        </section>
+
+        <!-- ─── 섹션 1: 옥내 소화전 ─── -->
+        <section class="ins-check-section">
+            <div class="ins-check-section-head">
+                <div class="ins-check-section-title">
+                    <span class="num">1</span> 옥내 소화전
+                </div>
+                <div class="ins-check-section-meta">5개 항목 · 완료 5</div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">1</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">옥내 소화전함 외관에 균열·파손이 없는가?</div>
+                    <div class="ins-check-q-hint">소화전함 도어·잠금장치·표지판 포함</div>
+                    <textarea class="ins-check-comment" placeholder="특이사항 메모">정상 — 도색 상태 양호</textarea>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q1" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q1"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q1"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q1"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">2</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">소화전 호스의 부식·곰팡이·찢어짐이 없는가?</div>
+                    <div class="ins-check-q-hint">호스 권취 상태 + 노즐 결합 확인</div>
+                    <textarea class="ins-check-comment" placeholder="특이사항 메모">정상</textarea>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q2" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q2"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q2"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q2"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-fix">
+                <span class="ins-check-no">3</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">소화전 펌프 정상 작동 (압력·유량)</div>
+                    <div class="ins-check-q-hint">방수 시험 5분 이상 · 압력 0.17~0.7 MPa</div>
+                    <textarea class="ins-check-comment" placeholder="특이사항 메모">3층 펌프 압력이 권장치(0.25 MPa) 대비 0.19 MPa로 다소 낮음 — 추가 정밀 점검 필요</textarea>
+                    <a class="ins-check-attach" onclick="window.DYLayout._soon(event, '사진 첨부')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        사진 첨부 (2장)
+                    </a>
+                    <div class="ins-auto-imp-notice">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        점검 완료 시 개선조치(IMP)가 자동 생성됩니다.
+                    </div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item"><input type="radio" name="q3"> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q3"> 부적합</label>
+                        <label class="ins-radio-item is-selected fix"><input type="radio" name="q3" checked> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q3"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">4</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">소화전 주위 장애물 없음 + 표지판 식별 가능</div>
+                    <div class="ins-check-q-hint">접근로 1m 이상 확보</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q4" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q4"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q4"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q4"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">5</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">소화전 점검 표지 부착 여부 (전월 점검 기록 포함)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q5" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q5"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q5"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q5"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 섹션 2: 자동 화재 탐지 ─── -->
+        <section class="ins-check-section">
+            <div class="ins-check-section-head">
+                <div class="ins-check-section-title">
+                    <span class="num">2</span> 자동 화재 탐지 설비
+                </div>
+                <div class="ins-check-section-meta">6개 항목 · 완료 5</div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">6</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">수신기 전원 정상 표시등 점등 확인</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q6" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q6"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q6"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q6"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">7</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">감지기 외관 점검 (오염·이물질·도색)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q7" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q7"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q7"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q7"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-fix">
+                <span class="ins-check-no">8</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">발신기 작동 시험 (각 층 1개소 표본 점검)</div>
+                    <textarea class="ins-check-comment">5층 발신기 표시등 LED 1개 불량 — 교체 필요</textarea>
+                    <div class="ins-auto-imp-notice">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+                        점검 완료 시 개선조치(IMP)가 자동 생성됩니다.
+                    </div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item"><input type="radio" name="q8"> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q8"> 부적합</label>
+                        <label class="ins-radio-item is-selected fix"><input type="radio" name="q8" checked> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q8"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">9</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">경종 작동 음량 정상 (각 구역 90dB 이상)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q9" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q9"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q9"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q9"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">10</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">중계기·연동제어반 정상 통신 여부</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q10" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q10"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q10"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q10"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item">
+                <span class="ins-check-no">11</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">예비전원 (배터리) 충전 상태 및 자동 절체 시험</div>
+                    <div class="ins-check-q-hint">배터리 점검 — 미실시</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item"><input type="radio" name="q11"> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q11"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q11"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q11"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 섹션 3: 스프링클러 ─── -->
+        <section class="ins-check-section">
+            <div class="ins-check-section-head">
+                <div class="ins-check-section-title">
+                    <span class="num">3</span> 스프링클러 설비
+                </div>
+                <div class="ins-check-section-meta">6개 항목 · 완료 4</div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">12</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">스프링클러 헤드 외관 정상 (방청·도색 양호)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q12" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q12"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q12"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q12"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">13</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">알람밸브 작동 시험 (시험 밸브 개방)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q13" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q13"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q13"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q13"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">14</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">유수검지장치 표시등 정상</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q14" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q14"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q14"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q14"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item is-ok">
+                <span class="ins-check-no">15</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">송수구·연결송수관 외관 점검</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item is-selected ok"><input type="radio" name="q15" checked> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q15"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q15"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q15"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item">
+                <span class="ins-check-no">16</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">물탱크 수위 및 외관 점검</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item"><input type="radio" name="q16"> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q16"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q16"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q16"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ins-check-item">
+                <span class="ins-check-no">17</span>
+                <div class="ins-check-body">
+                    <div class="ins-check-q">물탱크 수질 점검 (이물질·녹·악취)</div>
+                </div>
+                <div class="ins-check-result-input">
+                    <div class="ins-radio-group">
+                        <label class="ins-radio-item"><input type="radio" name="q17"> 적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q17"> 부적합</label>
+                        <label class="ins-radio-item"><input type="radio" name="q17"> 보완</label>
+                        <label class="ins-radio-item"><input type="radio" name="q17"> 미해당</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 섹션 4: 피난·방화 설비 (5개) — 접힘 -->
+        <section class="ins-check-section">
+            <div class="ins-check-section-head">
+                <div class="ins-check-section-title">
+                    <span class="num">4</span> 피난·방화 설비
+                </div>
+                <div class="ins-check-section-meta">5개 항목 · 완료 0 · 미실시</div>
+            </div>
+            <div style="padding: 22px; text-align: center; color: var(--text-gray); font-size: 13px;">
+                해당 섹션의 점검 항목 5개는 아직 평가되지 않았습니다.
+            </div>
+        </section>
+
+        <!-- ─── 최종 액션 ─── -->
+        <div class="ins-final-action">
+            <div class="ins-final-status">
+                현재 <strong>14 / 22</strong> 항목 완료 · 보완 <strong style="color:var(--status-warning-fg);">2건</strong> → 개선조치 자동 생성 예정
+            </div>
+            <div class="ins-final-buttons">
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '점검 완료 처리 — 개선조치 자동 생성')">
+                    점검 완료 처리
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('.ins-radio-group').forEach(grp => {
+            grp.querySelectorAll('.ins-radio-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    grp.querySelectorAll('.ins-radio-item').forEach(x => {
+                        x.classList.remove('is-selected', 'ok', 'bad', 'fix', 'skip');
+                    });
+                    const labels = ['적합', '부적합', '보완', '미해당'];
+                    const classes = ['ok', 'bad', 'fix', 'skip'];
+                    const idx = labels.findIndex(l => item.textContent.includes(l));
+                    if (idx >= 0) item.classList.add('is-selected', classes[idx]);
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

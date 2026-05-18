@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>법령 마스터 설정 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .settings-panel { display: none; }
+        .settings-panel.is-active { display: block; }
+
+        .cycle-table { width: 100%; border-collapse: collapse; }
+        .cycle-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        .cycle-table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-black);
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .cycle-table tbody tr:last-child td { border-bottom: none; }
+        .cycle-table .col-action { width: 80px; text-align: right; }
+        .cycle-table .col-active { width: 80px; }
+        .cycle-table .col-code { width: 200px; }
+        .cycle-table .col-period { width: 110px; }
+        .period-value { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--main-dark2); }
+        .period-value-sub { color: var(--text-gray); font-size: 12px; font-weight: 500; }
+
+        .cmp-cat {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .cmp-cat.cdpa  { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+        .cmp-cat.osha  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .cmp-cat.chem  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .cmp-cat.fac   { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .cmp-cat.local { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+    </style>
+</head>
+<body data-dy-page="cmp-settings" data-page-title="법령 마스터 설정" data-page-subtitle="이행관리 법령·자체 의무 마스터 및 자동 생성 정책 (CMP03-S)">
+    <main>
+        <div class="sub-tabs" role="tablist">
+            <button class="sub-tab active" type="button" data-panel="laws" onclick="window.CmpSettings.switchTab('laws')">법령 마스터</button>
+            <button class="sub-tab" type="button" data-panel="cycle" onclick="window.CmpSettings.switchTab('cycle')">의무 주기·자동 생성</button>
+            <button class="sub-tab" type="button" data-panel="notify" onclick="window.CmpSettings.switchTab('notify')">알림 정책</button>
+        </div>
+
+        <!-- ① 법령 마스터 -->
+        <div class="settings-panel is-active" data-panel="laws">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">법령 마스터</span>
+                        <span class="settings-card-desc">이행관리에 적용할 법령·조항을 관리합니다. 활성 법령에 한해 의무 항목 자동 생성됩니다.</span>
+                    </div>
+                    <button class="btn-register" type="button" onclick="window.DYLayout._soon(event, '법령 추가')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        법령 추가
+                    </button>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th class="col-code">법령 코드</th>
+                            <th>법령명·조항</th>
+                            <th style="text-align:center;">카테고리</th>
+                            <th>의무 항목 수</th>
+                            <th class="col-active">활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">CDPA-001</code></td>
+                            <td><strong>중대재해처벌법 시행령</strong> §4 (9대 의무)</td>
+                            <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                            <td>9건</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '법령 상세')">상세</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">OSHA-001</code></td>
+                            <td><strong>산업안전보건법</strong> §5, §15, §24, §36, §63, §75</td>
+                            <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                            <td>40건</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '법령 상세')">상세</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">CHEM-001</code></td>
+                            <td><strong>화학물질안전관리법</strong> §10, §11 (정기검사·MSDS)</td>
+                            <td style="text-align:center;"><span class="cmp-cat chem">화학물질법</span></td>
+                            <td>12건</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '법령 상세')">상세</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">FAC-001</code></td>
+                            <td><strong>시설물안전특별법</strong> §11 (정밀안전점검)</td>
+                            <td style="text-align:center;"><span class="cmp-cat fac">시설법</span></td>
+                            <td>8건</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '법령 상세')">상세</button></td>
+                        </tr>
+                        <tr>
+                            <td><code style="font-size:13px; color:var(--main);">LOCAL-001</code></td>
+                            <td><strong>담양군 안전조례</strong> (자치법규)</td>
+                            <td style="text-align:center;"><span class="cmp-cat local">지자체</span></td>
+                            <td>6건</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '법령 상세')">상세</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ② 의무 주기·자동 생성 -->
+        <div class="settings-panel" data-panel="cycle">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">의무 주기 마스터</span>
+                        <span class="settings-card-desc">법령별 의무 항목의 자동 생성 주기 설정. 변경 시 다음 배치(매일 00:00)부터 반영됩니다.</span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>의무명</th>
+                            <th style="text-align:center;">카테고리</th>
+                            <th class="col-period">주기</th>
+                            <th>책임 부서</th>
+                            <th class="col-active">활성</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>안전보건 경영방침 수립·점검</strong></td>
+                            <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                            <td><span class="period-value">분기 <span class="period-value-sub">1회</span></span></td>
+                            <td>자치행정과</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>위험성평가 정기 시행</strong></td>
+                            <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                            <td><span class="period-value">분기 <span class="period-value-sub">1회</span></span></td>
+                            <td>안전건설과</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>산업안전보건위원회 개최</strong></td>
+                            <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                            <td><span class="period-value">분기 <span class="period-value-sub">1회</span></span></td>
+                            <td>안전건설과</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>화학물질 정기 검사</strong></td>
+                            <td style="text-align:center;"><span class="cmp-cat chem">화학물질법</span></td>
+                            <td><span class="period-value">월 <span class="period-value-sub">1회</span></span></td>
+                            <td>환경과</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정')">수정</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>시설물 정밀안전점검</strong></td>
+                            <td style="text-align:center;"><span class="cmp-cat fac">시설법</span></td>
+                            <td><span class="period-value">반기 <span class="period-value-sub">1회</span></span></td>
+                            <td>시설관리과</td>
+                            <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td>
+                            <td class="col-action"><button class="btn-mini" type="button" onclick="window.DYLayout._soon(event, '주기 수정')">수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ③ 알림 정책 -->
+        <div class="settings-panel" data-panel="notify">
+            <section class="card">
+                <div class="settings-card-head">
+                    <div class="settings-card-head-main">
+                        <span class="settings-card-title">이행관리 알림 정책</span>
+                        <span class="settings-card-desc">기한 도래·임박·초과 시 알림 발송 규칙</span>
+                    </div>
+                </div>
+                <table class="cycle-table">
+                    <thead>
+                        <tr><th>알림 시점</th><th>대상</th><th>채널</th><th class="col-active">활성</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>기한 30일 전</td><td>담당자 (SHM)</td><td>새올 포틀릿</td><td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td></tr>
+                        <tr><td>기한 7일 전</td><td>담당자 + 부서장 (GM)</td><td>새올 + 이메일</td><td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td></tr>
+                        <tr><td>기한 1일 전</td><td>담당자 + 부서장 (GM)</td><td>새올 + 이메일</td><td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td></tr>
+                        <tr><td>기한초과 (D+1)</td><td>담당자 + GM + 안전건설과</td><td>새올 + 이메일</td><td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td></tr>
+                        <tr><td>기한초과 (D+7)</td><td>위 + 군수(CEO)</td><td>새올 + 이메일</td><td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-switch-slider"></span></label></td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const subtitleMap = {
+            laws: '이행관리 적용 법령 및 조항 마스터',
+            cycle: '의무 항목별 자동 생성 주기 + 책임 부서 매핑',
+            notify: '기한 도래·임박·초과 시 알림 발송 정책',
+        };
+        const subtitleEl = document.querySelector('.dy-page-subtitle');
+        window.CmpSettings = {
+            switchTab(name) {
+                document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.panel === name));
+                document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('is-active', p.dataset.panel === name));
+                if (subtitleEl && subtitleMap[name]) subtitleEl.textContent = subtitleMap[name];
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

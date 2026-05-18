@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도급계약 상세 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── CON01-D 전용 ─── */
+
+        /* 계약유형 chip */
+        .con-type-chip {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid transparent;
+        }
+        .con-type-chip.construction { background: #fdedda; color: #c47a07; border-color: #f9d486; }
+        .con-type-chip.service      { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .con-type-chip.install      { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .con-type-chip.consign      { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .con-type-chip.other        { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 서브 탭 (내부 영역 8개) */
+        .con-detail-tabs {
+            display: flex; align-items: center; gap: 0;
+            border-bottom: 1px solid var(--card-line);
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+        .con-detail-tab {
+            padding: 10px 18px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            white-space: nowrap;
+            transition: all .15s ease;
+        }
+        .con-detail-tab:hover { color: var(--main-dark); }
+        .con-detail-tab.is-active { color: var(--main-dark2); border-bottom-color: var(--main); }
+        .con-detail-tab .badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 18px; height: 18px;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 10px;
+            border-radius: 9px;
+            padding: 0 5px;
+            margin-left: 4px;
+        }
+        .con-detail-tab.is-active .badge { background: var(--main); color: white; }
+
+        .con-pane { display: none; }
+        .con-pane.is-active { display: block; }
+
+        /* STEP 4-stage 인디케이터 */
+        .con-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+            gap: 0;
+        }
+        .con-step-item {
+            display: flex; align-items: center; gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .con-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .con-step-item.is-done .con-step-num { background: var(--status-success-fg); color: white; }
+        .con-step-item.is-current .con-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .con-step-text { display: flex; flex-direction: column; min-width: 0; }
+        .con-step-label {
+            font-size: 12px; color: var(--text-gray); font-weight: 600;
+        }
+        .con-step-name {
+            font-size: 14px; color: var(--text-black); font-weight: 700;
+        }
+        .con-step-item.is-done .con-step-name { color: var(--status-success-fg); }
+        .con-step-item.is-current .con-step-name { color: var(--main-dark2); }
+        .con-step-connector {
+            flex: 0 0 30px;
+            height: 2px;
+            background: var(--gray-100);
+            margin: 0 8px;
+        }
+        .con-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 안전관리 인력 카드 */
+        .con-staff-check {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 16px 22px;
+        }
+        .con-staff-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            background: white;
+        }
+        .con-staff-row.is-met { background: var(--status-success-bg); border-color: var(--status-success-border); }
+        .con-staff-row.is-short { background: var(--status-danger-bg); border-color: var(--status-danger-border); }
+        .con-staff-row .name { font-size: 13px; font-weight: 700; color: var(--text-black); }
+        .con-staff-row .meta { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+        .con-staff-row .status {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 12px; font-weight: 700;
+            color: var(--status-success-fg);
+        }
+        .con-staff-row.is-short .status { color: var(--status-danger-fg); }
+
+        /* 결재 카드 */
+        .con-approval-card {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            margin: 0 22px 16px;
+        }
+        .con-approval-text { font-size: 13px; color: var(--status-info-fg); }
+        .con-approval-text strong { font-weight: 700; }
+
+        /* 평가 결과 chip */
+        .eval-result-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .eval-result-chip.qualified   { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .eval-result-chip.unqualified { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .eval-result-chip.pending     { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+
+        /* 초대 상태 chip */
+        .invite-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .invite-status-chip.pending  { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+        .invite-status-chip.accepted { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .invite-status-chip.expired  { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 시공 진행률 */
+        .con-progress-card {
+            margin: 16px 22px 0;
+            padding: 14px 16px;
+            background: var(--brand-100);
+            border-radius: var(--radius-button);
+            display: flex; align-items: center; gap: 14px;
+        }
+        .con-progress-track {
+            flex: 1;
+            height: 10px;
+            background: white;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .con-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--main) 0%, var(--main-light) 100%);
+            border-radius: 999px;
+        }
+        .con-progress-num { font-size: 14px; font-weight: 800; color: var(--main-dark2); min-width: 60px; }
+    </style>
+</head>
+<body data-dy-page="contractor">
+    <main>
+        <!-- ─── 상단 툴바 ─── -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="contractor.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                도급계약 목록
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline" type="button" onclick="window.location.href='con-step1.html?id=2026-12'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    수정
+                </button>
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    PDF
+                </button>
+                <button class="btn btn-primary" type="button" onclick="window.location.href='con-step3.html?id=2026-12'">
+                    결재 진행
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── 페이지 헤더 ─── -->
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <span class="con-type-chip construction">공사</span>
+                    <h1>청사 시설 보수공사</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    e호조 자동 import #2026-12 · 자치행정과 · 김도급 · 2026-04-01 ~ 2026-08-31
+                </div>
+            </div>
+            <span class="chip-status info detail-header-status">STEP 3 진행중 — 결재 대기</span>
+        </section>
+
+        <!-- ─── 4-Step 인디케이터 ─── -->
+        <section class="con-step-bar">
+            <div class="con-step-item is-done">
+                <div class="con-step-num">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 1</span>
+                    <span class="con-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-done">
+                <div class="con-step-num">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 2</span>
+                    <span class="con-step-name">수급업체 평가</span>
+                </div>
+            </div>
+            <div class="con-step-connector is-done"></div>
+            <div class="con-step-item is-current">
+                <div class="con-step-num">3</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 3</span>
+                    <span class="con-step-name">선정 + 결재</span>
+                </div>
+            </div>
+            <div class="con-step-connector"></div>
+            <div class="con-step-item">
+                <div class="con-step-num">4</div>
+                <div class="con-step-text">
+                    <span class="con-step-label">STEP 4</span>
+                    <span class="con-step-name">초대 + 서약</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── 서브 탭 (8개 영역) ─── -->
+        <nav class="con-detail-tabs" role="tablist">
+            <button class="con-detail-tab is-active" type="button" data-pane="overview">개요</button>
+            <button class="con-detail-tab" type="button" data-pane="subcontractor">수급업체 <span class="badge">3</span></button>
+            <button class="con-detail-tab" type="button" data-pane="evaluation">평가 <span class="badge">2/3</span></button>
+            <button class="con-detail-tab" type="button" data-pane="risk">위험성평가 <span class="badge">1</span></button>
+            <button class="con-detail-tab" type="button" data-pane="council">협의체 <span class="badge">0</span></button>
+            <button class="con-detail-tab" type="button" data-pane="tbm">TBM <span class="badge">0</span></button>
+            <button class="con-detail-tab" type="button" data-pane="agreement">서약서 <span class="badge">0/1</span></button>
+            <button class="con-detail-tab" type="button" data-pane="imp">개선조치 <span class="badge">0</span></button>
+        </nav>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ① 개요 (OVERVIEW) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="con-pane is-active" data-pane="overview">
+
+            <!-- 기본정보 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">기본정보</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">사업명</span>
+                        <span class="info-grid-value">청사 시설 보수공사</span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">계약유형</span>
+                        <span class="info-grid-value"><span class="con-type-chip construction">공사 (CONSTRUCTION)</span></span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">출처</span>
+                        <span class="info-grid-value">
+                            <span class="source-tag auto">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                차세대 e호조 자동 import
+                            </span>
+                            <span style="font-family:'SF Mono', Consolas, monospace; font-size:12px; color:var(--text-gray); margin-left:6px;">#2026-12</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">발주처</span>
+                        <span class="info-grid-value">자치행정과</span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">관리대상</span>
+                        <span class="info-grid-value">
+                            <a href="target-detail.html" style="color:var(--main-dark); font-weight:600;">군청 청사</a>
+                            <span class="type-tag">시설</span>
+                            <span class="type-tag">공중이용시설 · 1종</span>
+                        </span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">계약 기간</span>
+                        <span class="info-grid-value">2026-04-01 ~ 2026-08-31 <span class="text-gray">(153일)</span></span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">예산</span>
+                        <span class="info-grid-value"><strong style="color:var(--main-dark2); font-size:15px;">500,000,000원</strong> <span class="text-gray">(5억)</span></span>
+                    </div>
+                    <div class="info-grid-row last-row">
+                        <span class="info-grid-label">담당자</span>
+                        <span class="info-grid-value">김도급 <span class="text-gray">(자치행정과 · SHM)</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 안전관리 인력 충족 여부 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">안전관리 인력 충족 여부 (산안법 시행령 §16)</h2>
+                    <span class="text-muted" style="font-size:12px;">공사금액 5억 — 법정 안전관리자 1명 / 안전보건관리책임자 1명 필요</span>
+                </div>
+                <div class="con-staff-check">
+                    <div class="con-staff-row is-met">
+                        <div>
+                            <div class="name">안전관리자 (SAFETY_MGR)</div>
+                            <div class="meta">법정 1명 필요 · 배치 1명 (김안전 · 안전건설과)</div>
+                        </div>
+                        <span class="status">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            충족
+                        </span>
+                    </div>
+                    <div class="con-staff-row is-met">
+                        <div>
+                            <div class="name">안전보건관리책임자 (HEALTH_MGR)</div>
+                            <div class="meta">법정 1명 필요 · 배치 1명 (홍자치 · 자치행정과장)</div>
+                        </div>
+                        <span class="status">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            충족
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 결재 안내 -->
+            <section class="card" style="padding-bottom: 0;">
+                <div class="card-header">
+                    <h2 class="card-title">결재 상태</h2>
+                </div>
+                <div class="con-approval-card">
+                    <div class="con-approval-text">
+                        <strong>결재 요청 대기 중</strong> — STEP 2 평가 완료. 결재 진행 가능합니다.
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="window.location.href='con-step3.html?id=2026-12'">
+                        STEP 3 진행
+                    </button>
+                </div>
+            </section>
+
+            <!-- 시공 진행 (시공 시작 전 안내) -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">시공 진행</h2>
+                </div>
+                <div class="con-progress-card">
+                    <span style="font-size:13px; color:var(--text-gray);">시공 진행률</span>
+                    <div class="con-progress-track"><div class="con-progress-fill" style="width:0%;"></div></div>
+                    <span class="con-progress-num">0%</span>
+                </div>
+                <div style="padding: 12px 22px 18px; font-size: 12px; color: var(--text-gray);">
+                    STEP 4 초대·서약 완료 후 시공 시작(<code>IN_PROGRESS</code>)으로 자동 전환됩니다.
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ② 수급업체 (SUBCONTRACTOR) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="con-pane" data-pane="subcontractor">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">참여 수급업체 (3개)</h2>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.location.href='con-step2.html?id=2026-12'">
+                        STEP 2 이동
+                    </button>
+                </div>
+                <table class="table-figma">
+                    <thead>
+                        <tr>
+                            <th>업체명</th>
+                            <th>사업자번호</th>
+                            <th>대표자</th>
+                            <th style="text-align:center;">관리계획서</th>
+                            <th>평가자</th>
+                            <th style="text-align:center;">평가 점수</th>
+                            <th style="text-align:center;">결과</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.location.href='con-evaluation.html'">
+                            <td><strong>A건설(주)</strong></td>
+                            <td>123-45-67890</td>
+                            <td>홍사장</td>
+                            <td style="text-align:center;"><span class="chip-status success">제출</span></td>
+                            <td>김안전 (안전건설과)</td>
+                            <td style="text-align:center; font-weight:700; color:var(--status-success-fg);">85점 / 100</td>
+                            <td style="text-align:center;"><span class="eval-result-chip qualified">적격</span></td>
+                        </tr>
+                        <tr class="row-link" onclick="window.location.href='con-evaluation.html'">
+                            <td><strong>B건설(주)</strong></td>
+                            <td>234-56-78901</td>
+                            <td>이사장</td>
+                            <td style="text-align:center;"><span class="chip-status success">제출</span></td>
+                            <td>김안전 (안전건설과)</td>
+                            <td style="text-align:center; font-weight:700;">72점 / 100</td>
+                            <td style="text-align:center;"><span class="eval-result-chip qualified">적격</span></td>
+                        </tr>
+                        <tr class="row-link row-highlight-danger" onclick="window.location.href='con-evaluation.html'">
+                            <td><strong>C건설(주)</strong></td>
+                            <td>345-67-89012</td>
+                            <td>박사장</td>
+                            <td style="text-align:center;"><span class="chip-status warning">미제출</span></td>
+                            <td>김안전 (안전건설과)</td>
+                            <td style="text-align:center; font-weight:700; color:var(--status-danger-fg);">65점 / 100</td>
+                            <td style="text-align:center;"><span class="eval-result-chip unqualified">부적격</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ③ 평가 (EVALUATION) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="con-pane" data-pane="evaluation">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">평가 진행 현황</h2>
+                    <span class="text-muted" style="font-size:13px;">공사 안전관리 평가서 (CONSTRUCTION_SAFETY) · 만점 100 · 적격 70</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">선정평가</span>
+                        <span class="info-grid-value">완료 (3개 업체 모두 평가됨) · 적격 2 / 부적격 1</span>
+                    </div>
+                    <div class="info-grid-row">
+                        <span class="info-grid-label">정기평가</span>
+                        <span class="info-grid-value text-gray">시공 시작 후 자동 생성 (월별)</span>
+                    </div>
+                    <div class="info-grid-row last-row">
+                        <span class="info-grid-label">종료평가</span>
+                        <span class="info-grid-value text-gray">시공 완료 후 자동 생성</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ④ 위험성평가 (RISK) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="con-pane" data-pane="risk">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">관련 위험성평가</h2>
+                </div>
+                <table class="table-figma">
+                    <thead>
+                        <tr>
+                            <th>평가명</th>
+                            <th style="text-align:center;">유형</th>
+                            <th style="text-align:center;">상태</th>
+                            <th>기간</th>
+                            <th>담당자</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-link" onclick="window.location.href='risk-detail.html'">
+                            <td><strong>청사 시설 보수공사 위험성평가</strong><div style="font-size:11px; color:var(--text-gray);">e호조 자동 생성</div></td>
+                            <td style="text-align:center;"><span class="chip-cat cat-special">수시</span></td>
+                            <td style="text-align:center;"><span class="chip-status info">진행중</span></td>
+                            <td>2026-03-25 ~ 2026-04-10</td>
+                            <td>김안전</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ⑤ 협의체 -->
+        <div class="con-pane" data-pane="council">
+            <section class="card">
+                <div class="card-body" style="padding: 40px 24px; text-align: center; color: var(--text-gray);">
+                    아직 등록된 협의체 회의가 없습니다. <a href="con-council.html" style="color:var(--main-dark);">협의체 운영 이동 →</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- ⑥ TBM -->
+        <div class="con-pane" data-pane="tbm">
+            <section class="card">
+                <div class="card-body" style="padding: 40px 24px; text-align: center; color: var(--text-gray);">
+                    시공 시작 후 도급업체가 TBM을 등록할 수 있습니다. <a href="con-tbm.html" style="color:var(--main-dark);">TBM 목록 이동 →</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- ⑦ 서약서 (AGREEMENT) -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="con-pane" data-pane="agreement">
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">서약서 — 공사 안전관리 서약서 (CONSTRUCTION)</h2>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '서약서 본문 보기')">서약서 보기</button>
+                </div>
+                <table class="table-figma">
+                    <thead>
+                        <tr>
+                            <th>업체명</th>
+                            <th>담당자</th>
+                            <th style="text-align:center;">초대 상태</th>
+                            <th>발송일</th>
+                            <th style="text-align:center;">서약 상태</th>
+                            <th style="text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>A건설(주)</strong></td>
+                            <td>김도급 (kim@a.co.kr)</td>
+                            <td style="text-align:center;"><span class="invite-status-chip pending">초대 발송</span></td>
+                            <td>2026-04-01</td>
+                            <td style="text-align:center;">미완료</td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="con-step4.html?id=2026-12">관리</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>B건설(주)</strong></td>
+                            <td><span style="color:var(--text-lightgray);">미입력</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:11px;">—</span></td>
+                            <td><span style="color:var(--text-lightgray);">—</span></td>
+                            <td style="text-align:center;"><span style="color:var(--text-lightgray); font-size:11px;">—</span></td>
+                            <td style="text-align:center;"><a class="table-action-btn" href="con-step4.html?id=2026-12">초대</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- ⑧ 개선조치 -->
+        <div class="con-pane" data-pane="imp">
+            <section class="card">
+                <div class="card-body" style="padding: 40px 24px; text-align: center; color: var(--text-gray);">
+                    이 계약에 연결된 개선조치가 없습니다. <a href="imp-list.html" style="color:var(--main-dark);">전체 개선조치 →</a>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('.con-detail-tab').forEach(b => {
+            b.addEventListener('click', () => {
+                const target = b.dataset.pane;
+                document.querySelectorAll('.con-detail-tab').forEach(x => x.classList.toggle('is-active', x.dataset.pane === target));
+                document.querySelectorAll('.con-pane').forEach(p => p.classList.toggle('is-active', p.dataset.pane === target));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

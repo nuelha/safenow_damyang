@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구성원 직접 등록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .modal-backdrop {
+            min-height: calc(100vh - 64px);
+            background: rgba(15, 23, 42, 0.35);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 30px 20px;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            width: 100%; max-width: 540px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-line);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: var(--main-dark2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close {
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray);
+            border-radius: 8px;
+        }
+        .modal-close:hover { background: var(--gray-100); }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+            display: flex; justify-content: flex-end; gap: 8px;
+        }
+
+        /* 모드 선택 탭 */
+        .mode-tabs {
+            display: flex; gap: 4px;
+            background: var(--gray-100);
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+        .mode-tab {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 13px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .mode-tab.is-active { background: white; color: var(--main-dark2); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+        /* 섹션 헤더 */
+        .form-section { margin-bottom: 18px; }
+        .form-section-title {
+            font-size: 12px; font-weight: 700;
+            color: var(--main-dark);
+            margin-bottom: 10px;
+            padding-left: 8px;
+            border-left: 3px solid var(--main);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            row-gap: 14px;
+            column-gap: 12px;
+            align-items: center;
+        }
+        .form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+        }
+        .form-grid .label.required::after { content: " *"; color: var(--status-danger-fg); }
+        .form-input, .form-grid select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            height: 36px;
+        }
+        .form-input:focus, .form-grid select:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .form-input:disabled { background: var(--gray-100); color: var(--text-gray); }
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: 8px;
+            font-size: 13px;
+            min-height: 60px;
+            line-height: 1.5;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .source-hint {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 12px;
+            background: var(--status-info-bg);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--status-info-fg);
+            margin-top: 4px;
+        }
+
+        /* 권한 chip */
+        .role-options { display: flex; gap: 6px; flex-wrap: wrap; }
+        .role-option {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            font-size: 12px; color: var(--text-gray);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .role-option:hover { border-color: var(--main); }
+        .role-option.is-selected { background: var(--main); color: white; border-color: var(--main-dark); }
+        .role-option:disabled { background: var(--gray-100); color: var(--text-lightgray); cursor: not-allowed; }
+    </style>
+</head>
+<body data-dy-page="organization">
+    <main style="padding: 0;">
+        <div class="modal-backdrop">
+            <div class="modal-box" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--main);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        구성원 직접 등록 (ORG02-M)
+                    </div>
+                    <button class="modal-close" onclick="window.history.back()" aria-label="닫기">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- 모드 -->
+                    <div class="mode-tabs" id="mode-tabs">
+                        <button class="mode-tab is-active" data-mode="new">신규 등록</button>
+                        <button class="mode-tab" data-mode="edit">수정</button>
+                    </div>
+
+                    <!-- 기본 정보 -->
+                    <div class="form-section">
+                        <div class="form-section-title">기본 정보</div>
+                        <div class="form-grid">
+                            <span class="label required">이름</span>
+                            <input class="form-input" type="text" placeholder="홍길동">
+
+                            <span class="label required">이메일</span>
+                            <input class="form-input" type="email" placeholder="hong@damyang.go.kr">
+
+                            <span class="label">연락처</span>
+                            <input class="form-input" type="tel" placeholder="010-XXXX-XXXX">
+                        </div>
+                    </div>
+
+                    <!-- 소속·직무 -->
+                    <div class="form-section">
+                        <div class="form-section-title">소속·직무</div>
+                        <div class="form-grid">
+                            <span class="label required">부서</span>
+                            <select class="form-input">
+                                <option>자치행정과</option>
+                                <option>안전건설과</option>
+                                <option>시설관리과</option>
+                                <option>환경과</option>
+                                <option>상수도사업소</option>
+                                <option>보건소</option>
+                                <option>문화관광과</option>
+                                <option>농업기술센터</option>
+                                <option>담양읍사무소</option>
+                            </select>
+
+                            <span class="label required">직급</span>
+                            <input class="form-input" type="text" placeholder="예: 7급, 행정주사">
+
+                            <span class="label">직종</span>
+                            <select class="form-input">
+                                <option>사무직 (office)</option>
+                                <option>현장직 (field)</option>
+                                <option>관리감독자 (supervisor)</option>
+                                <option>안전보건관리자 (safety_manager)</option>
+                                <option>기타 (etc)</option>
+                            </select>
+                        </div>
+                        <div class="source-hint">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                            행정포털 SSO 동기화 사용자는 부서·직급이 자동으로 동기화되며 본 모달에서 readonly입니다.
+                        </div>
+                    </div>
+
+                    <!-- 권한 -->
+                    <div class="form-section">
+                        <div class="form-section-title">권한 (현재 사용자가 부여 가능한 권한만 활성)</div>
+                        <div class="role-options" id="role-options">
+                            <button class="role-option" type="button" data-role="CEO" disabled>CEO</button>
+                            <button class="role-option" type="button" data-role="GM" disabled>GM</button>
+                            <button class="role-option is-selected" type="button" data-role="SM">SM</button>
+                            <button class="role-option" type="button" data-role="SHM">SHM</button>
+                            <button class="role-option" type="button" data-role="WKR">WKR</button>
+                        </div>
+                        <div class="source-hint">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                            CEO/GM 권한은 군수·부군수만 변경 가능합니다.
+                        </div>
+                    </div>
+
+                    <!-- 기타 -->
+                    <div class="form-section">
+                        <div class="form-section-title">기타</div>
+                        <div class="form-grid">
+                            <span class="label">비고</span>
+                            <textarea class="form-textarea" maxlength="500" placeholder="임시 계약직 / 외부 위임 등 메모"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                    <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '구성원 저장')">저장</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        document.querySelectorAll('#mode-tabs .mode-tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('#mode-tabs .mode-tab').forEach(x => x.classList.remove('is-active'));
+                t.classList.add('is-active');
+            });
+        });
+        document.querySelectorAll('#role-options .role-option').forEach(o => {
+            o.addEventListener('click', () => {
+                if (o.disabled) return;
+                document.querySelectorAll('#role-options .role-option').forEach(x => x.classList.remove('is-selected'));
+                o.classList.add('is-selected');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

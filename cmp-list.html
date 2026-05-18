@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이행 목록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 카테고리 chip */
+        .cmp-cat {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .cmp-cat.cdpa  { background: #fff4e6; color: #c47a07; border-color: #f9d486; }
+        .cmp-cat.osha  { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .cmp-cat.chem  { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .cmp-cat.fac   { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .cmp-cat.local { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .cmp-cat.plan  { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 이행 상태 chip */
+        .cmp-status-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .cmp-status-chip.pending   { background: var(--status-neutral-bg); color: var(--status-neutral-fg); border-color: var(--status-neutral-border); }
+        .cmp-status-chip.progress  { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-border); }
+        .cmp-status-chip.done      { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-border); }
+        .cmp-status-chip.overdue   { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .cmp-status-chip.imminent  { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
+    </style>
+</head>
+<body data-dy-page="cmp-list" data-page-title="이행 목록" data-page-subtitle="법령·자체 의무 이행 일정·실행 관리 (CMP02-L · SFR-014)">
+    <main>
+        <!-- 필터 -->
+        <div class="rsk-filter-row">
+            <div class="form-group">
+                <span class="form-label-inline">카테고리</span>
+                <select class="select">
+                    <option>전체</option><option>중대재해법 §4</option><option>산안법</option><option>화학물질안전관리법</option><option>시설물안전특별법</option><option>담양군 안전조례</option><option>자체 계획</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">부서</span>
+                <select class="select"><option>전체</option><option>안전건설과</option><option>시설관리과</option><option>환경과</option></select>
+            </div>
+            <div class="form-group">
+                <span class="form-label-inline">상태</span>
+                <select class="select"><option>전체</option><option>예정</option><option>진행중</option><option>완료</option><option>기한임박</option><option>기한초과</option></select>
+            </div>
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="의무명 검색">
+                <button class="search-submit" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>검색</button>
+            </div>
+            <button class="clear-filters" type="button" onclick="window.DYLayout._soon(event, '필터 초기화')">초기화</button>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+            <span style="font-size:14px; color:var(--text-gray);">전체 <strong style="color:var(--main); font-weight:700;">142</strong>건 · 기한초과 <strong style="color:var(--status-danger-fg);">3</strong>건 · 임박 <strong style="color:var(--status-warning-fg);">14</strong>건</span>
+            <a href="cmp-status.html" class="text-muted" style="font-size:13px;">← 이행 현황</a>
+        </div>
+
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">이행 의무 목록</h2>
+                <button class="btn btn-outline btn-sm" type="button" onclick="window.location.href='cmp-settings.html'">법령 마스터 →</button>
+            </div>
+            <table class="table-figma">
+                <colgroup>
+                    <col><col style="width:140px;"><col style="width:120px;"><col style="width:130px;"><col style="width:90px;"><col style="width:100px;"><col style="width:80px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>의무명 · 근거</th>
+                        <th style="text-align:center;">카테고리</th>
+                        <th>담당부서</th>
+                        <th>기한</th>
+                        <th style="text-align:center;">주기</th>
+                        <th style="text-align:center;">상태</th>
+                        <th style="text-align:center;">실행</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 기한초과 -->
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>화학물질 정기 검사 실시</strong><div style="font-size:11px; color:var(--text-gray);">화학물질안전관리법 §10</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat chem">화학물질법</span></td>
+                        <td>환경과</td>
+                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-05</span> <span class="imp-due-dday">D+8</span></td>
+                        <td style="text-align:center;">월 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>보건소 노후 시설 정밀안전점검</strong><div style="font-size:11px; color:var(--text-gray);">시설물안전특별법 §11</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시설법</span></td>
+                        <td>시설관리과</td>
+                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-08</span> <span class="imp-due-dday">D+5</span></td>
+                        <td style="text-align:center;">분기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>안전보건관리책임자 평가 (담양읍)</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-6</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                        <td>담양읍사무소</td>
+                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-11</span> <span class="imp-due-dday">D+2</span></td>
+                        <td style="text-align:center;">반기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <!-- 임박 -->
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>안전보건 경영방침 정기 점검</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-1</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                        <td>안전건설과</td>
+                        <td>2026-05-18 <span class="imp-due-dday" style="color:var(--status-warning-fg);">D-5</span></td>
+                        <td style="text-align:center;">분기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip imminent">기한 임박</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>위험성평가 정기 시행 (Q2)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §36, 중대재해법 §4-3</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>안전건설과</td>
+                        <td>2026-05-20 <span class="imp-due-dday" style="color:var(--status-warning-fg);">D-7</span></td>
+                        <td style="text-align:center;">분기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip imminent">기한 임박</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>산업안전보건위원회 Q2 개최</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §24</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>안전건설과</td>
+                        <td>2026-06-12 <span class="imp-due-dday">D-30</span></td>
+                        <td style="text-align:center;">분기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip pending">예정</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-committee.html" onclick="event.stopPropagation();">대기</a></td>
+                    </tr>
+                    <!-- 진행중 -->
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>안전보건 종사자 의견청취 캠페인 (상반기)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §75</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>안전건설과</td>
+                        <td>2026-06-30 <span class="imp-due-dday">D-48</span></td>
+                        <td style="text-align:center;">반기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opn-status.html" onclick="event.stopPropagation();">진행</a></td>
+                    </tr>
+                    <!-- 완료 -->
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>2026 안전보건 경영방침 수립·결재</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-1</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                        <td>자치행정과</td>
+                        <td>2026-01-20</td>
+                        <td style="text-align:center;">연 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>안전보건 예산 편성 (2026)</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-4</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
+                        <td>자치행정과</td>
+                        <td>2026-02-28</td>
+                        <td style="text-align:center;">연 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>도급공사 안전관리 평가 (5건)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §63 / 중대재해법 §4-9</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>안전건설과</td>
+                        <td>분기별</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중 (3/5)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="contractor.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div data-pagination data-current="1" data-total="15"></div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>

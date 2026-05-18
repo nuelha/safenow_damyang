@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전계획 등록 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* ─── PLN02-F 전용 ─── */
+
+        /* 2-Step 인디케이터 */
+        .pln-step-bar {
+            display: flex; align-items: center;
+            padding: 16px 22px;
+            background: white;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-card);
+        }
+        .pln-step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .pln-step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 13px; font-weight: 700;
+        }
+        .pln-step-item.is-done .pln-step-num { background: var(--status-success-fg); color: white; }
+        .pln-step-item.is-current .pln-step-num { background: var(--main); color: white; box-shadow: 0 0 0 4px var(--brand-100); }
+        .pln-step-text { display: flex; flex-direction: column; }
+        .pln-step-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+        .pln-step-name { font-size: 14px; color: var(--text-black); font-weight: 700; }
+        .pln-step-item.is-done .pln-step-name { color: var(--status-success-fg); }
+        .pln-step-item.is-current .pln-step-name { color: var(--main-dark2); }
+        .pln-step-connector { flex: 0 0 30px; height: 2px; background: var(--gray-100); margin: 0 8px; }
+        .pln-step-connector.is-done { background: var(--status-success-fg); }
+
+        /* 폼 그리드 */
+        .pln-form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 18px;
+            column-gap: 16px;
+            padding: 24px;
+        }
+        .pln-form-grid .label {
+            font-size: 13px; color: var(--text-gray); font-weight: 600;
+            line-height: 36px;
+        }
+        .pln-form-grid .label.required::after {
+            content: " *"; color: var(--status-danger-fg);
+        }
+        .pln-form-grid .value { display: flex; flex-direction: column; gap: 6px; }
+
+        .pln-input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            color: var(--text-black);
+            background: white;
+            height: 38px;
+        }
+        .pln-input:focus { outline: none; border-color: var(--main); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .pln-textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 10px 14px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .pln-hint { font-size: 12px; color: var(--text-gray); }
+
+        /* 카테고리 chip */
+        .pln-cat-chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 8px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .pln-cat-chip.education  { background: #e0eefb; color: #3e7bc7; border-color: #b0d3f0; }
+        .pln-cat-chip.inspection { background: #fdedda; color: #e58a3c; border-color: #f9c2ab; }
+        .pln-cat-chip.risk       { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+        .pln-cat-chip.budget     { background: var(--brand-100); color: var(--main-dark); border-color: var(--status-success-border); }
+        .pln-cat-chip.contract   { background: var(--status-purple-bg); color: var(--status-purple-fg); border-color: var(--status-purple-border); }
+        .pln-cat-chip.etc        { background: var(--gray-100); color: var(--text-gray); border-color: var(--card-line); }
+
+        /* 항목 입력 테이블 */
+        .pln-items-table { width: 100%; border-collapse: collapse; }
+        .pln-items-table thead th {
+            background: var(--gray-100);
+            color: var(--text-gray);
+            font-size: 12px; font-weight: 600;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .pln-items-table tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--card-line);
+            vertical-align: middle;
+        }
+        .pln-items-table tbody tr:last-child td { border-bottom: none; }
+        .pln-items-table select,
+        .pln-items-table input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--card-line);
+            border-radius: 5px;
+            font-size: 13px;
+            height: 32px;
+        }
+        .row-delete-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: transparent;
+            border: 1px solid var(--card-line);
+            border-radius: 6px;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+        .row-delete-btn:hover { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+
+        .pln-add-row-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 8px 14px;
+            background: white;
+            border: 1px dashed var(--card-line);
+            border-radius: var(--radius-button);
+            color: var(--main-dark);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .pln-add-row-btn:hover { background: var(--brand-100); border-color: var(--main); }
+
+        /* 템플릿 적용 카드 */
+        .template-card {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--status-info-bg);
+            border: 1px solid var(--status-info-border);
+            border-radius: var(--radius-button);
+            margin: 0 22px 16px;
+        }
+        .template-card-text { font-size: 13px; color: var(--status-info-fg); }
+        .template-card-text strong { font-weight: 700; }
+
+        /* 폼 액션 */
+        .pln-form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-line);
+            background: var(--brand-100);
+        }
+        .pln-form-actions .left { font-size: 12px; color: var(--text-gray); }
+        .pln-form-actions .buttons { display: flex; gap: 8px; }
+
+        .pln-step-panel { display: none; }
+        .pln-step-panel.is-active { display: block; }
+    </style>
+</head>
+<body data-dy-page="pln-list" data-page-title="안전계획 등록·수정" data-page-subtitle="2-Step Wizard — 기본정보 + 계획 항목 입력">
+    <main>
+        <!-- 상단 툴바 -->
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="pln-list.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                계획 목록
+            </a>
+        </div>
+
+        <!-- 2-Step 인디케이터 -->
+        <section class="pln-step-bar">
+            <div class="pln-step-item is-current" id="step1-indicator">
+                <div class="pln-step-num">1</div>
+                <div class="pln-step-text">
+                    <span class="pln-step-label">STEP 1</span>
+                    <span class="pln-step-name">기본정보</span>
+                </div>
+            </div>
+            <div class="pln-step-connector" id="step-connector"></div>
+            <div class="pln-step-item" id="step2-indicator">
+                <div class="pln-step-num">2</div>
+                <div class="pln-step-text">
+                    <span class="pln-step-label">STEP 2</span>
+                    <span class="pln-step-name">계획 항목 입력</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- STEP 1: 기본정보 -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="pln-step-panel is-active" data-step="1">
+            <section class="card" style="padding: 0;">
+                <div class="card-header" style="padding: 16px 24px;">
+                    <h2 class="card-title">기본정보 입력</h2>
+                </div>
+
+                <div class="pln-form-grid">
+                    <span class="label required">관리대상</span>
+                    <div class="value">
+                        <select class="pln-input">
+                            <option>군청 청사 (시설 · 공중이용시설 1종 · 자치행정과)</option>
+                            <option>군민체육관 (시설)</option>
+                            <option>담양읍 행정복지센터 (시설)</option>
+                            <option>환경자원시설 (업무)</option>
+                            <option>죽녹원 (시설)</option>
+                            <option>상수도사업소 본관 (시설)</option>
+                        </select>
+                        <span class="pln-hint">권한 범위 내 관리대상만 노출됩니다.</span>
+                    </div>
+
+                    <span class="label required">연도</span>
+                    <div class="value">
+                        <input class="pln-input" type="number" value="2027" min="2025" max="2030" style="max-width: 180px;">
+                        <span class="pln-hint">관리대상 + 연도 조합 UNIQUE (한 관리대상에 한 연도 1건만)</span>
+                    </div>
+
+                    <span class="label required">계획명</span>
+                    <div class="value">
+                        <input class="pln-input" type="text" value="2027 군청 청사 안전관리계획" maxlength="200">
+                        <span class="pln-hint">기본 제안 — "{연도} {관리대상명} 안전관리계획"</span>
+                    </div>
+
+                    <span class="label required">담당자</span>
+                    <div class="value">
+                        <select class="pln-input" style="max-width: 340px;">
+                            <option>김안전 (자치행정과 · SHM)</option>
+                            <option>박안전 (안전건설과 · SHM)</option>
+                            <option>이안전 (안전건설과 · SHM)</option>
+                            <option>한시설 (시설관리과 · SHM)</option>
+                        </select>
+                    </div>
+
+                    <span class="label">비고</span>
+                    <div class="value">
+                        <textarea class="pln-textarea" placeholder="계획 수립 배경·특이사항 등">군청 본관 옥상 방수공사 완료 후 누수 점검, 1·2층 화장실 리모델링 작업 안전관리 등 청사 보수 사업과 연계한 안전계획.</textarea>
+                    </div>
+                </div>
+
+                <div class="pln-form-actions">
+                    <div class="left">기본정보 입력 후 STEP 2에서 계획 항목을 등록합니다.</div>
+                    <div class="buttons">
+                        <button class="btn btn-outline" type="button" onclick="window.history.back()">취소</button>
+                        <button class="btn btn-primary" type="button" onclick="window.PlnForm.goStep(2)">
+                            다음 STEP
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═════════════════════════════════════ -->
+        <!-- STEP 2: 계획 항목 입력 -->
+        <!-- ═════════════════════════════════════ -->
+        <div class="pln-step-panel" data-step="2">
+            <section class="card" style="padding: 0;">
+                <div class="card-header" style="padding: 16px 24px;">
+                    <h2 class="card-title">계획 항목 입력</h2>
+                    <span class="text-muted" style="font-size:13px;">2027 군청 청사 안전관리계획 — 최소 1건 등록 필요</span>
+                </div>
+
+                <!-- 템플릿 적용 카드 -->
+                <div class="template-card">
+                    <div class="template-card-text">
+                        <strong>📋 표준 템플릿 적용</strong> — 안전계획 설정에서 정의한 표준 템플릿(12개 항목)을 일괄 추가합니다.
+                    </div>
+                    <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '템플릿 적용 (12개 항목 일괄 추가)')">
+                        템플릿 적용
+                    </button>
+                </div>
+
+                <!-- 항목 테이블 -->
+                <div style="padding: 0 22px 14px;">
+                    <table class="pln-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width:100px;">카테고리</th>
+                                <th>제목</th>
+                                <th style="width:120px;">마감일</th>
+                                <th style="width:140px;">담당자</th>
+                                <th style="width:60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option>교육 (education)</option>
+                                        <option>점검 (inspection)</option>
+                                        <option>평가 (risk)</option>
+                                        <option>예산 (budget)</option>
+                                        <option>도급 (contract)</option>
+                                        <option>기타 (etc)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="전직원 안전보건 정기교육 (상반기)"></td>
+                                <td><input type="date" value="2027-06-30"></td>
+                                <td>
+                                    <select>
+                                        <option>김안전</option>
+                                        <option>박안전</option>
+                                    </select>
+                                </td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option>교육 (education)</option>
+                                        <option selected>점검 (inspection)</option>
+                                        <option>평가 (risk)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="분기 정기 안전점검 (1Q)"></td>
+                                <td><input type="date" value="2027-03-31"></td>
+                                <td>
+                                    <select>
+                                        <option>이안전</option>
+                                    </select>
+                                </td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option selected>평가 (risk)</option>
+                                        <option>점검 (inspection)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="위험성평가 정기 (연 1회)"></td>
+                                <td><input type="date" value="2027-04-30"></td>
+                                <td>
+                                    <select>
+                                        <option>김안전</option>
+                                    </select>
+                                </td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select>
+                                        <option selected>예산 (budget)</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="안전관리 예산 편성·집행"></td>
+                                <td><input type="text" value="분기별" placeholder="분기별 또는 날짜"></td>
+                                <td>
+                                    <select>
+                                        <option>박재무</option>
+                                    </select>
+                                </td>
+                                <td><button type="button" class="row-delete-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="pln-add-row-btn" onclick="window.DYLayout._soon(event, '항목 추가')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        항목 추가
+                    </button>
+                </div>
+
+                <div class="pln-form-actions">
+                    <div class="left">저장 시 status=ESTABLISHED 자동 전환 후 결재 요청 가능합니다.</div>
+                    <div class="buttons">
+                        <button class="btn btn-outline" type="button" onclick="window.PlnForm.goStep(1)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+                            이전
+                        </button>
+                        <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장 (status=DRAFT)')">임시저장</button>
+                        <button class="btn btn-primary" type="button" onclick="window.location.href='pln-detail.html?id=new'">
+                            저장 후 상세 이동
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./js/layout.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        const step1Indicator = document.getElementById('step1-indicator');
+        const step2Indicator = document.getElementById('step2-indicator');
+        const connector = document.getElementById('step-connector');
+        const panels = document.querySelectorAll('.pln-step-panel');
+
+        window.PlnForm = {
+            goStep(n) {
+                step1Indicator.classList.toggle('is-current', n === 1);
+                step1Indicator.classList.toggle('is-done', n > 1);
+                step2Indicator.classList.toggle('is-current', n === 2);
+                connector.classList.toggle('is-done', n > 1);
+                panels.forEach(p => {
+                    p.classList.toggle('is-active', parseInt(p.dataset.step, 10) === n);
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

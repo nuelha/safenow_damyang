@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이행 상세 - 담양군 중대재해예방통합관리시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .cmp-cat {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px;
+            font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+        }
+        .cmp-cat.chem { background: var(--status-danger-bg); color: var(--status-danger-fg); border: 1px solid var(--status-danger-border); }
+
+        /* 이행 이력 타임라인 */
+        .cmp-timeline {
+            border-left: 2px solid var(--main);
+            padding-left: 16px;
+            margin-left: 6px;
+        }
+        .cmp-timeline-row {
+            position: relative;
+            padding: 10px 0;
+        }
+        .cmp-timeline-dot {
+            position: absolute; left: -22px; top: 14px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--main);
+            border: 2px solid white;
+        }
+        .cmp-timeline-dot.warn { background: var(--status-warning-fg); }
+        .cmp-timeline-dot.danger { background: var(--status-danger-fg); }
+        .cmp-timeline-dot.done { background: var(--status-success-fg); }
+        .cmp-timeline-title { font-size: 13px; font-weight: 600; color: var(--text-black); }
+        .cmp-timeline-meta { font-size: 11px; color: var(--text-gray); margin-top: 2px; }
+
+        /* 실행 입력 */
+        .cmp-exec-card {
+            padding: 18px 22px;
+            background: var(--status-warning-bg);
+            border: 1px solid var(--status-warning-border);
+            border-radius: var(--radius-card);
+        }
+        .cmp-exec-title {
+            font-size: 14px; font-weight: 700; color: var(--status-warning-fg);
+            margin-bottom: 12px;
+        }
+        .cmp-exec-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            row-gap: 12px; column-gap: 12px;
+            font-size: 13px;
+            align-items: center;
+        }
+        .cmp-exec-grid .k { color: var(--text-gray); font-weight: 600; }
+        .cmp-exec-grid input, .cmp-exec-grid textarea, .cmp-exec-grid select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--card-line);
+            border-radius: var(--radius-button);
+            font-size: 13px;
+            background: white;
+            font-family: inherit;
+        }
+        .cmp-exec-grid textarea { min-height: 70px; resize: vertical; line-height: 1.5; }
+        .cmp-exec-actions {
+            display: flex; justify-content: flex-end; gap: 8px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--status-warning-border);
+        }
+    </style>
+</head>
+<body data-dy-page="cmp-list">
+    <main>
+        <div class="detail-topbar">
+            <a class="detail-back-link" href="cmp-list.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                이행 목록
+            </a>
+            <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, 'PDF 출력')">PDF</button>
+        </div>
+
+        <section class="detail-header">
+            <div class="detail-header-main">
+                <div class="detail-header-row">
+                    <span class="cmp-cat chem">화학물질법</span>
+                    <h1>화학물질 정기 검사 실시</h1>
+                </div>
+                <div class="detail-header-subtitle">
+                    화학물질안전관리법 §10 · 환경자원시설 · 환경과 · 담당자 오환경 · 월 1회 주기
+                </div>
+            </div>
+            <span class="chip-status danger detail-header-status">기한초과 D+8</span>
+        </section>
+
+        <!-- 기본정보 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">의무 정보</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-grid-row">
+                    <span class="info-grid-label">근거 법령</span>
+                    <span class="info-grid-value"><strong>화학물질안전관리법 제10조</strong> (취급시설 정기 검사)</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">의무 내용</span>
+                    <span class="info-grid-value">화학물질 취급시설(환경자원시설)에 대해 매월 1회 정기 검사를 실시하고 결과를 기록·보존해야 합니다.</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">대상 관리대상</span>
+                    <span class="info-grid-value"><a href="target-detail.html" style="color:var(--main-dark); font-weight:600;">환경자원시설</a> <span class="type-tag">업무</span></span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">담당 부서</span>
+                    <span class="info-grid-value">환경과</span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">담당자</span>
+                    <span class="info-grid-value">오환경 <span class="text-gray">(환경과 · SHM)</span></span>
+                </div>
+                <div class="info-grid-row">
+                    <span class="info-grid-label">주기</span>
+                    <span class="info-grid-value">매월 1회 (직전: 2026-04-05 / 다음: 2026-05-05)</span>
+                </div>
+                <div class="info-grid-row last-row">
+                    <span class="info-grid-label">현재 기한</span>
+                    <span class="info-grid-value"><strong style="color:var(--status-danger-fg);">2026-05-05 (D+8 초과)</strong> — 즉시 시정 필요</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 실행 입력 -->
+        <section class="cmp-exec-card">
+            <div class="cmp-exec-title">⚠ 이행 실행 입력 (이번 회차)</div>
+            <div class="cmp-exec-grid">
+                <span class="k">실행일</span>
+                <input type="date" value="2026-05-13" style="max-width:200px;">
+                <span class="k">실행 결과</span>
+                <div style="display:flex; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="result" checked> 적합 (이행 완료)
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="result"> 부분 적합 (보완 필요)
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="result"> 부적합 (재실시)
+                    </label>
+                </div>
+                <span class="k">실행 내용</span>
+                <textarea placeholder="실행한 내용·점검 항목·결과·특이사항을 작성하세요">환경자원시설 화학물질 취급 정기 검사 — 보관 용기 30개 외관 점검, MSDS 갱신 확인, 누출 흡착재·비상샤워 가동 확인. 모든 항목 적합.</textarea>
+                <span class="k">증빙</span>
+                <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '파일 첨부')" style="justify-self: flex-start;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    검사일지·사진 첨부
+                </button>
+            </div>
+            <div class="cmp-exec-actions">
+                <button class="btn btn-outline" type="button" onclick="window.DYLayout._soon(event, '임시저장')">임시저장</button>
+                <button class="btn btn-primary" type="button" onclick="window.DYLayout._soon(event, '이행 완료 처리 → status=COMPLETED')">
+                    이행 완료
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- 이행 이력 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">이행 이력 (최근 12개월)</h2>
+                <span class="text-muted" style="font-size:13px;">이행률 91% (10/11회)</span>
+            </div>
+            <div class="card-body" style="padding: 4px 24px 16px;">
+                <div class="cmp-timeline">
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot danger"></div>
+                        <div class="cmp-timeline-title" style="color: var(--status-danger-fg);">2026-05-05 기한 초과 — 현재 진행 중</div>
+                        <div class="cmp-timeline-meta">담당자 오환경 · D+8 초과 · 새올 알림 발송됨</div>
+                    </div>
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot done"></div>
+                        <div class="cmp-timeline-title">2026-04-05 적합 — 이행 완료</div>
+                        <div class="cmp-timeline-meta">오환경 · 보관 용기 28개 점검 · 모든 항목 적합</div>
+                    </div>
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot done"></div>
+                        <div class="cmp-timeline-title">2026-03-08 적합 — 이행 완료</div>
+                        <div class="cmp-timeline-meta">오환경 · MSDS 일부 갱신</div>
+                    </div>
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot warn"></div>
+                        <div class="cmp-timeline-title">2026-02-10 부분 적합 — 보완 처리</div>
+                        <div class="cmp-timeline-meta">오환경 · 누출 흡착재 부족 → 개선조치 imp-32 자동 생성</div>
+                    </div>
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot done"></div>
+                        <div class="cmp-timeline-title">2026-01-05 적합 — 이행 완료</div>
+                        <div class="cmp-timeline-meta">오환경</div>
+                    </div>
+                    <div class="cmp-timeline-row">
+                        <div class="cmp-timeline-dot done"></div>
+                        <div class="cmp-timeline-title">2025-12-08 적합 — 이행 완료</div>
+                        <div class="cmp-timeline-meta">오환경</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 관련 자료 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">관련 자료</h2>
+            </div>
+            <div class="card-body" style="padding: 12px 22px 18px; display: flex; flex-direction: column; gap: 8px;">
+                <a class="alert-row" href="doc-manual.html" style="cursor:pointer; text-decoration: none;">
+                    <span class="alert-row-dot info"></span>
+                    <div class="alert-row-body">
+                        <span class="alert-row-title">화학물질 취급 점검 매뉴얼 INS-M-008 v2.3</span>
+                        <span class="alert-row-meta">매뉴얼 → 환경과 · 오환경</span>
+                    </div>
+                </a>
+                <a class="alert-row" href="doc-checklist.html" style="cursor:pointer; text-decoration: none;">
+                    <span class="alert-row-dot info"></span>
+                    <div class="alert-row-body">
+                        <span class="alert-row-title">화학물질 보관 일일 점검표 INS-CL-008-2</span>
+                        <span class="alert-row-meta">점검표 12개 항목</span>
+                    </div>
+                </a>
+                <a class="alert-row" href="imp-detail.html" style="cursor:pointer; text-decoration: none;">
+                    <span class="alert-row-dot warning"></span>
+                    <div class="alert-row-body">
+                        <span class="alert-row-title">관련 개선조치 imp-32 — 누출 흡착재 보충</span>
+                        <span class="alert-row-meta">2026-02-10 발생 · 진행률 80%</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./js/layout.js"></script>
+</body>
+</html>
