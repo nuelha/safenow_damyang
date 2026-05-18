@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -530,7 +530,7 @@
                         <td style="text-align:center;"><span class="industry-chip construction">건설</span></td>
                         <td style="text-align:center;"><span class="sub-score high">88</span></td>
                         <td style="text-align:center;"><span class="qual-chip qualified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 적격</span></td>
-                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 목록 (CON01-L) - (주)담양건설 참여')">5건</a></span></td>
+                        <td style="text-align:center;"><span class="sub-contracts"><a href="#" onclick="event.stopPropagation(); window.location.href='contractor.html'">5건</a></span></td>
                         <td style="text-align:center;"><a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.openDetail('damyang-c')">상세</a></td>
                     </tr>
                     <tr class="row-link" onclick="window.openDetail('honam-safe')">
@@ -996,7 +996,7 @@
                         <div class="budget">${c.budget}</div>
                         <div><span class="ins-status-chip ${c.result === '완료' ? 'done' : (c.result === '결재 차단' ? 'overdue' : 'progress')}" style="padding:2px 8px; font-size:11px; font-weight:700; border-radius:5px; ${c.result === '완료' ? 'background:var(--status-success-bg);color:var(--status-success-fg);border:1px solid var(--status-success-border);' : c.result === '결재 차단' ? 'background:var(--status-danger-bg);color:var(--status-danger-fg);border:1px solid var(--status-danger-border);' : 'background:var(--status-info-bg);color:var(--status-info-fg);border:1px solid var(--status-info-border);'}">${c.result}</span></div>
                         <div style="text-align:right;">
-                            <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.DYLayout._soon(event, '도급계약 상세 (CON01-D)')">상세</a>
+                            <a class="table-action-btn" href="#" onclick="event.stopPropagation(); window.location.href='con-detail.html'">상세</a>
                         </div>
                     </div>
                 `).join('')

@@ -103,9 +103,8 @@
             { id: 'sta-status',   label: '종합 통계',       icon: 'chart', href: 'sta-status.html',   screen: 'STA01-V' },
             { id: 'sta-module',   label: '모듈별 통계',     icon: 'chart', href: 'sta-module.html',   screen: 'STA02-V' },
             { id: 'sta-settings', label: '통계 설정',       icon: 'cog',   href: 'sta-settings.html', screen: 'STA03-S' },
-            // 제증명 (CRT / SFR-021)
+            // 제증명 (CRT / SFR-021) — CRT02-F 발급 폼은 CRT01-V의 [+ 증명서 발급] 버튼으로 진입 (다른 폼들과 일관)
             { id: 'crt-history',  label: '제증명 발급 이력', icon: 'file',  href: 'crt-status.html',   screen: 'CRT01-V' },
-            { id: 'crt-issue',    label: '증명서 발급',      icon: 'file',  href: 'crt-form.html',     screen: 'CRT02-F' },
             { id: 'crt-settings', label: '제증명 설정',      icon: 'cog',   href: 'crt-settings.html', screen: 'CRT03-S' },
         ]},
 
