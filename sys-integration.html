@@ -495,11 +495,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>군수 / 부군수</td><td><strong>CEO</strong></td><td class="center">1</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 군수/CEO')">수정</button></td></tr>
-                        <tr><td>실장 · 과장 · 단장 · 소장</td><td><strong>GM</strong></td><td class="center">2</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 과장/GM')">수정</button></td></tr>
+                        <tr><td>군수 <span style="font-size:11px; color:var(--text-gray); margin-left:6px;">(경영책임자 + 안전보건관리책임자)</span></td><td><strong>CEO</strong></td><td class="center">1</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 군수/CEO')">수정</button></td></tr>
+                        <tr><td>부군수 <span style="font-size:11px; color:var(--main-dark); margin-left:6px;">(분임 안전보건관리책임자 — 결재 시 군수와 동등)</span></td><td><strong>CEO</strong></td><td class="center">1</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 부군수/CEO')">수정</button></td></tr>
+                        <tr><td>실장 · 국장 · 과장 · 단장 · 소장</td><td><strong>GM</strong></td><td class="center">2</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 과장/GM')">수정</button></td></tr>
+                        <tr><td>읍장 · 면장 <span style="font-size:11px; color:var(--text-gray); margin-left:6px;">(12개 읍면 관리감독자)</span></td><td><strong>GM</strong></td><td class="center">2</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 읍면장/GM')">수정</button></td></tr>
                         <tr><td>팀장</td><td><strong>SM</strong></td><td class="center">3</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — 팀장/SM')">수정</button></td></tr>
-                        <tr><td>안전보건담당자</td><td><strong>SHM</strong></td><td class="center">3</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — SHM')">수정</button></td></tr>
-                        <tr><td>그 외</td><td><strong>WKR</strong></td><td class="center">4</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — WKR')">수정</button></td></tr>
+                        <tr><td>안전보건담당자 <span style="font-size:11px; color:var(--text-gray); margin-left:6px;">(부서별 SHM)</span></td><td><strong>SHM</strong></td><td class="center">3</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — SHM')">수정</button></td></tr>
+                        <tr><td>그 외 (현업 종사자 포함)</td><td><strong>WKR</strong></td><td class="center">4</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, '매핑 수정 — WKR')">수정</button></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -549,10 +551,10 @@
                         <tr><th class="center">FMS 코드</th><th>본 시스템 분류</th><th class="center">관리</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td class="center"><code>A01</code></td><td>공중이용시설 / 1종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A01 매핑 수정')">수정</button></td></tr>
-                        <tr><td class="center"><code>A02</code></td><td>공중이용시설 / 2종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A02 매핑 수정')">수정</button></td></tr>
-                        <tr><td class="center"><code>B01</code></td><td>원료·제조물 / 1종</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'B01 매핑 수정')">수정</button></td></tr>
-                        <tr><td class="center"><code>C01</code></td><td>공중교통수단</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'C01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>A01</code></td><td>공중이용시설 / 시설물안전법 (도로교량·상하수도·건축물) — 2026 종합계획 25개소</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>A02</code></td><td>공중이용시설 / 실내공기질법 (체육관·전시·업무·기타) — 14개소</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'A02 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>B01</code></td><td>원료·제조물 / 유해화학물질 (염소투입 등) — 1개소</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'B01 매핑 수정')">수정</button></td></tr>
+                        <tr><td class="center"><code>B02</code></td><td>원료·제조물 / 의약품·의료기기 (보건소·보건지소·보건진료소) — 24개소</td><td class="center"><button class="sys-mini-btn" type="button" onclick="window.DYLayout._soon(event, 'B02 매핑 수정')">수정</button></td></tr>
                     </tbody>
                 </table>
                 <div style="padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; font-size:13px; color: var(--text-gray); border-top: 1px solid var(--card-line);">
