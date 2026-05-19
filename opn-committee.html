@@ -116,7 +116,7 @@
         .agenda-chip.decision { background: var(--status-warning-bg); color: var(--status-warning-fg); border: 1px solid var(--status-warning-border); }
     </style>
 </head>
-<body data-dy-page="opn-committee" data-page-title="산업안전보건위원회" data-page-subtitle="산안법 §24 위원회 분기 1회 의무 — 노사 동수 위원 구성 및 회의 운영 (결정사항 #20)">
+<body data-dy-page="opn-committee" data-page-title="산업안전보건위원회 (OPN03-L)" data-page-subtitle="산안법 §24 / 시행령 §34~39 · 분기 1회 (연 4회) · 근로자위원 4명 + 사용자위원 4명 동수">
     <main>
 
         <!-- ─── 외부 연동 위젯 (의무 충족 알림) ─── -->
@@ -141,8 +141,8 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </span>
                 </div>
-                <div class="opn-kpi-value">12<span class="small">명</span></div>
-                <div class="opn-kpi-sub">노 6명 · 사 6명 (동수)</div>
+                <div class="opn-kpi-value">8<span class="small">명</span></div>
+                <div class="opn-kpi-sub">근로자위원 4명 + 사용자위원 4명 (동수)</div>
             </div>
             <div class="opn-kpi-cell">
                 <div class="opn-kpi-head">
@@ -182,36 +182,43 @@
         <!-- ─── ② 위원 구성 ─── -->
         <section class="committee-card">
             <div class="card-header" style="border-bottom: 1px solid var(--card-line);">
-                <h2 class="card-title">위원 구성 (현재 임기 2025-04-01 ~ 2027-03-31)</h2>
+                <h2 class="card-title">위원 구성 (산안법 §24 / 시행령 §34~39 · 임기 2025-04 ~ 2027-03)</h2>
                 <button class="btn btn-outline btn-sm" type="button" onclick="window.DYLayout._soon(event, '위원 명단 관리')">위원 관리</button>
             </div>
             <div class="committee-grid">
                 <div class="committee-block">
-                    <div class="committee-block-title">사용자측 위원 (6명)</div>
-                    <div class="committee-block-count">6<span class="small">명</span></div>
+                    <div class="committee-block-title">사용자위원 (4명)</div>
+                    <div class="committee-block-count">4<span class="small">명</span></div>
                     <div class="committee-block-list">
-                        <strong>위원장</strong>: 홍길동 (군수) · 의장 권한<br>
-                        <strong>안전보건 책임자</strong>: 김안전 · 안전건설과장<br>
-                        <strong>실·과·단·소장</strong>: 박시설·이환경·정상수·강보건
+                        <strong>위원장</strong>: 담양군수 · 의장 권한<br>
+                        <strong>안전보건책임자</strong>: 재난안전과장<br>
+                        <strong>실·과·단·소장</strong> 중 2명: 기획예산실장·행정과장
                     </div>
                 </div>
                 <div class="committee-block">
-                    <div class="committee-block-title">근로자측 위원 (6명)</div>
-                    <div class="committee-block-count">6<span class="small">명</span></div>
+                    <div class="committee-block-title">근로자위원 (4명)</div>
+                    <div class="committee-block-count">4<span class="small">명</span></div>
                     <div class="committee-block-list">
-                        <strong>근로자 대표</strong>: 박근로 (자치행정과 노조 대표)<br>
-                        <strong>현장 직원</strong>: 김민수·이지영·최성호·정하나·신예지<br>
-                        <span style="color:var(--text-gray);">전체 부서 균등 배분</span>
+                        <strong>근로자 대표</strong>: 박근로 (담양군 공무원노조 대표)<br>
+                        <strong>현장 직원 (현업종사자)</strong>: 산림정원과·공공시설사업소·물순환사업소 대표 3명<br>
+                        <span style="color:var(--text-gray);">동수 원칙 (사용자위원과 동일)</span>
                     </div>
                 </div>
                 <div class="committee-block">
-                    <div class="committee-block-title">간사 / 옵저버</div>
-                    <div class="committee-block-count">2<span class="small">명</span></div>
+                    <div class="committee-block-title">간사 / 위탁 전문가</div>
+                    <div class="committee-block-count">3<span class="small">명</span></div>
                     <div class="committee-block-list">
-                        <strong>간사</strong>: 박안전 (안전건설과 SHM)<br>
-                        <strong>옵저버</strong>: 외부 안전보건 전문가 1명<br>
-                        <span style="color:var(--text-gray);">필요시 외부 자문 위원 초청</span>
+                        <strong>간사</strong>: 김안전 (재난안전과 중대재해팀 SHM)<br>
+                        <strong>위탁 안전관리자</strong>: 대한산업안전협회 1명<br>
+                        <strong>위탁 보건관리자</strong>: 김병원산업보건센터 1명
                     </div>
+                </div>
+            </div>
+            <div style="padding:14px 22px; border-top:1px solid var(--card-line); background:rgba(32,159,132,0.04);">
+                <div style="font-size:12px; font-weight:700; color:var(--main-dark2); margin-bottom:6px;">법정 심의·의결 안건</div>
+                <div style="font-size:12.5px; color:var(--text-gray); line-height:1.6;">
+                    ① 산재예방계획 · ② 안전보건관리규정 변경 · ③ 안전보건교육 · ④ 작업환경 개선
+                    <span style="margin-left:8px; color:var(--text-lightgray);">· 출처: 산안법 시행령 제35조</span>
                 </div>
             </div>
         </section>

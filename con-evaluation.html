@@ -200,19 +200,19 @@
         <!-- ─── 평가서 정보 ─── -->
         <section class="eval-info-card">
             <div class="eval-info-body">
-                <span class="eval-info-title">📋 공사 안전관리 평가서 (CONSTRUCTION_SAFETY)</span>
-                <span class="eval-info-meta">평가항목 <strong>8개</strong> · 만점 <strong>100점</strong> · 적격기준 <strong>70점 이상</strong></span>
+                <span class="eval-info-title">📋 도급사업 안전보건수준평가서 (2026 종합계획 붙임5)</span>
+                <span class="eval-info-meta">평가항목 <strong>4개 분야 12개 세부</strong> · 만점 <strong>100점</strong> · 적격기준 <strong>70점 이상</strong> · 채점 <strong>우수·보통·미흡</strong> 3단계</span>
             </div>
         </section>
 
         <!-- ─── 실시간 합계 헤더 (sticky) ─── -->
         <section class="eval-total-bar">
             <div class="eval-total-info">
-                <span class="eval-total-num" id="total-num">85</span>
+                <span class="eval-total-num" id="total-num">84</span>
                 <span class="eval-total-max">/ 100점</span>
             </div>
             <div class="eval-total-progress-track">
-                <div class="eval-total-progress-fill" id="total-fill" style="width: 85%;"></div>
+                <div class="eval-total-progress-fill" id="total-fill" style="width: 84%;"></div>
             </div>
             <span class="eval-result-badge qualified" id="total-result">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -220,157 +220,232 @@
             </span>
         </section>
 
-        <!-- ─── 평가 항목 ─── -->
+        <!-- ─── 평가 항목 (PRD §2.11 4분야 12세부) ─── -->
         <section style="margin-top: 16px;">
-            <!-- 항목 1 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">1</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">안전보건관리계획 수립 여부<span class="eval-item-max">20점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 안전관리계획서 제출 + 적정성 검토 (위험요인 분석 + 안전대책 + 비상대응 절차 포함)
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="20" value="18" data-max="20">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">20</span>
-                </div>
+            <!-- ── A. 안전보건관리체제 (20점) ── -->
+            <div style="margin-bottom:10px; padding:10px 16px; background:linear-gradient(135deg, var(--main-dark) 0%, var(--main) 100%); color:white; border-radius:8px 8px 0 0; font-weight:700;">
+                A. 안전보건관리체제 <span style="opacity:0.85; font-weight:500;">— 20점</span>
             </div>
-
-            <!-- 항목 2 -->
             <div class="eval-item">
                 <div class="eval-item-head">
-                    <span class="eval-item-no">2</span>
+                    <span class="eval-item-no">A1</span>
                     <div class="eval-item-body">
-                        <div class="eval-item-title">안전관리자 선임<span class="eval-item-max">15점</span></div>
+                        <div class="eval-item-title">일반원칙<span class="eval-item-max">5점</span></div>
                         <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 법정 자격 보유 안전관리자 선임 여부 + 경력 (산안법 §17 자격 충족)
+                            <strong>평가 기준:</strong> 도급·수급인의 안전보건방침 적정 여부 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
                         </div>
                     </div>
                 </div>
                 <div class="eval-item-input">
                     <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="14" data-max="15">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">15</span>
-                </div>
-            </div>
-
-            <!-- 항목 3 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">3</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">안전교육 이수<span class="eval-item-max">15점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 정기 안전교육 이수 증빙 + 신규 채용자 안전교육 + 특별교육 (위험작업 종사자)
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="13" data-max="15">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">15</span>
-                </div>
-            </div>
-
-            <!-- 항목 4 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">4</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">최근 3년 산재 이력<span class="eval-item-max">15점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 중대재해 0건 + 일반 산재 발생률 (점수 감점 — 1건당 -3점)
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="15" value="12" data-max="15">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">15</span>
-                </div>
-            </div>
-
-            <!-- 항목 5 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">5</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">위험성평가 실시 능력<span class="eval-item-max">10점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 사전 위험성평가 실시 사례 + 위험요인 식별 + 감소대책 수립 능력
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="9" data-max="10">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">10</span>
-                </div>
-            </div>
-
-            <!-- 항목 6 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">6</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">개인보호구 (PPE) 지급·관리<span class="eval-item-max">10점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 작업별 적정 PPE 지급 + 사용 점검 기록 + 교체 주기 준수
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="8" data-max="10">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">10</span>
-                </div>
-            </div>
-
-            <!-- 항목 7 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">7</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">비상대응 체계<span class="eval-item-max">10점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 비상연락망 + 응급처치 가능 인력 + 비상장비 비치 + 훈련 실시 이력
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="7" data-max="10">
-                    <span class="eval-score-divider">/</span>
-                    <span class="eval-score-max">10</span>
-                </div>
-            </div>
-
-            <!-- 항목 8 -->
-            <div class="eval-item">
-                <div class="eval-item-head">
-                    <span class="eval-item-no">8</span>
-                    <div class="eval-item-body">
-                        <div class="eval-item-title">현장 안전관리 인력 보유<span class="eval-item-max">5점</span></div>
-                        <div class="eval-item-criteria">
-                            <strong>평가 기준:</strong> 상시 현장 안전관리 인력 1명 이상 + TBM 진행 능력
-                        </div>
-                    </div>
-                </div>
-                <div class="eval-item-input">
-                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
-                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="4" data-max="5">
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="5" data-max="5">
                     <span class="eval-score-divider">/</span>
                     <span class="eval-score-max">5</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">A2</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">계획수립<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 산업재해예방 활동에 대한 수급인의 이행계획 적정 여부 · <strong>채점:</strong> 우수 10 / 보통 5 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="10" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">A3</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">역할 및 책임<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 이행계획 추진을 위한 구성원의 역할 분담 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="3" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+
+            <!-- ── B. 실행수준 (40점) ── -->
+            <div style="margin-top:16px; margin-bottom:10px; padding:10px 16px; background:linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color:white; border-radius:8px 8px 0 0; font-weight:700;">
+                B. 실행수준 <span style="opacity:0.85; font-weight:500;">— 40점</span>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">B1</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">위험성평가<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 위험성평가 실시 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="5" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">B2</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">안전점검<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 안전점검 및 모니터링 (보호구 착용 확인 포함) · <strong>채점:</strong> 우수 10 / 보통 5 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="10" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">B3</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">이행확인<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 안전조치 이행여부 확인 · <strong>채점:</strong> 우수 10 / 보통 5 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="5" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">B4</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">교육 및 기록<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 안전보건교육 이수 + 기록보존 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="5" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">B5</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">안전작업허가<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 유해·위험작업에 대한 안전작업허가 이행 수준 · <strong>채점:</strong> 우수 10 / 보통 5 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="10" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+
+            <!-- ── C. 운영관리 (20점) ── -->
+            <div style="margin-top:16px; margin-bottom:10px; padding:10px 16px; background:linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); color:white; border-radius:8px 8px 0 0; font-weight:700;">
+                C. 운영관리 <span style="opacity:0.85; font-weight:500;">— 20점</span>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">C1</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">신호 및 연락체계<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 비상연락망 + 신호 체계 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="3" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">C2</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">위험물질 및 설비<span class="eval-item-max">10점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 위험물질·설비 관리 상태 · <strong>채점:</strong> 우수 10 / 보통 5 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="10" value="5" data-max="10">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">10</span>
+                </div>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">C3</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">비상대책<span class="eval-item-max">5점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>평가 기준:</strong> 비상대응 절차 + 훈련 실시 · <strong>채점:</strong> 우수 5 / 보통 3 / 미흡 1
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="5" value="3" data-max="5">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">5</span>
+                </div>
+            </div>
+
+            <!-- ── D. 재해발생 수준 (20점) ── -->
+            <div style="margin-top:16px; margin-bottom:10px; padding:10px 16px; background:linear-gradient(135deg, #dc2626 0%, #f87171 100%); color:white; border-radius:8px 8px 0 0; font-weight:700;">
+                D. 재해발생 수준 <span style="opacity:0.85; font-weight:500;">— 20점</span>
+            </div>
+            <div class="eval-item">
+                <div class="eval-item-head">
+                    <span class="eval-item-no">D1</span>
+                    <div class="eval-item-body">
+                        <div class="eval-item-title">산업재해 현황 (최근 3년)<span class="eval-item-max">20점</span></div>
+                        <div class="eval-item-criteria">
+                            <strong>채점 기준:</strong><br>
+                            • <strong style="color:var(--status-success-fg);">우수 (20점):</strong> 최근 휴업 제외 2년 동안 무재해 또는 3년 연속 동종업종 평균 재해율 미만<br>
+                            • <strong style="color:var(--status-warning-fg);">보통 (10점):</strong> 2년 연속 동종업종 평균재해율 미만<br>
+                            • <strong style="color:var(--status-danger-fg);">미흡 (1점):</strong> 최근 2년 동안 사망재해 발생 또는 2년 동안 동종업종 평균재해율 이상
+                        </div>
+                    </div>
+                </div>
+                <div class="eval-item-input">
+                    <span style="font-size:13px; color:var(--text-gray); font-weight:600;">점수 입력</span>
+                    <input class="eval-score-input score-input" type="number" min="0" max="20" value="20" data-max="20">
+                    <span class="eval-score-divider">/</span>
+                    <span class="eval-score-max">20</span>
                 </div>
             </div>
         </section>

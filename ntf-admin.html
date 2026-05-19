@@ -158,8 +158,8 @@
     </style>
 </head>
 <body data-dy-page="sys-notif"
-      data-page-title="알림 운영"
-      data-page-subtitle="적재 현황·실패 큐 (NTF03-S v1.1 — 결정사항 #24)">
+      data-page-title="알림 운영 (NTF03-S)"
+      data-page-subtitle="알림 카테고리 4종 (긴급·결재·시기도래·미이행) · 적재 현황·실패 큐 — PRD §2.7">
     <main>
 
         <!-- ─── 상단 외부 연동 상태 위젯 (v1.1 — 결정사항 #24)
@@ -244,34 +244,92 @@
                 </div>
                 <div class="ntf-bar-chart">
                     <div class="ntf-bar-row">
-                        <span class="name">결재 요청</span>
+                        <span class="name">결재 안내 (DECISION)</span>
                         <div class="bar-track"><div class="bar-fill" style="width: 92%;"></div></div>
                         <span class="count">1,142건</span>
                     </div>
                     <div class="ntf-bar-row">
-                        <span class="name">위험성평가</span>
+                        <span class="name">시기 도래 (SCHEDULED)</span>
                         <div class="bar-track"><div class="bar-fill" style="width: 65%;"></div></div>
                         <span class="count">812건</span>
                     </div>
                     <div class="ntf-bar-row">
-                        <span class="name">도급계약</span>
+                        <span class="name">미이행 (MONITORING)</span>
                         <div class="bar-track"><div class="bar-fill" style="width: 48%;"></div></div>
                         <span class="count">598건</span>
                     </div>
                     <div class="ntf-bar-row">
-                        <span class="name">이행관리</span>
-                        <div class="bar-track"><div class="bar-fill" style="width: 32%;"></div></div>
-                        <span class="count">402건</span>
-                    </div>
-                    <div class="ntf-bar-row">
-                        <span class="name">개선조치</span>
-                        <div class="bar-track"><div class="bar-fill" style="width: 26%;"></div></div>
-                        <span class="count">328건</span>
-                    </div>
-                    <div class="ntf-bar-row">
-                        <span class="name">시스템 (운영자)</span>
+                        <span class="name">긴급 (EMERGENCY)</span>
                         <div class="bar-track"><div class="bar-fill" style="width: 8%;"></div></div>
                         <span class="count">94건</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카테고리 정의 (PRD §2.7) -->
+            <div class="ntf-card">
+                <div class="ntf-card-head">
+                    <div>
+                        <h3>알림 카테고리 정의 (PRD §2.7 — 4개 카테고리)</h3>
+                        <div class="desc">우선순위·전달 방식·해당 트리거</div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:14px 18px;">
+                    <!-- EMERGENCY -->
+                    <div style="border:1px solid var(--card-line); border-left:3px solid #dc2626; border-radius:8px; padding:12px 14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <strong style="color:#dc2626; font-size:13.5px;">긴급 (EMERGENCY)</strong>
+                            <span style="font-size:11px; color:var(--text-gray);">우선순위 1 · 즉시 알림</span>
+                        </div>
+                        <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-gray); line-height:1.7;">
+                            <li>중대산업재해 발생 (사망/부상)</li>
+                            <li>중대시민재해 발생</li>
+                            <li>작업중지요청 접수</li>
+                            <li>급박한 위험 (추락/붕괴/화학물질 누출 등 7가지)</li>
+                            <li>외부 시스템 인증 만료</li>
+                        </ul>
+                    </div>
+                    <!-- DECISION -->
+                    <div style="border:1px solid var(--card-line); border-left:3px solid #2563eb; border-radius:8px; padding:12px 14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <strong style="color:#2563eb; font-size:13.5px;">결재 안내 (DECISION)</strong>
+                            <span style="font-size:11px; color:var(--text-gray);">우선순위 2 · 온나라 팝업</span>
+                        </div>
+                        <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-gray); line-height:1.7;">
+                            <li>위험성평가 결재요청</li>
+                            <li>산업재해예방계획 수립 결재 (매년 2월)</li>
+                            <li>안전관리계획 수립 결재 (매년 2월)</li>
+                            <li>예산 편성 결재 · 도급계약 결재</li>
+                            <li>안전보건방침 변경 결재</li>
+                        </ul>
+                    </div>
+                    <!-- SCHEDULED -->
+                    <div style="border:1px solid var(--card-line); border-left:3px solid var(--main); border-radius:8px; padding:12px 14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <strong style="color:var(--main-dark2); font-size:13.5px;">시기 도래 (SCHEDULED)</strong>
+                            <span style="font-size:11px; color:var(--text-gray);">우선순위 3 · 정기 알림</span>
+                        </div>
+                        <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-gray); line-height:1.7;">
+                            <li>위험성평가 정기 (연 1회)</li>
+                            <li>사업장 순회점검 (월 2회 안전 / 월 1회 보건)</li>
+                            <li>합동점검 (분기 1회) · 의무이행 정기점검 (반기 1회)</li>
+                            <li>산업안전보건위원회 (분기 1회)</li>
+                            <li>안전보건교육 (반기 6/12시간) · 관리감독자 교육 (연 16시간)</li>
+                        </ul>
+                    </div>
+                    <!-- MONITORING -->
+                    <div style="border:1px solid var(--card-line); border-left:3px solid #f59e0b; border-radius:8px; padding:12px 14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <strong style="color:#d97706; font-size:13.5px;">미이행 (MONITORING)</strong>
+                            <span style="font-size:11px; color:var(--text-gray);">우선순위 4 · 감시 알림</span>
+                        </div>
+                        <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-gray); line-height:1.7;">
+                            <li>안전관리자 미달 (공사 50억+ 결재 차단)</li>
+                            <li>자격증 만료 임박 (90일 이내)</li>
+                            <li>의무이행 기한 초과</li>
+                            <li>개선조치 기한 초과</li>
+                            <li>도급사업 점검 미실시</li>
+                        </ul>
                     </div>
                 </div>
             </div>

@@ -291,7 +291,7 @@
         }
     </style>
 </head>
-<body data-dy-page="pln-list" data-page-title="안전계획 — 캘린더" data-page-subtitle="안전계획 항목 일정 시각화">
+<body data-dy-page="pln-status" data-page-title="안전계획 캘린더 (PLN03-V)" data-page-subtitle="2026 종합계획 일정 마스터 — 매월/분기/반기/연간 일정 시각화">
     <main>
 
         <!-- ─── 서브 탭 ─── -->
@@ -458,43 +458,52 @@
         };
 
         /* ─── 이벤트 데이터 (2026년 전체) ─── */
+        // PRD §2.15 — 2026 종합계획 일정 마스터 (매월/분기/반기/연간)
         const EVENTS = [
-            // 5월
-            { date: '2026-05-05', cat: 'inspection', title: '군청 청사 정기 점검 (2Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
-            { date: '2026-05-15', cat: 'education', title: '정수장 종사자 안전보건교육', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
-            { date: '2026-05-15', cat: 'inspection', title: '농기계 임대사업소 안전점검', target: '농기계 임대사업소', assignee: '정농업', dept: '농업기술센터' },
-            { date: '2026-05-18', cat: 'inspection', title: '청사 정기 안전점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
-            { date: '2026-05-20', cat: 'contract', title: '정수장 증축 협의체 회의 (예정)', target: '상수도사업소', assignee: '신상수', dept: '상수도사업소' },
-            { date: '2026-05-25', cat: 'contract', title: '체육관 리모델링 정기 협의', target: '군민체육관', assignee: '정하나', dept: '문화관광과' },
-            { date: '2026-05-22', cat: 'inspection', title: '담양읍 행정복지센터 정기 점검', target: '담양읍 행정복지센터', assignee: '서지역', dept: '담양읍사무소' },
-            { date: '2026-05-28', cat: 'budget', title: '안전관리 예산 집행 (1H 정산)', target: '군청 청사', assignee: '박재무', dept: '시설관리과' },
-            { date: '2026-05-30', cat: 'inspection', title: '문화관광시설 분기 안전점검', target: '문화관광과 산하', assignee: '정하나', dept: '문화관광과' },
+            // ─ 2월 (연간 수립 기한) ─
+            { date: '2026-02-03', cat: 'contract', title: '2026 안전보건경영방침 시행 (군수 결재)', target: '담양군 전체', assignee: '담양군수', dept: '재난안전과' },
+            { date: '2026-02-28', cat: 'contract', title: '산업재해예방계획 수립 마감 (전 부서)', target: '담양군 전체', assignee: '각 부서장', dept: '재난안전과' },
+            { date: '2026-02-28', cat: 'contract', title: '안전계획 수립 마감 (시민재해 10개 부서)', target: '공중이용시설', assignee: '시설 관리부서', dept: '재난안전과' },
+            { date: '2026-02-28', cat: 'risk_assessment', title: '위험성평가 용역 (공공시설물) 발주', target: '62개 시설', assignee: '재난과장', dept: '재난안전과' },
+            { date: '2026-02-28', cat: 'budget', title: '안전·보건 예산편성 마감', target: '전 부서', assignee: '각 부서', dept: '재난안전과' },
 
-            // 6월
-            { date: '2026-06-05', cat: 'budget', title: '체육관 보호장비 보충 구매', target: '군민체육관', assignee: '정하나', dept: '문화관광과' },
-            { date: '2026-06-10', cat: 'inspection', title: '보건소 자율 안전점검 (2회차)', target: '보건소 청사', assignee: '강보건', dept: '보건소' },
-            { date: '2026-06-15', cat: 'education', title: '도급사 합동 안전교육', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
-            { date: '2026-06-20', cat: 'risk_assessment', title: '청사 위험성평가 보완', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
-            { date: '2026-06-25', cat: 'inspection', title: '소방설비 분기 점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
-            { date: '2026-06-30', cat: 'education', title: '전직원 안전보건교육', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
-            { date: '2026-06-30', cat: 'inspection', title: '청사 정기 안전점검 (2Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
-            { date: '2026-06-30', cat: 'budget', title: '안전관리 예산 집행 (1H)', target: '전 부서', assignee: '박재무', dept: '안전건설과' },
+            // ─ 4월 (5월 직전 1회) ─
+            { date: '2026-04-10', cat: 'inspection', title: '사업장 순회점검(안전) 1회차', target: '본청·사업소', assignee: '대한산업안전협회', dept: '재난안전과' },
+            { date: '2026-04-15', cat: 'inspection', title: '사업장 순회점검(안전) 2회차', target: '직속기관·읍면', assignee: '대한산업안전협회', dept: '재난안전과' },
+            { date: '2026-04-20', cat: 'inspection', title: '사업장 순회점검(보건) 4월', target: '본청', assignee: '김병원산업보건센터', dept: '재난안전과' },
+            { date: '2026-04-28', cat: 'risk_assessment', title: '신계정수장 위험성평가 정기', target: '신계 정수장', assignee: '김안전', dept: '물순환사업소' },
 
-            // 4월
-            { date: '2026-04-15', cat: 'contract', title: '청사 보수공사 협의체', target: '군청 청사', assignee: '박안전', dept: '안전건설과' },
-            { date: '2026-04-22', cat: 'risk_assessment', title: '농기계 임대사업소 위험성평가', target: '농기계 임대사업소', assignee: '정농업', dept: '농업기술센터' },
-            { date: '2026-04-28', cat: 'inspection', title: '죽녹원 시설물 정기 안전점검', target: '죽녹원', assignee: '신예지', dept: '문화관광과' },
-            { date: '2026-04-30', cat: 'risk_assessment', title: '청사 위험성평가 정기', target: '군청 청사', assignee: '김안전', dept: '시설관리과' },
-            { date: '2026-04-30', cat: 'inspection', title: '청사 소방설비 점검', target: '군청 청사', assignee: '한시설', dept: '시설관리과' },
+            // ─ 5월 (이번 달) ─
+            { date: '2026-05-05', cat: 'inspection', title: '사업장 순회점검(보건) 5월', target: '본청', assignee: '김병원산업보건센터', dept: '재난안전과' },
+            { date: '2026-05-08', cat: 'inspection', title: '도로교량 정기점검 (20개소)', target: '도로교량 20개소', assignee: '신과장', dept: '건설과' },
+            { date: '2026-05-12', cat: 'inspection', title: '사업장 순회점검(안전) 1회차', target: '사업소·읍면', assignee: '대한산업안전협회', dept: '재난안전과' },
+            { date: '2026-05-15', cat: 'education', title: '담양군 안전보건 점검의 날 (월 1회)', target: '전 부서', assignee: '각 부서', dept: '재난안전과' },
+            { date: '2026-05-20', cat: 'contract', title: '안전보건협의체 (도급사업) 5월', target: '하수처리 보수공사', assignee: '물순환소장', dept: '물순환사업소' },
+            { date: '2026-05-26', cat: 'inspection', title: '사업장 순회점검(안전) 2회차', target: '본청', assignee: '대한산업안전협회', dept: '재난안전과' },
 
-            // 7월
-            { date: '2026-07-10', cat: 'inspection', title: '소방설비 정기점검', target: '담양읍 행정복지센터', assignee: '이지영', dept: '담양읍사무소' },
-            { date: '2026-07-20', cat: 'education', title: '동절기 대비 안전교육', target: '전 부서', assignee: '박안전', dept: '안전건설과' },
+            // ─ 6월 (분기 + 반기) ─
+            { date: '2026-06-05', cat: 'inspection', title: '사업장 순회점검(보건) 6월', target: '직속기관', assignee: '김병원산업보건센터', dept: '재난안전과' },
+            { date: '2026-06-12', cat: 'contract', title: '산업안전보건위원회 Q2 (분기 1회)', target: '담양군청', assignee: '담양군수 (위원장)', dept: '재난안전과' },
+            { date: '2026-06-15', cat: 'inspection', title: '도급사업 합동점검 Q2 (분기 1회)', target: '도급공사 전체', assignee: '발주부서 + 수급인', dept: '재난안전과' },
+            { date: '2026-06-25', cat: 'education', title: '현업종사자 안전보건교육 (반기 12시간) 마감', target: '현업종사자 249명', assignee: '각 부서', dept: '재난안전과' },
+            { date: '2026-06-30', cat: 'inspection', title: '의무이행 정기점검 (반기 1회)', target: '전 부서', assignee: '전문기관 위탁', dept: '재난안전과' },
+            { date: '2026-06-30', cat: 'inspection', title: '안전계획 이행점검 — 상반기 (시민재해 10부서)', target: '공중이용시설', assignee: '시설 관리부서', dept: '재난안전과' },
+            { date: '2026-06-30', cat: 'budget', title: '안전관리 예산 집행 (1H)', target: '전 부서', assignee: '각 부서', dept: '재난안전과' },
 
-            // 9월
-            { date: '2026-09-15', cat: 'risk_assessment', title: '증축공사 수시 위험성평가', target: '상수도사업소 본관', assignee: '신상수', dept: '상수도사업소' },
-            { date: '2026-09-30', cat: 'inspection', title: '청사 정기 안전점검 (3Q)', target: '군청 청사', assignee: '이안전', dept: '시설관리과' },
-            { date: '2026-09-30', cat: 'education', title: '안전관리자 정기교육', target: '안전건설과', assignee: '박안전', dept: '안전건설과' },
+            // ─ 8월 (반기 보고) ─
+            { date: '2026-08-31', cat: 'contract', title: '담양군 상반기 추진실적 보고 (군수)', target: '담양군청', assignee: '중대재해팀', dept: '재난안전과' },
+            { date: '2026-08-15', cat: 'inspection', title: '유해인자 노출 근로자 특수건강검진', target: '현업 249명', assignee: '김병원산업보건센터', dept: '재난안전과' },
+
+            // ─ 9월 (분기 + 연간) ─
+            { date: '2026-09-11', cat: 'contract', title: '산업안전보건위원회 Q3 (분기 1회)', target: '담양군청', assignee: '담양군수 (위원장)', dept: '재난안전과' },
+            { date: '2026-09-15', cat: 'inspection', title: '도급사업 합동점검 Q3', target: '도급공사 전체', assignee: '발주부서 + 수급인', dept: '재난안전과' },
+            { date: '2026-09-30', cat: 'education', title: '관리감독자 안전보건교육 (연 16시간)', target: '실과단소장 39명', assignee: '대한산업안전협회', dept: '재난안전과' },
+
+            // ─ 12월 (분기 + 반기 + 연말) ─
+            { date: '2026-12-11', cat: 'contract', title: '산업안전보건위원회 Q4 (분기 1회)', target: '담양군청', assignee: '담양군수 (위원장)', dept: '재난안전과' },
+            { date: '2026-12-15', cat: 'inspection', title: '도급사업 합동점검 Q4', target: '도급공사 전체', assignee: '발주부서 + 수급인', dept: '재난안전과' },
+            { date: '2026-12-20', cat: 'inspection', title: '의무이행 정기점검 (반기 1회 · 하반기)', target: '전 부서', assignee: '전문기관 위탁', dept: '재난안전과' },
+            { date: '2026-12-30', cat: 'contract', title: '하반기 추진실적 보고 (군수)', target: '담양군청', assignee: '중대재해팀', dept: '재난안전과' },
         ];
 
         /* ─── 캘린더 렌더 ─── */
