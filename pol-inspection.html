@@ -10,6 +10,30 @@
     <style>
         /* ─── POL04-V 전용 ─── */
 
+        /* 서브 탭 (safety-policy와 동일 패턴) */
+        .pol-tabs {
+            display: flex; align-items: center; gap: 4px;
+            border-bottom: 1px solid var(--card-line);
+        }
+        .pol-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all .15s ease;
+            text-decoration: none;
+        }
+        .pol-tab:hover { color: var(--main-dark); }
+        .pol-tab.is-active {
+            color: var(--main-dark2);
+            border-bottom-color: var(--main);
+        }
+
         /* KPI 4분할 */
         .pol-kpi-grid {
             display: grid;
@@ -113,8 +137,28 @@
         }
     </style>
 </head>
-<body data-dy-page="pol-check" data-page-title="경영방침 점검" data-page-subtitle="분기·반기 정기 점검 및 결재 관리 (POL04-V)">
+<body data-dy-page="safety-policy" data-page-title="경영방침 점검" data-page-subtitle="분기·반기 정기 점검 및 결재 관리 (POL04-V)">
     <main>
+
+        <!-- ─── 서브 탭 ─── -->
+        <div class="pol-tabs" role="tablist">
+            <a class="pol-tab" href="safety-policy.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                현황
+            </a>
+            <a class="pol-tab" href="pol-history.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                방침 이력
+            </a>
+            <button class="pol-tab is-active" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                경영방침 점검
+            </button>
+            <button class="pol-tab" type="button" onclick="window.DYLayout._soon(event, 'KPI·점검 설정 (POL05-S)')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                설정
+            </button>
+        </div>
 
         <!-- ─── 시기 도래 알림 ─── -->
         <div class="pol-due-banner">

@@ -68,7 +68,7 @@
         // GNB 2. 점검·진단 (INS + DOC / SFR-012)
         { id: 'inspect', label: '점검·진단', icon: 'check', items: [
             { id: 'ins-status',     label: '안전점검 현황', icon: 'check', href: 'ins-status.html',  screen: 'INS01-V' },
-            { id: 'ins-list',       label: '점검 목록',     icon: 'list',  href: 'ins-list.html',     screen: 'INS02-L' },
+            { id: 'ins-list',       label: '안전점검 목록', icon: 'list',  href: 'ins-list.html',     screen: 'INS02-L' },
             { id: 'ins-settings',   label: '안전점검 설정', icon: 'cog',   href: 'ins-settings.html', screen: 'INS03-S' },
             // 업무문서 (DOC) — DOC01-L 내부 탭으로 [매뉴얼]·[점검표] 통합
             { id: 'doc-manual',     label: '업무문서',      icon: 'file',  href: 'doc-manual.html',   screen: 'DOC01-L' },
@@ -110,19 +110,12 @@
 
         // GNB 6. 안전보건 경영 (POL + PLN + BGT + EVL / SFR-005·004·008·009) — 연간 사이클
         { id: 'safety', label: '안전보건 경영', icon: 'shield', items: [
-            // 안전보건 방침 (POL / SFR-005)
+            // 안전보건 방침 (POL / SFR-005) — POL01-L 내부 탭으로 [방침 이력]·[경영방침 점검]·[설정] 통합
             { id: 'safety-policy', label: '방침 관리',      icon: 'shield',   href: 'safety-policy.html', screen: 'POL01-L' },
-            { id: 'pol-history',   label: '방침 이력',      icon: 'file',     href: 'pol-history.html',   screen: 'POL01-L' },
-            { id: 'pol-check',     label: '경영방침 점검',  icon: 'check',    href: 'pol-inspection.html',  screen: 'POL04-V' },
-            // 안전보건 계획 (PLN / SFR-004)
-            { id: 'pln-status',    label: '계획 현황',      icon: 'chart',    href: 'pln-status.html',    screen: 'PLN01-V' },
-            { id: 'pln-list',      label: '계획 목록',      icon: 'list',     href: 'pln-list.html',      screen: 'PLN01-L' },
-            { id: 'pln-calendar',  label: '캘린더',         icon: 'calendar', href: 'pln-calendar.html',  screen: 'PLN03-V' },
-            { id: 'pln-settings',  label: '계획 설정',      icon: 'cog',      href: 'pln-settings.html',  screen: 'PLN04-S' },
-            // 안전보건 예산 (BGT / SFR-008)
-            { id: 'bgt-status',    label: '예산 현황',      icon: 'coins',    href: 'bgt-status.html',    screen: 'BGT01-V' },
-            { id: 'bgt-tree',      label: '예방 항목 트리', icon: 'list',     href: 'bgt-tree.html',      screen: 'BGT02-V' },
-            { id: 'bgt-settings',  label: '예산 설정',      icon: 'cog',      href: 'bgt-settings.html',  screen: 'BGT05-S' },
+            // 안전보건 계획 (PLN / SFR-004) — PLN01-V 내부 탭으로 [목록]·[캘린더]·[설정] 통합
+            { id: 'pln-status',    label: '계획 관리',      icon: 'chart',    href: 'pln-status.html',    screen: 'PLN01-V' },
+            // 안전보건 예산 (BGT / SFR-008) — BGT01-V 내부 탭으로 [트리]·[편성]·[집행]·[설정] 통합
+            { id: 'bgt-status',    label: '예산 관리',      icon: 'coins',    href: 'bgt-status.html',    screen: 'BGT01-V' },
             // 인력 평가 (EVL / SFR-009) — EVL01-V 내부 탭으로 [평가 목록]·[설정] 통합
             { id: 'evl-list',      label: '인력 평가',      icon: 'user',     href: 'evl-list.html',      screen: 'EVL01-V' },
         ]},
