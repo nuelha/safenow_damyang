@@ -1,0 +1,100 @@
+{
+  "source": "2026 담양군 중대재해 예방 종합계획(2026.2.3 군수 결재)",
+  "total_targets": 62,
+  "duplicates": 2,
+  "duplicate_note": "담양종합체육관(건축물+실내체육시설), 신계정수장(상수도+유해화학물질)",
+  "categories": {
+    "public_facility_law": {
+      "name": "공중이용시설 (시설물안전법)",
+      "count": 25,
+      "subcategories": {
+        "도로교량": { "count": 20, "owner": "건설과" },
+        "상하수도": { "count": 4, "owner": "물순환사업소" },
+        "건축물": { "count": 1, "owner": "공공시설사업소" }
+      }
+    },
+    "indoor_air_quality_law": {
+      "name": "공중이용시설 (실내공기질법)",
+      "count": 14,
+      "owners": ["향촌복지과", "경제교통과", "공공시설사업소", "문화체육과", "재무과", "물순환사업소", "농업기술센터", "환경과"]
+    },
+    "raw_materials_products": {
+      "name": "원료·제조물",
+      "count": 25,
+      "subcategories": {
+        "유해화학물질": { "count": 1, "owner": "물순환사업소" },
+        "의약품_의료기기": { "count": 24, "owner": "보건소·보건지소·보건진료소" }
+      }
+    }
+  },
+  "targets": [
+    { "id": "TGT-B001", "name": "삼지교", "type": "도로교량", "category": "시설물안전법", "spec": "군도5, 230m, 2종", "location": "수북면 정중리", "owner": "건설과" },
+    { "id": "TGT-B002", "name": "학동교", "type": "도로교량", "category": "시설물안전법", "spec": "군도8, 180m, 2종", "location": "담양읍 학동리", "owner": "건설과" },
+    { "id": "TGT-B003", "name": "금월교", "type": "도로교량", "category": "시설물안전법", "spec": "군도8, 132m, 2종", "location": "담양읍 금월리", "owner": "건설과" },
+    { "id": "TGT-B004", "name": "석현교", "type": "도로교량", "category": "시설물안전법", "spec": "군도8, 132m, 2종", "location": "금성면 석현리", "owner": "건설과" },
+    { "id": "TGT-B005", "name": "고읍교", "type": "도로교량", "category": "시설물안전법", "spec": "군도17, 54m, 3종", "location": "고서면 분향리", "owner": "건설과" },
+    { "id": "TGT-B006", "name": "유천교", "type": "도로교량", "category": "시설물안전법", "spec": "군도1, 29m, 3종", "location": "창평면 창평리", "owner": "건설과" },
+    { "id": "TGT-B007", "name": "연화교", "type": "도로교량", "category": "시설물안전법", "spec": "군도4, 25.8m, 3종", "location": "창평면 유곡리", "owner": "건설과" },
+    { "id": "TGT-B008", "name": "창평교", "type": "도로교량", "category": "시설물안전법", "spec": "군도5, 50m, 3종", "location": "창평면 창평리", "owner": "건설과" },
+    { "id": "TGT-B009", "name": "갈전소교", "type": "도로교량", "category": "시설물안전법", "spec": "군도3, 35m, 3종", "location": "대덕면 갈전리", "owner": "건설과" },
+    { "id": "TGT-B010", "name": "갈전교", "type": "도로교량", "category": "시설물안전법", "spec": "군도3, 39.9m, 3종", "location": "대덕면 갈전리", "owner": "건설과" },
+    { "id": "TGT-B011", "name": "동산교", "type": "도로교량", "category": "시설물안전법", "spec": "군도16, 66m, 3종", "location": "무정면 동산리", "owner": "건설과" },
+    { "id": "TGT-B012", "name": "옥산교", "type": "도로교량", "category": "시설물안전법", "spec": "군도10, 67m, 그외", "location": "월산면 월계리", "owner": "건설과" },
+    { "id": "TGT-B013", "name": "대례교", "type": "도로교량", "category": "시설물안전법", "spec": "군도15, 34m, 그외", "location": "월산면 월산리", "owner": "건설과" },
+    { "id": "TGT-B014", "name": "월계교", "type": "도로교량", "category": "시설물안전법", "spec": "군도15, 40m, 3종", "location": "월산면 월계리", "owner": "건설과" },
+    { "id": "TGT-B015", "name": "송정교", "type": "도로교량", "category": "시설물안전법", "spec": "군도5, 33m, 그외", "location": "수북면 대방리", "owner": "건설과" },
+    { "id": "TGT-B016", "name": "대성교", "type": "도로교량", "category": "시설물안전법", "spec": "군도20, 60m, 그외", "location": "금성면 대성리", "owner": "건설과" },
+    { "id": "TGT-B017", "name": "금성교", "type": "도로교량", "category": "시설물안전법", "spec": "군도8, 39m, 그외", "location": "금성면 봉서리", "owner": "건설과" },
+    { "id": "TGT-B018", "name": "주평대교", "type": "도로교량", "category": "시설물안전법", "spec": "군도2, 54m, 그외", "location": "수북면 주평리", "owner": "건설과" },
+    { "id": "TGT-B019", "name": "궁산대교", "type": "도로교량", "category": "시설물안전법", "spec": "군도15, 40m, 그외", "location": "수북면 궁산리", "owner": "건설과" },
+    { "id": "TGT-B020", "name": "매산육교", "type": "도로교량", "category": "시설물안전법", "spec": "군도4, 66m, 그외", "location": "대덕면 매산리", "owner": "건설과" },
+
+    { "id": "TGT-W001", "name": "신계 정수장", "type": "상수도", "category": "시설물안전법", "spec": "저수량 1,165t, 2종", "owner": "물순환사업소", "duplicate": true, "duplicate_note": "유해화학물질(염소투입) 중복" },
+    { "id": "TGT-W002", "name": "담양읍 공공하수처리시설", "type": "하수도", "category": "시설물안전법", "spec": "1,200t, 2종", "owner": "물순환사업소" },
+    { "id": "TGT-W003", "name": "고서면 공공하수처리시설", "type": "하수도", "category": "시설물안전법", "spec": "1,800t, 2종", "owner": "물순환사업소" },
+    { "id": "TGT-W004", "name": "대전면 공공하수처리시설", "type": "하수도", "category": "시설물안전법", "spec": "700t, 2종", "owner": "물순환사업소" },
+
+    { "id": "TGT-A001", "name": "담양군 종합체육관", "type": "건축물", "category": "시설물안전법", "spec": "7,783㎡, 2종", "owner": "공공시설사업소", "duplicate": true, "duplicate_note": "실내체육시설 중복" },
+
+    { "id": "TGT-I001", "name": "담양군청소년수련원", "type": "실내공기질법", "spec": "3,656㎡", "owner": "향촌복지과", "management": "위탁" },
+    { "id": "TGT-I002", "name": "담양군향촌노인종합복지관", "type": "실내공기질법", "spec": "3,809㎡", "owner": "향촌복지과", "management": "위탁" },
+    { "id": "TGT-I003", "name": "우리네어린이집", "type": "실내공기질법", "spec": "598.11㎡", "owner": "향촌복지과", "management": "위탁/국공립" },
+    { "id": "TGT-I004", "name": "담빛청소년문화의집", "type": "실내공기질법", "spec": "2,627㎡", "owner": "향촌복지과" },
+    { "id": "TGT-I005", "name": "여성회관", "type": "실내공기질법", "spec": "3,809㎡", "owner": "향촌복지과" },
+    { "id": "TGT-I006", "name": "담양시장", "type": "실내공기질법", "spec": "6,213.94㎡", "owner": "경제교통과" },
+    { "id": "TGT-I007", "name": "담양문화회관", "type": "실내공기질법", "spec": "3,584㎡", "owner": "공공시설사업소" },
+    { "id": "TGT-I008", "name": "담양종합체육관", "type": "실내공기질법", "spec": "1,718석", "owner": "공공시설사업소" },
+    { "id": "TGT-I009", "name": "한국대나무박물관", "type": "실내공기질법", "spec": "5,146㎡", "owner": "공공시설사업소" },
+    { "id": "TGT-I010", "name": "한국가사문학관", "type": "실내공기질법", "spec": "2,421㎡", "owner": "문화체육과" },
+    { "id": "TGT-I011", "name": "담양군청 본관 6동", "type": "실내공기질법", "spec": "12,147㎡", "owner": "재무과" },
+    { "id": "TGT-I012", "name": "물순환사업소", "type": "실내공기질법", "spec": "3,090㎡", "owner": "물순환사업소" },
+    { "id": "TGT-I013", "name": "농업기술센터 담빛농업관", "type": "실내공기질법", "spec": "6,669㎡", "owner": "농업기술센터" },
+    { "id": "TGT-I014", "name": "에코센터", "type": "실내공기질법", "spec": "4,098㎡", "owner": "환경과" },
+
+    { "id": "TGT-C001", "name": "신계정수장 염소투입 및 저장시설", "type": "유해화학물질", "category": "원료·제조물", "owner": "물순환사업소" },
+    { "id": "TGT-M001", "name": "담양군 보건소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "1,937㎡", "owner": "보건소" },
+    { "id": "TGT-M002", "name": "치매안심센터", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "613.81㎡", "owner": "보건소" },
+    { "id": "TGT-M003", "name": "봉산보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "341.10㎡", "owner": "보건소" },
+    { "id": "TGT-M004", "name": "고서보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "337.50㎡", "owner": "보건소" },
+    { "id": "TGT-M005", "name": "창평보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "739.68㎡", "owner": "보건소" },
+    { "id": "TGT-M006", "name": "대덕보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "368.30㎡", "owner": "보건소" },
+    { "id": "TGT-M007", "name": "무정보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "371.90㎡", "owner": "보건소" },
+    { "id": "TGT-M008", "name": "금성보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "353.03㎡", "owner": "보건소" },
+    { "id": "TGT-M009", "name": "용면보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "345.15㎡", "owner": "보건소" },
+    { "id": "TGT-M010", "name": "월산보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "353.83㎡", "owner": "보건소" },
+    { "id": "TGT-M011", "name": "수북보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "394.75㎡", "owner": "보건소" },
+    { "id": "TGT-M012", "name": "대전보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "352.42㎡", "owner": "보건소" },
+    { "id": "TGT-M013", "name": "가사문학보건지소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "366.63㎡", "owner": "보건소" },
+    { "id": "TGT-M014", "name": "양지보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "142.05㎡", "owner": "보건소" },
+    { "id": "TGT-M015", "name": "원주보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "139.06㎡", "owner": "보건소" },
+    { "id": "TGT-M016", "name": "인암보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "133.11㎡", "owner": "보건소" },
+    { "id": "TGT-M017", "name": "용대보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "122.19㎡", "owner": "보건소" },
+    { "id": "TGT-M018", "name": "금산보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "116.10㎡", "owner": "보건소" },
+    { "id": "TGT-M019", "name": "덕성보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "131.85㎡", "owner": "보건소" },
+    { "id": "TGT-M020", "name": "외추보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "116.75㎡", "owner": "보건소" },
+    { "id": "TGT-M021", "name": "용연보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "127.72㎡", "owner": "보건소" },
+    { "id": "TGT-M022", "name": "복정보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "139.10㎡", "owner": "보건소" },
+    { "id": "TGT-M023", "name": "수남보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "117.73㎡", "owner": "보건소" },
+    { "id": "TGT-M024", "name": "삼산보건진료소", "type": "의약품·의료기기", "category": "원료·제조물", "spec": "123.90㎡", "owner": "보건소" }
+  ]
+}

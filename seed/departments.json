@@ -1,0 +1,73 @@
+{
+  "source": "2026 담양군 중대재해 예방 종합계획(2026.2.3 군수 결재)",
+  "total_departments": 39,
+  "total_personnel": 1224,
+  "total_field_workers": 249,
+  "categories": {
+    "본청": {
+      "count": 23,
+      "structure": "3국 16과 + 2실 + 1단",
+      "personnel": 495
+    },
+    "직속기관": {
+      "count": 4,
+      "structure": "보건소 2과 + 농기센터 2과 1단 + 의회",
+      "personnel": 178
+    },
+    "사업소": {
+      "count": 2,
+      "structure": "공공시설사업소 + 물순환사업소",
+      "personnel": 66
+    },
+    "읍면": {
+      "count": 12,
+      "structure": "1읍 11면",
+      "personnel": 194
+    }
+  },
+  "departments": [
+    { "id": "DEPT-001", "name": "기획예산실", "category": "본청", "personnel": 23, "field_workers": 0 },
+    { "id": "DEPT-002", "name": "참여소통실", "category": "본청", "personnel": 20, "field_workers": 0 },
+    { "id": "DEPT-003", "name": "행정과", "category": "본청", "personnel": 46, "field_workers": 6 },
+    { "id": "DEPT-004", "name": "재무과", "category": "본청", "personnel": 38, "field_workers": 4, "citizen_risk": true },
+    { "id": "DEPT-005", "name": "주민복지과", "category": "본청", "personnel": 26, "field_workers": 0 },
+    { "id": "DEPT-006", "name": "향촌복지과", "category": "본청", "personnel": 55, "field_workers": 6, "citizen_risk": true },
+    { "id": "DEPT-007", "name": "문화체육과", "category": "본청", "personnel": 23, "field_workers": 4, "citizen_risk": true },
+    { "id": "DEPT-008", "name": "관광과", "category": "본청", "personnel": 43, "field_workers": 10 },
+    { "id": "DEPT-009", "name": "경제교통과", "category": "본청", "personnel": 31, "field_workers": 8, "citizen_risk": true },
+    { "id": "DEPT-010", "name": "공간재생과", "category": "본청", "personnel": 20, "field_workers": 0 },
+    { "id": "DEPT-011", "name": "건설과", "category": "본청", "personnel": 24, "field_workers": 7, "citizen_risk": true },
+    { "id": "DEPT-012", "name": "도시과", "category": "본청", "personnel": 26, "field_workers": 0 },
+    { "id": "DEPT-013", "name": "산림정원과", "category": "본청", "personnel": 151, "field_workers": 112, "note": "최대 현업종사자 보유 부서" },
+    { "id": "DEPT-014", "name": "투자유치단", "category": "본청", "personnel": 13, "field_workers": 0 },
+    { "id": "DEPT-015", "name": "농업유통과", "category": "본청", "personnel": 23, "field_workers": 0 },
+    { "id": "DEPT-016", "name": "축산원예과", "category": "본청", "personnel": 31, "field_workers": 0 },
+    { "id": "DEPT-017", "name": "재난안전과", "category": "본청", "personnel": 25, "field_workers": 0, "is_dedicated_org": true, "note": "전담조직 (중대재해팀) 061-380-3355/3356" },
+    { "id": "DEPT-018", "name": "환경과", "category": "본청", "personnel": 37, "field_workers": 8, "citizen_risk": true },
+    { "id": "DEPT-019", "name": "민원과", "category": "본청", "personnel": 25, "field_workers": 0 },
+    { "id": "DEPT-020", "name": "보건행정과", "category": "직속기관", "parent": "보건소", "personnel": 105, "field_workers": 1, "citizen_risk": true },
+    { "id": "DEPT-021", "name": "건강증진과", "category": "직속기관", "parent": "보건소", "personnel": 43, "field_workers": 0 },
+    { "id": "DEPT-022", "name": "농촌지원과", "category": "직속기관", "parent": "농업기술센터", "personnel": 45, "field_workers": 16 },
+    { "id": "DEPT-023", "name": "기술보급과", "category": "직속기관", "parent": "농업기술센터", "personnel": 18, "field_workers": 9 },
+    { "id": "DEPT-024", "name": "미래농업연구단", "category": "직속기관", "parent": "농업기술센터", "personnel": 21, "field_workers": 18 },
+    { "id": "DEPT-025", "name": "의회사무과", "category": "직속기관", "personnel": 27, "field_workers": 1 },
+    { "id": "DEPT-026", "name": "공공시설사업소", "category": "사업소", "personnel": 40, "field_workers": 15, "citizen_risk": true },
+    { "id": "DEPT-027", "name": "물순환사업소", "category": "사업소", "personnel": 40, "field_workers": 14, "citizen_risk": true },
+    { "id": "DEPT-028", "name": "담양읍", "category": "읍면", "personnel": 26 },
+    { "id": "DEPT-029", "name": "봉산면", "category": "읍면" },
+    { "id": "DEPT-030", "name": "고서면", "category": "읍면" },
+    { "id": "DEPT-031", "name": "가사문학면", "category": "읍면" },
+    { "id": "DEPT-032", "name": "창평면", "category": "읍면" },
+    { "id": "DEPT-033", "name": "대덕면", "category": "읍면" },
+    { "id": "DEPT-034", "name": "무정면", "category": "읍면" },
+    { "id": "DEPT-035", "name": "금성면", "category": "읍면" },
+    { "id": "DEPT-036", "name": "용면", "category": "읍면" },
+    { "id": "DEPT-037", "name": "월산면", "category": "읍면" },
+    { "id": "DEPT-038", "name": "수북면", "category": "읍면" },
+    { "id": "DEPT-039", "name": "대전면", "category": "읍면" }
+  ],
+  "citizen_risk_departments": [
+    "재무과", "향촌복지과", "문화체육과", "경제교통과", "건설과",
+    "환경과", "보건행정과", "공공시설사업소", "물순환사업소", "농업기술센터"
+  ]
+}

@@ -39,19 +39,38 @@
         .cmp-status-chip.imminent  { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-border); }
     </style>
 </head>
-<body data-dy-page="cmp-list" data-page-title="이행 목록" data-page-subtitle="법령·자체 의무 이행 일정·실행 관리 (CMP02-L · SFR-014)">
+<body data-dy-page="cmp-list" data-page-title="이행 목록 (CMP02-L)" data-page-subtitle="2026 종합계획 의무이행 17개 항목 (산업 9 + 시민 8) · SFR-014">
     <main>
         <!-- 필터 -->
         <div class="rsk-filter-row">
             <div class="form-group">
                 <span class="form-label-inline">카테고리</span>
                 <select class="select">
-                    <option>전체</option><option>중대재해법 §4</option><option>산안법</option><option>화학물질안전관리법</option><option>시설물안전특별법</option><option>담양군 안전조례</option><option>자체 계획</option>
+                    <option>전체</option>
+                    <option>중대산업재해 (IND 9개)</option>
+                    <option>중대시민재해 (CIT 8개)</option>
+                    <option>중대재해법 §4</option>
+                    <option>산안법</option>
+                    <option>화학물질안전관리법</option>
+                    <option>시설물안전특별법</option>
                 </select>
             </div>
             <div class="form-group">
                 <span class="form-label-inline">부서</span>
-                <select class="select"><option>전체</option><option>안전건설과</option><option>시설관리과</option><option>환경과</option></select>
+                <select class="select">
+                    <option>전체 (39)</option>
+                    <option>재난안전과 (전담)</option>
+                    <option>건설과 ★</option>
+                    <option>물순환사업소 ★</option>
+                    <option>공공시설사업소 ★</option>
+                    <option>향촌복지과 ★</option>
+                    <option>경제교통과 ★</option>
+                    <option>문화체육과 ★</option>
+                    <option>재무과 ★</option>
+                    <option>환경과 ★</option>
+                    <option>농업기술센터 ★</option>
+                    <option>보건소 ★</option>
+                </select>
             </div>
             <div class="form-group">
                 <span class="form-label-inline">상태</span>
@@ -65,7 +84,7 @@
         </div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
-            <span style="font-size:14px; color:var(--text-gray);">전체 <strong style="color:var(--main); font-weight:700;">142</strong>건 · 기한초과 <strong style="color:var(--status-danger-fg);">3</strong>건 · 임박 <strong style="color:var(--status-warning-fg);">14</strong>건</span>
+            <span style="font-size:14px; color:var(--text-gray);">의무이행 항목 <strong style="color:var(--main); font-weight:700;">17</strong>개 (산업 9 + 시민 8) · 부서별 적용 <strong>~600</strong>건 · 기한초과 <strong style="color:var(--status-danger-fg);">3</strong>건 · 임박 <strong style="color:var(--status-warning-fg);">14</strong>건</span>
             <a href="cmp-status.html" class="text-muted" style="font-size:13px;">← 이행 현황</a>
         </div>
 
@@ -90,99 +109,161 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 기한초과 -->
+                    <!-- ─ 중대산업재해 IND-01 ~ IND-09 (전 부서 적용) ─ -->
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[IND-01] 부서별 중대산업재해 예방계획 수립</strong><div style="font-size:11px; color:var(--text-gray);">중대재해처벌법 제4조</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">산업재해</span></td>
+                        <td>전 부서 (39)</td>
+                        <td>2026-02-28</td>
+                        <td style="text-align:center;">매년 2월</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">완료 (35/39)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
                     <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>화학물질 정기 검사 실시</strong><div style="font-size:11px; color:var(--text-gray);">화학물질안전관리법 §10</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat chem">화학물질법</span></td>
-                        <td>환경과</td>
-                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-05</span> <span class="imp-due-dday">D+8</span></td>
+                        <td><strong>[IND-02] 담양군 안전보건 점검의 날 운영</strong><div style="font-size:11px; color:var(--text-gray);">유해·위험요인 확인개선 + 의견청취 + 교육</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">산업재해</span></td>
+                        <td>전 부서 (39)</td>
+                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-15</span> <span class="imp-due-dday">D+4</span></td>
                         <td style="text-align:center;">월 1회</td>
                         <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
                         <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
                     </tr>
-                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>보건소 노후 시설 정밀안전점검</strong><div style="font-size:11px; color:var(--text-gray);">시설물안전특별법 §11</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat fac">시설법</span></td>
-                        <td>시설관리과</td>
-                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-08</span> <span class="imp-due-dday">D+5</span></td>
-                        <td style="text-align:center;">분기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
-                    </tr>
-                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>안전보건관리책임자 평가 (담양읍)</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-6</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
-                        <td>담양읍사무소</td>
-                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-11</span> <span class="imp-due-dday">D+2</span></td>
-                        <td style="text-align:center;">반기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
-                    </tr>
-                    <!-- 임박 -->
                     <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>안전보건 경영방침 정기 점검</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-1</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
-                        <td>안전건설과</td>
-                        <td>2026-05-18 <span class="imp-due-dday" style="color:var(--status-warning-fg);">D-5</span></td>
-                        <td style="text-align:center;">분기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip imminent">기한 임박</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
-                    </tr>
-                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>위험성평가 정기 시행 (Q2)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §36, 중대재해법 §4-3</div></td>
+                        <td><strong>[IND-03] 위험성 평가 실시</strong><div style="font-size:11px; color:var(--text-gray);">산업안전보건법 제36조 · 62개 시설 + 부서별</div></td>
                         <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
-                        <td>안전건설과</td>
-                        <td>2026-05-20 <span class="imp-due-dday" style="color:var(--status-warning-fg);">D-7</span></td>
-                        <td style="text-align:center;">분기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip imminent">기한 임박</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                        <td>전 부서 (39)</td>
+                        <td>2026-12-31 <span class="imp-due-dday">D-226</span></td>
+                        <td style="text-align:center;">연 1회 + 수시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중 (54/62)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="risk-list.html" onclick="event.stopPropagation();">실행</a></td>
                     </tr>
                     <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>산업안전보건위원회 Q2 개최</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §24</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
-                        <td>안전건설과</td>
-                        <td>2026-06-12 <span class="imp-due-dday">D-30</span></td>
-                        <td style="text-align:center;">분기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip pending">예정</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="opn-committee.html" onclick="event.stopPropagation();">대기</a></td>
-                    </tr>
-                    <!-- 진행중 -->
-                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>안전보건 종사자 의견청취 캠페인 (상반기)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §75</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
-                        <td>안전건설과</td>
-                        <td>2026-06-30 <span class="imp-due-dday">D-48</span></td>
-                        <td style="text-align:center;">반기 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="opn-status.html" onclick="event.stopPropagation();">진행</a></td>
-                    </tr>
-                    <!-- 완료 -->
-                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>2026 안전보건 경영방침 수립·결재</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-1</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
-                        <td>자치행정과</td>
-                        <td>2026-01-20</td>
-                        <td style="text-align:center;">연 1회</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip done">완료</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
-                    </tr>
-                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>안전보건 예산 편성 (2026)</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-4</div></td>
-                        <td style="text-align:center;"><span class="cmp-cat cdpa">중대재해법</span></td>
-                        <td>자치행정과</td>
+                        <td><strong>[IND-04] 안전·보건 예산편성 및 집행</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 시행령 §4-4</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">산업재해</span></td>
+                        <td>전 부서 (39)</td>
                         <td>2026-02-28</td>
-                        <td style="text-align:center;">연 1회</td>
+                        <td style="text-align:center;">매년</td>
                         <td style="text-align:center;"><span class="cmp-status-chip done">완료</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="bgt-status.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[IND-05] 종사자 의견청취 및 개선방안 마련·이행</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §75</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>전 부서 (39)</td>
+                        <td>2026-06-30 <span class="imp-due-dday">D-42</span></td>
+                        <td style="text-align:center;">수시 (반기 보고)</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="opinion.html" onclick="event.stopPropagation();">진행</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[IND-06] 중대재해 발생 시 조치 매뉴얼 준수</strong><div style="font-size:11px; color:var(--text-gray);">광주노동청 062-975-6485 · 작업중지</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">산업재해</span></td>
+                        <td>전 부서 (39)</td>
+                        <td>상시</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">매뉴얼 v2.1</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="doc-manual.html" onclick="event.stopPropagation();">매뉴얼</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[IND-07] 도급·용역·위탁 시 안전보건 확보의무 준수</strong><div style="font-size:11px; color:var(--text-gray);">중대재해법 §5 + 산안법 §63</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
+                        <td>전 부서 (39)</td>
+                        <td>각 단계별</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중 (23/25)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="con-sub.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[IND-08] 안전보건 관계 법령 의무 이행</strong><div style="font-size:11px; color:var(--text-gray);">5개 법령 모니터링</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat cdpa">산업재해</span></td>
+                        <td>전 부서 (39)</td>
+                        <td>상시</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
                         <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
                     </tr>
                     <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
-                        <td><strong>도급공사 안전관리 평가 (5건)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §63 / 중대재해법 §4-9</div></td>
+                        <td><strong>[IND-09] 현업종사자 안전보건 교육 실시 (반기 12시간)</strong><div style="font-size:11px; color:var(--text-gray);">산안법 §29 · 현업 249명 대상</div></td>
                         <td style="text-align:center;"><span class="cmp-cat osha">산안법</span></td>
-                        <td>안전건설과</td>
-                        <td>분기별</td>
+                        <td>전 부서 (39)</td>
+                        <td>2026-06-30 <span class="imp-due-dday" style="color:var(--status-warning-fg);">D-42</span></td>
+                        <td style="text-align:center;">반기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip imminent">기한 임박</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+
+                    <!-- ─ 중대시민재해 CIT-01 ~ CIT-08 (해당 10개 부서) ─ -->
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-01] 안전인력 확보</strong><div style="font-size:11px; color:var(--text-gray);">중대시민재해 10개 부서 적용</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>상시</td>
                         <td style="text-align:center;">상시</td>
-                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중 (3/5)</span></td>
-                        <td style="text-align:center;"><a class="table-action-btn" href="contractor.html" onclick="event.stopPropagation();">상세</a></td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">충족 (10/10)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-02] 안전예산 편성·집행</strong><div style="font-size:11px; color:var(--text-gray);">시민재해 시설별 안전예산</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>2026-02-28</td>
+                        <td style="text-align:center;">매년</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">완료 (10/10)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="bgt-status.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link row-highlight-danger" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-03] 안전점검계획 수립 및 점검</strong><div style="font-size:11px; color:var(--text-gray);">반기 1회 점검</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td><span style="color:var(--status-danger-fg); font-weight:600;">2026-05-08</span> <span class="imp-due-dday">D+11</span></td>
+                        <td style="text-align:center;">반기 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip overdue">기한초과</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="ins-list.html" onclick="event.stopPropagation();">실행</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-04] 안전계획 수립 및 점검</strong><div style="font-size:11px; color:var(--text-gray);">매년 2월 수립 · 반기 점검 (6월/12월)</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>2026-02-28</td>
+                        <td style="text-align:center;">매년 2월 + 반기</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip done">완료 (9/10)</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="pln-status.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-05] 중대시민재해 예방 업무처리 절차 마련·이행</strong><div style="font-size:11px; color:var(--text-gray);">유해위험요인 확인점검 + 대피훈련(1종)</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>상시</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-06] 도급·용역·위탁 기준과 절차 마련·이행</strong><div style="font-size:11px; color:var(--text-gray);">제3자에게 공중이용시설 운영·관리 위탁</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>각 단계</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="con-sub.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-07] 안전보건 관계 법령 이행</strong><div style="font-size:11px; color:var(--text-gray);">시설물안전법 + 실내공기질법 + 화학물질법</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>상시</td>
+                        <td style="text-align:center;">상시</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip progress">진행중</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">상세</a></td>
+                    </tr>
+                    <tr class="row-link" onclick="window.location.href='cmp-detail.html'">
+                        <td><strong>[CIT-08] 안전보건교육 이수</strong><div style="font-size:11px; color:var(--text-gray);">관리감독자 연 16시간</div></td>
+                        <td style="text-align:center;"><span class="cmp-cat fac">시민재해</span></td>
+                        <td>시민재해 부서 (10) ★</td>
+                        <td>2026-09-30 <span class="imp-due-dday">D-134</span></td>
+                        <td style="text-align:center;">연 1회</td>
+                        <td style="text-align:center;"><span class="cmp-status-chip pending">예정</span></td>
+                        <td style="text-align:center;"><a class="table-action-btn" href="cmp-detail.html" onclick="event.stopPropagation();">대기</a></td>
                     </tr>
                 </tbody>
             </table>

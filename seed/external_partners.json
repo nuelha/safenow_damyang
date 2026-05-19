@@ -1,0 +1,46 @@
+{
+  "source": "2026 담양군 중대재해 예방 종합계획(2026.2.3 군수 결재)",
+  "partners": [
+    {
+      "id": "EXT-001",
+      "name": "대한산업안전협회",
+      "type": "안전관리자",
+      "role": "안전관리 점검",
+      "personnel": [
+        { "qualification": "산업안전기사", "count": 2 }
+      ],
+      "visit_frequency": "매월 2회",
+      "scope": "사업장 순회점검 (안전)",
+      "status": "위탁"
+    },
+    {
+      "id": "EXT-002",
+      "name": "김병원산업보건센터",
+      "type": "보건관리자",
+      "role": "보건관리 점검",
+      "personnel": [
+        { "qualification": "간호사", "count": 1 },
+        { "qualification": "산업위생기사", "count": 1 },
+        { "qualification": "의사", "count": 1 }
+      ],
+      "visit_frequency": "매월 1회",
+      "scope": "사업장 순회점검 (보건)",
+      "status": "위탁"
+    }
+  ],
+  "external_authorities": [
+    {
+      "name": "광주지방고용노동청",
+      "role": "중대산업재해 보고 접수",
+      "contact": {
+        "tel": ["062-975-6485", "062-975-6492"],
+        "fax": "0503-8803-0852"
+      }
+    }
+  ],
+  "internal_dedicated_org": {
+    "name": "재난안전과 중대재해팀",
+    "department": "재난안전과",
+    "contact": ["061-380-3355", "061-380-3356"]
+  }
+}
